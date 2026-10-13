@@ -2,45 +2,42 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<title>BUG DASH — Né Bug / Chạy Deadline | FU-DEVER Tech Lab</title>
+<title>BUG DASH — Né Bug Chạy Deadline | CLB FU-DEVER FPTU ĐÀ NẴNG</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#070a13">
 
-<!-- Fonts: Be Vietnam Pro (Vietnamese support) + JetBrains Mono + Space Grotesk -->
+<!-- Fonts: Be Vietnam Pro (tiếng Việt chuẩn) + JetBrains Mono (Terminal/Score) + Space Grotesk -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-base: #070a13;
-    --bg-surface: #0c1427;
-    --bg-card: rgba(14, 23, 43, 0.72);
-    --bg-card-hover: rgba(22, 35, 64, 0.85);
+    --bg-base: #060911;
+    --bg-surface: #0b1120;
+    --bg-card: rgba(13, 20, 36, 0.85);
     --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-glow: rgba(245, 158, 11, 0.35);
+    --border-amber: rgba(245, 158, 11, 0.4);
     
-    /* FU-DEVER Brand Accents */
-    --amber-primary: #f59e0b;
-    --amber-glow: rgba(245, 158, 11, 0.45);
-    --orange-dever: #ff6b00;
-    --cyan-cyber: #06b6d4;
+    /* FU-DEVER & FPTU Brand Colors */
+    --fpt-orange: #f26f21;
+    --dever-amber: #f59e0b;
+    --dever-amber-glow: rgba(245, 158, 11, 0.35);
+    --dever-blue: #0ea5e9;
+    --dever-cyan: #06b6d4;
     --emerald-ok: #10b981;
     --emerald-glow: rgba(16, 185, 129, 0.4);
     --crimson-bad: #ef4444;
-    --crimson-glow: rgba(239, 68, 68, 0.4);
+    --crimson-glow: rgba(239, 68, 68, 0.45);
     
-    /* Text tokens */
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
     
-    /* Spatial & Transitions */
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 20px;
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,16 +45,16 @@
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
     position: relative;
     background-image: 
-      radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.07) 0%, transparent 60%),
-      radial-gradient(circle at 10% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 40%),
-      linear-gradient(to bottom, #070a13 0%, #05070e 100%);
+      radial-gradient(circle at 50% 0%, rgba(242, 111, 33, 0.09) 0%, transparent 65%),
+      radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
+      linear-gradient(to bottom, #070a13 0%, #04060b 100%);
   }
 
   /* Scanline subtle texture */
@@ -68,39 +65,38 @@
     pointer-events: none;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.15) 1px,
+      rgba(0, 0, 0, 0.12),
+      rgba(0, 0, 0, 0.12) 1px,
       transparent 1px,
       transparent 3px
     );
     z-index: 99;
-    opacity: 0.35;
+    opacity: 0.25;
   }
 
-  /* App Shell Container */
   .app-shell {
-    max-width: 1380px;
+    max-width: 1420px;
     width: 100%;
     margin: 0 auto;
-    padding: 16px 20px;
+    padding: 12px 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     flex: 1;
   }
 
-  /* Top Navigation Bar */
+  /* Top Bar with Real Club & University Logos */
   .top-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
+    padding: 10px 18px;
     background: var(--bg-card);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     z-index: 10;
   }
 
@@ -110,40 +106,49 @@
     gap: 14px;
   }
 
-  .brand-logo-badge {
+  .logos-cluster {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--orange-dever), var(--amber-primary));
-    box-shadow: 0 0 16px var(--amber-glow);
-    color: #070a13;
-    font-weight: 800;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 18px;
-    letter-spacing: -0.5px;
+    gap: 12px;
+  }
+
+  .logo-img-fptu {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  }
+
+  .logo-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .logo-img-dever {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.3));
   }
 
   .brand-meta h1 {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
     letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     gap: 8px;
-    text-transform: uppercase;
   }
 
   .brand-meta h1 span.pill {
     font-size: 10px;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 20px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber-primary);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    letter-spacing: 0.5px;
+    background: rgba(242, 111, 33, 0.15);
+    color: var(--fpt-orange);
+    border: 1px solid rgba(242, 111, 33, 0.35);
+    font-weight: 700;
   }
 
   .brand-meta p {
@@ -175,7 +180,6 @@
   .btn-icon:hover {
     background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.18);
   }
 
   .btn-primary {
@@ -184,39 +188,33 @@
     gap: 8px;
     padding: 9px 18px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, var(--amber-primary), var(--orange-dever));
+    background: linear-gradient(135deg, var(--fpt-orange), var(--dever-amber));
     border: 0;
     color: #070a13;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 13px;
     letter-spacing: 0.3px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 14px rgba(242, 111, 33, 0.35);
     transition: all 0.2s var(--ease-spring);
     text-transform: uppercase;
   }
 
   .btn-primary:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
-    filter: brightness(1.05);
+    box-shadow: 0 6px 20px rgba(242, 111, 33, 0.5);
+    filter: brightness(1.06);
   }
 
   .btn-primary:active:not(:disabled) {
     transform: translateY(1px);
   }
 
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    filter: grayscale(0.5);
-  }
-
-  /* Cockpit Grid Layout */
+  /* Cockpit Layout Grid */
   .cockpit-grid {
     display: grid;
     grid-template-columns: 290px 1fr 290px;
-    gap: 16px;
+    gap: 14px;
     align-items: start;
     flex: 1;
   }
@@ -225,26 +223,20 @@
     .cockpit-grid {
       grid-template-columns: 1fr;
     }
-    .col-telemetry, .col-mission {
-      order: 2;
-    }
-    .col-center {
-      order: 1;
-    }
   }
 
-  /* Cards */
+  /* Cards & Panels */
   .panel-card {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 18px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    gap: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
   }
 
   .card-header {
@@ -252,7 +244,7 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 10px;
+    padding-bottom: 8px;
   }
 
   .card-header h2 {
@@ -261,109 +253,58 @@
     font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     display: flex;
     align-items: center;
     gap: 7px;
   }
 
-  .card-header .pulse-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--emerald-ok);
-    box-shadow: 0 0 8px var(--emerald-glow);
-  }
-
-  /* Telemetry Panel Elements */
-  .status-radar-box {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--border-subtle);
-  }
-
-  .radar-ring {
+  /* Left Panel: Camera Control & Calibration */
+  .pip-camera-box {
     position: relative;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  }
+
+  #video, #overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  .pip-badge {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    background: rgba(7, 10, 19, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--dever-amber);
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+    z-index: 5;
   }
 
-  .radar-ring::after {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    border: 2px dashed rgba(245, 158, 11, 0.35);
-    animation: rotateRing 12s linear infinite;
-  }
-
-  @keyframes rotateRing {
-    to { transform: rotate(360deg); }
-  }
-
-  .radar-core {
-    width: 14px;
-    height: 14px;
+  .status-led {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: var(--text-muted);
-    transition: all 0.3s ease;
   }
+  .status-led.on { background: var(--emerald-ok); box-shadow: 0 0 6px var(--emerald-glow); }
 
-  .radar-core.s-wait { background: var(--text-muted); box-shadow: none; }
-  .radar-core.s-cand { background: var(--amber-primary); box-shadow: 0 0 12px var(--amber-glow); }
-  .radar-core.s-lock { background: var(--emerald-ok); box-shadow: 0 0 14px var(--emerald-glow); }
-  .radar-core.s-lost { background: var(--crimson-bad); box-shadow: 0 0 14px var(--crimson-glow); }
-
-  .status-desc h3 {
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
-
-  .status-desc p {
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
-
-  /* Metric gauges */
-  .metric-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .metric-item {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-  }
-
-  .metric-label {
-    font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-muted);
-    text-transform: uppercase;
-  }
-
-  .metric-value {
-    font-size: 18px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-primary);
-    margin-top: 2px;
-  }
-
-  /* Control sliders & buttons */
   .ctrl-group {
     display: flex;
     flex-direction: column;
@@ -379,7 +320,7 @@
   }
 
   .ctrl-label-row span.val {
-    color: var(--amber-primary);
+    color: var(--dever-amber);
     font-weight: 700;
   }
 
@@ -398,14 +339,9 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--amber-primary);
+    background: var(--fpt-orange);
     cursor: pointer;
-    box-shadow: 0 0 10px var(--amber-glow);
-    transition: transform 0.1s;
-  }
-
-  input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(242, 111, 33, 0.5);
   }
 
   .btn-outline {
@@ -429,152 +365,164 @@
     border-color: rgba(255, 255, 255, 0.2);
   }
 
-  .btn-outline:active {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  /* Center Arcade Viewport */
+  /* Center: The Main Game Arena & 3-Lane Highway */
   .col-center {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  .arcade-stage-container {
+  .game-stage-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 4/3;
-    max-height: 520px;
-    background: #000;
+    aspect-ratio: 16/10;
+    max-height: 540px;
+    background: #060913;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 2px solid var(--border-subtle);
     box-shadow: 
-      0 0 30px rgba(0, 0, 0, 0.7),
-      inset 0 0 20px rgba(0, 0, 0, 0.8);
-  }
-
-  /* Cyber corner brackets */
-  .arcade-stage-container::before {
-    content: "";
-    position: absolute;
-    inset: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    pointer-events: none;
-    z-index: 5;
-  }
-
-  #video, #overlay {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1); /* mirror */
-  }
-
-  #overlay {
-    z-index: 4;
-  }
-
-  /* Attract Mode Overlay Banner */
-  .attract-banner {
-    position: absolute;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(7, 10, 19, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--amber-glow);
-    padding: 8px 18px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--amber-primary);
-    letter-spacing: 0.5px;
-    z-index: 6;
+      0 0 35px rgba(0, 0, 0, 0.7),
+      inset 0 0 25px rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    justify-content: center;
   }
 
-  .attract-banner .pulse-glow {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--amber-primary);
-    animation: pulseGlow 1.5s infinite;
+  #gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
   }
 
-  @keyframes pulseGlow {
-    0%, 100% { opacity: 0.4; transform: scale(0.9); }
-    50% { opacity: 1; transform: scale(1.3); }
-  }
-
-  /* Calibration Target Crosshair in Center */
-  .starter-gate-hint {
+  /* Floating UI Over Game Canvas */
+  .canvas-overlay-ui {
     position: absolute;
     inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    z-index: 6;
+  }
+
+  .stage-top-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .hud-badge-box {
+    background: rgba(6, 9, 19, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hud-badge-title {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .hud-badge-val {
+    font-size: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    color: var(--dever-amber);
+  }
+
+  /* Game Overlay Screens (Start / Game Over / Victory) */
+  .game-state-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(6, 9, 19, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    padding: 24px;
+    gap: 16px;
+    z-index: 10;
+    transition: opacity 0.25s ease;
+  }
+
+  .game-state-modal.hidden {
+    display: none !important;
+    opacity: 0;
     pointer-events: none;
-    z-index: 5;
-    opacity: 0.85;
-    transition: opacity 0.3s ease;
   }
 
-  .starter-gate-box {
-    width: 48%;
-    height: 68%;
-    border: 2px dashed rgba(245, 158, 11, 0.6);
-    border-radius: 16px;
-    position: relative;
-    box-shadow: inset 0 0 25px rgba(245, 158, 11, 0.1);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 16px;
+  .modal-mascot-img {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+    animation: bounceMascot 2.5s ease-in-out infinite;
   }
 
-  .starter-gate-box::before, .starter-gate-box::after {
-    content: "";
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-color: var(--amber-primary);
-    border-style: solid;
+  @keyframes bounceMascot {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
 
-  .starter-gate-box::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
-  .starter-gate-box::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
-
-  .starter-gate-box span {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--amber-primary);
-    background: rgba(7, 10, 19, 0.85);
-    padding: 3px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+  .modal-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  /* 3-Lane Glowing Cyber Runway */
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 440px;
+    line-height: 1.5;
+  }
+
+  .btn-play-big {
+    background: linear-gradient(135deg, var(--fpt-orange), var(--dever-amber));
+    color: #070a13;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(242, 111, 33, 0.4);
+    transition: all 0.2s var(--ease-spring);
+    text-transform: uppercase;
+    pointer-events: auto;
+  }
+
+  .btn-play-big:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(242, 111, 33, 0.6);
+  }
+
+  /* 3-Lane Runway Bar at Bottom */
   .runway-wrapper {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 16px 18px;
+    padding: 14px 18px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .runway-header {
@@ -590,132 +538,62 @@
   .lanes-track {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    position: relative;
+    gap: 10px;
   }
 
   .lane-node {
     background: rgba(0, 0, 0, 0.35);
     border: 2px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
-    padding: 16px 10px;
+    padding: 12px 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.22s var(--ease-spring);
+    transition: all 0.2s var(--ease-spring);
     user-select: none;
   }
 
-  .lane-node::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(245, 158, 11, 0.12) 100%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
   .lane-node .lane-tag {
-    font-size: 10px;
+    font-size: 9px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
-    letter-spacing: 1px;
   }
 
   .lane-node .lane-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     color: var(--text-secondary);
-    letter-spacing: 0.5px;
     text-transform: uppercase;
   }
 
-  .lane-node .lane-indicator {
-    width: 24px;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
-  }
-
-  /* Active Lane State */
   .lane-node.active {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: var(--amber-primary);
-    box-shadow: 
-      0 0 25px rgba(245, 158, 11, 0.3),
-      inset 0 0 15px rgba(245, 158, 11, 0.15);
+    background: rgba(242, 111, 33, 0.12);
+    border-color: var(--fpt-orange);
+    box-shadow: 0 0 20px rgba(242, 111, 33, 0.3);
     transform: translateY(-2px);
-  }
-
-  .lane-node.active::before {
-    opacity: 1;
   }
 
   .lane-node.active .lane-title {
     color: #fff;
-    text-shadow: 0 0 10px var(--amber-glow);
+    text-shadow: 0 0 10px rgba(242, 111, 33, 0.6);
   }
 
-  .lane-node.active .lane-indicator {
-    background: var(--amber-primary);
-    box-shadow: 0 0 10px var(--amber-primary);
-    width: 38px;
-  }
-
-  /* Head Delta Gauge */
-  .delta-gauge-container {
-    height: 6px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 3px;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border-subtle);
-  }
-
-  .delta-gauge-center {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-50%);
-  }
-
-  .delta-gauge-thumb {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 14px;
-    border-radius: 3px;
-    background: var(--cyan-cyber);
-    box-shadow: 0 0 8px var(--cyan-cyber);
-    left: 50%;
-    transform: translateX(-50%);
-    transition: left 0.08s linear;
-  }
-
-  /* Right Column: Mission HUD */
+  /* Right Panel: Mission HUD & Local Leaderboard */
   .col-mission {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  /* Timer Clock Box */
   .timer-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 22px 14px;
-    background: linear-gradient(180deg, rgba(14, 23, 43, 0.9) 0%, rgba(8, 13, 26, 0.9) 100%);
+    padding: 18px 14px;
+    background: linear-gradient(180deg, rgba(14, 23, 43, 0.95) 0%, rgba(8, 13, 26, 0.95) 100%);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     position: relative;
@@ -725,100 +603,95 @@
   .timer-card::after {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--orange-dever), var(--amber-primary));
-  }
-
-  .timer-val {
-    font-size: 42px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: -1px;
-    color: var(--amber-primary);
-    text-shadow: 0 0 20px var(--amber-glow);
-    line-height: 1;
-    margin-top: 6px;
+    background: linear-gradient(90deg, var(--fpt-orange), var(--dever-amber));
   }
 
   .timer-sub {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
     font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 6px;
   }
 
-  /* Scoreboard metrics */
+  .timer-val {
+    font-size: 40px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--dever-amber);
+    text-shadow: 0 0 20px var(--dever-amber-glow);
+    line-height: 1;
+    margin-top: 4px;
+  }
+
   .score-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .score-item {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    padding: 10px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
   .score-item .label {
-    font-size: 11px;
+    font-size: 10px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
     text-transform: uppercase;
   }
 
   .score-item .val {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     color: #fff;
   }
 
-  /* Lives Energy Hearts */
   .lives-row {
     display: flex;
     gap: 8px;
     align-items: center;
   }
 
-  .shield-point {
-    width: 22px;
-    height: 22px;
+  .heart-point {
+    width: 24px;
+    height: 24px;
     border-radius: 6px;
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid var(--emerald-ok);
-    box-shadow: 0 0 10px var(--emerald-glow);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid var(--crimson-bad);
+    box-shadow: 0 0 8px var(--crimson-glow);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
   }
 
-  .shield-point.lost {
-    background: rgba(255, 255, 255, 0.05);
+  .heart-point.lost {
+    background: rgba(255, 255, 255, 0.04);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: none;
-    opacity: 0.3;
+    opacity: 0.25;
   }
 
-  /* Obstacle & Reward Field Guide */
-  .guide-list {
+  /* Leaderboard list */
+  .board-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .guide-row {
+  .board-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -828,26 +701,30 @@
     border: 1px solid rgba(255, 255, 255, 0.04);
   }
 
-  .guide-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 600;
+  .board-row.gold {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
   }
 
-  .badge-tag {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
+  .board-rank {
+    font-weight: 800;
+    color: var(--dever-amber);
+    width: 20px;
   }
 
-  .tag-danger { background: var(--crimson-bad); box-shadow: 0 0 6px var(--crimson-glow); }
-  .tag-reward { background: var(--emerald-ok); box-shadow: 0 0 6px var(--emerald-glow); }
-  .tag-buff { background: var(--cyan-cyber); }
+  .board-name {
+    flex: 1;
+    color: var(--text-secondary);
+  }
+
+  .board-score {
+    font-weight: 800;
+    color: #fff;
+  }
 
   /* Footer bar */
   .footer-bar {
-    padding: 12px 18px;
+    padding: 10px 16px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
@@ -867,17 +744,10 @@
     flex-wrap: wrap;
   }
 
-  .shortcut-k {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-
   kbd {
     display: inline-block;
-    padding: 2px 6px;
+    padding: 2px 5px;
     font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.08);
@@ -885,80 +755,61 @@
     border-radius: 4px;
   }
 
-  /* Modal Dialog */
+  /* Help Modal */
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
     z-index: 1000;
   }
-
-  .modal-overlay.open {
-    display: flex;
-  }
+  .modal-overlay.open { display: flex; }
 
   .modal-card {
     background: var(--bg-surface);
-    border: 1px solid var(--border-glow);
+    border: 1px solid var(--border-amber);
     border-radius: var(--radius-md);
-    padding: 24px;
-    max-width: 520px;
+    padding: 22px;
+    max-width: 500px;
     width: 100%;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 12px;
-  }
-
-  .modal-header h3 {
+  .modal-card h3 {
     font-size: 16px;
     font-weight: 800;
-    color: var(--amber-primary);
+    color: var(--fpt-orange);
     text-transform: uppercase;
   }
 
-  .modal-body {
+  .modal-card p, .modal-card li {
     font-size: 13px;
     line-height: 1.6;
     color: var(--text-secondary);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .modal-body ul {
-    padding-left: 20px;
-  }
-
-  .modal-body li {
-    margin-bottom: 6px;
   }
 </style>
 </head>
 <body>
 
 <div class="app-shell">
-  <!-- Top Bar -->
+  <!-- Top Bar: FPTU & FU-DEVER Official Logos -->
   <header class="top-bar">
     <div class="brand-group">
-      <div class="brand-logo-badge">DV</div>
+      <div class="logos-cluster">
+        <img src="assets/fptu_logo_white.png" alt="FPT University" class="logo-img-fptu">
+        <div class="logo-divider"></div>
+        <img src="assets/dever_logo_white.png" alt="CLB Lập Trình FU-DEVER" class="logo-img-dever">
+      </div>
       <div class="brand-meta">
-        <h1>BUG DASH <span class="pill">TECH LAB</span></h1>
-        <p>CLB LẬP TRÌNH FU-DEVER • BOOTH DEMO</p>
+        <h1>BUG DASH <span class="pill">BOOTH 2026</span></h1>
+        <p>TRƯỜNG ĐẠI HỌC FPT ĐÀ NẴNG • CLB LẬP TRÌNH FU-DEVER</p>
       </div>
     </div>
 
@@ -972,41 +823,30 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
       </button>
 
-      <button class="btn-primary" id="start">
+      <button class="btn-primary" id="startCamera">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-        <span>Bật Webcam AI</span>
+        <span id="btnCameraText">Bật Camera Điều Khiển</span>
       </button>
     </div>
   </header>
 
   <!-- Cockpit Grid Layout -->
   <main class="cockpit-grid">
-    <!-- Left Column: Telemetry & Vision Diagnostics Deck -->
+    <!-- Cột Trái: Webcam Controller & Calibrator -->
     <aside class="col-telemetry">
       <div class="panel-card">
         <div class="card-header">
-          <h2><span class="pulse-dot"></span> Trạng Thái Tracking</h2>
+          <h2><span class="status-led" id="statusLed"></span> Camera AI (Dịch Đầu)</h2>
           <span id="fpsBadge" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted)">-- FPS</span>
         </div>
 
-        <div class="status-radar-box">
-          <div class="radar-ring">
-            <div id="radarCore" class="radar-core s-wait"></div>
-          </div>
-          <div class="status-desc">
-            <h3 id="statusTitle">Chưa Khởi Động</h3>
-            <p id="statusMsg">Bấm Bật Webcam AI để tải model</p>
-          </div>
-        </div>
-
-        <div class="metric-row">
-          <div class="metric-item">
-            <div class="metric-label">Inference Latency</div>
-            <div class="metric-value" id="infLatency">-- ms</div>
-          </div>
-          <div class="metric-item">
-            <div class="metric-label">Mục Tiêu Khóa</div>
-            <div class="metric-value" id="targetState">CHƯA</div>
+        <!-- PIP Video Preview -->
+        <div class="pip-camera-box">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+          <div class="pip-badge">
+            <span class="status-led on" id="pipLed"></span>
+            <span id="pipStatusText">ĐỨNG VÀO KHUNG VÀNG</span>
           </div>
         </div>
 
@@ -1027,30 +867,58 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span id="debugToggleLabel">Bật Debug Grid (D)</span>
         </button>
+
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-top:4px;">
+          💡 <strong>Mẹo:</strong> Bạn có thể dùng phím mũi tên <code>←</code> và <code>→</code> để đổi làn nếu máy chưa bật webcam.
+        </div>
       </div>
     </aside>
 
-    <!-- Center Column: Arcade Viewport & 3-Lane Glowing Runway -->
+    <!-- Cột Giữa: ĐƯỜNG ĐUA ARCADE 3 LÀN (CANVAS ENGINE) -->
     <section class="col-center">
-      <div class="arcade-stage-container" id="stage">
-        <video id="video" playsinline muted></video>
-        <canvas id="overlay"></canvas>
+      <div class="game-stage-wrapper">
+        <canvas id="gameCanvas" width="640" height="720"></canvas>
 
-        <!-- Attract Banner -->
-        <div class="attract-banner" id="attractBanner">
-          <div class="pulse-glow"></div>
-          <span id="bannerText">ĐỨNG VÀO KHUNG VÀNG ĐỂ KHÓA MỤC TIÊU</span>
+        <!-- Canvas In-Game HUD Overlay -->
+        <div class="canvas-overlay-ui">
+          <div class="stage-top-hud">
+            <div class="hud-badge-box">
+              <span class="hud-badge-title">ĐIỂM SỐ</span>
+              <span class="hud-badge-val" id="canvasScore">0000</span>
+            </div>
+            <div class="hud-badge-box" style="align-items:flex-end;">
+              <span class="hud-badge-title">COMBO BUFF</span>
+              <span class="hud-badge-val" id="canvasCombo" style="color:var(--fpt-orange)">1X</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Starter Gate Guide -->
-        <div class="starter-gate-hint" id="starterHint">
-          <div class="starter-gate-box">
-            <span>VACH XUAT PHAT (1S)</span>
-          </div>
+        <!-- Start Screen Modal -->
+        <div class="game-state-modal" id="startScreenModal">
+          <img src="assets/player_running.png" alt="Buggy Running" class="modal-mascot-img">
+          <h2 class="modal-title">NÉ BUG • CHẠY DEADLINE 23:59</h2>
+          <p class="modal-sub">Điều khiển chú bọ <strong>Buggy</strong> bằng chuyển động đầu qua webcam! Né các dòng Bug và Deadline dí dồn dập trong 60 giây, nhặt Cà phê và Clean Code để đạt điểm kỷ lục!</p>
+          <button class="btn-play-big" id="btnStartGame">BẮT ĐẦU CHẠY DEADLINE (SPACE)</button>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="game-state-modal hidden" id="gameOverModal">
+          <img src="assets/player_dead.png" alt="Buggy Dead" class="modal-mascot-img">
+          <h2 class="modal-title" style="color:var(--crimson-bad)">TOANG PRODUCTION RỒI!</h2>
+          <p class="modal-sub" id="gameOverScoreDesc">Bạn đã bị Bug & Deadline đè bẹp khi chỉ mới trụ được 24 giây!</p>
+          <button class="btn-play-big" id="btnRestartGame">CHƠI LẠI VÁN MỚI (SPACE)</button>
+        </div>
+
+        <!-- Victory Modal -->
+        <div class="game-state-modal hidden" id="victoryModal">
+          <img src="assets/buggy_champion.png" alt="Buggy Champion" class="modal-mascot-img">
+          <h2 class="modal-title" style="color:var(--dever-amber)">SỐNG SÓT QUA DEADLINE!</h2>
+          <p class="modal-sub" id="victoryScoreDesc">Chúc mừng bạn đã hoàn thành xuất sắc thử thách 60 giây và bảo vệ đồ án SWE201c an toàn!</p>
+          <button class="btn-play-big" id="btnVictoryRestart">LƯU ĐIỂM & CHƠI TIẾP</button>
         </div>
       </div>
 
-      <!-- 3-Lane Glowing Cyber Runway -->
+      <!-- 3-Lane Runway Visualizer -->
       <div class="runway-wrapper">
         <div class="runway-header">
           <span>SÀN ĐẤU ĐỔI LÀN TƯƠNG TÁC (CHUYỂN ĐỘNG ĐẦU NGANG)</span>
@@ -1061,87 +929,76 @@
           <div class="lane-node" id="l0">
             <span class="lane-tag">LÀN 0</span>
             <span class="lane-title">TRÁI</span>
-            <div class="lane-indicator"></div>
           </div>
 
           <div class="lane-node active" id="l1">
             <span class="lane-tag">LÀN 1</span>
             <span class="lane-title">GIỮA</span>
-            <div class="lane-indicator"></div>
           </div>
 
           <div class="lane-node" id="l2">
             <span class="lane-tag">LÀN 2</span>
             <span class="lane-title">PHẢI</span>
-            <div class="lane-indicator"></div>
           </div>
-        </div>
-
-        <!-- Head Delta Gauge Slider -->
-        <div class="delta-gauge-container">
-          <div class="delta-gauge-center"></div>
-          <div class="delta-gauge-thumb" id="gaugeThumb"></div>
         </div>
       </div>
     </section>
 
-    <!-- Right Column: Mission HUD & Live Scoreboard -->
+    <!-- Cột Phải: Đồng Hồ 60s & Bảng Vàng Booth -->
     <aside class="col-mission">
       <div class="timer-card">
-        <div class="timer-sub">THỜI GIAN THI ĐẤU</div>
+        <div class="timer-sub">THỜI GIAN CÒN LẠI</div>
         <div class="timer-val" id="timerVal">00:60</div>
       </div>
 
       <div class="panel-card">
         <div class="card-header">
-          <h2>Bảng Điểm Kỷ Lục</h2>
-          <span style="font-family:'JetBrains Mono'; font-size:10px; color:var(--amber-primary)">LOCAL BOOTH</span>
-        </div>
-
-        <div class="score-grid">
-          <div class="score-item">
-            <span class="label">ĐIỂM HIỆN TẠI</span>
-            <span class="val" id="scoreVal">0000</span>
-          </div>
-          <div class="score-item">
-            <span class="label">KỶ LỤC BOOTH</span>
-            <span class="val" id="bestVal">1450</span>
-          </div>
-        </div>
-
-        <div class="card-header" style="margin-top:4px;">
-          <h2>Năng Lượng / Mạng</h2>
-          <span style="font-family:'JetBrains Mono'; font-size:10px; color:var(--emerald-ok)">3 LƯỢT</span>
+          <h2>Sinh Lực / Khiên</h2>
+          <span style="font-family:'JetBrains Mono'; font-size:10px; color:var(--crimson-bad)">HP</span>
         </div>
 
         <div class="lives-row">
-          <div class="shield-point" id="shield1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--emerald-ok)" stroke="var(--emerald-ok)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <div class="heart-point" id="heart1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--crimson-bad)" stroke="var(--crimson-bad)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
           </div>
-          <div class="shield-point" id="shield2">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--emerald-ok)" stroke="var(--emerald-ok)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <div class="heart-point" id="heart2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--crimson-bad)" stroke="var(--crimson-bad)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
           </div>
-          <div class="shield-point" id="shield3">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--emerald-ok)" stroke="var(--emerald-ok)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <div class="heart-point" id="heart3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--crimson-bad)" stroke="var(--crimson-bad)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
           </div>
         </div>
 
-        <div class="card-header" style="margin-top:4px;">
-          <h2>Quy Tắc Vật Thể</h2>
+        <div class="card-header" style="margin-top:6px;">
+          <h2>Bảng Vàng Booth FPTU</h2>
+          <span style="font-family:'JetBrains Mono'; font-size:10px; color:var(--dever-amber)">TOP K20-K22</span>
         </div>
 
-        <div class="guide-list">
-          <div class="guide-row">
-            <span class="guide-badge"><span class="badge-tag tag-danger"></span> Bug & Deadline</span>
-            <span style="color:var(--crimson-bad); font-weight:700;">Trừ 1 Mạng</span>
+        <div class="board-list" id="leaderboardList">
+          <div class="board-row gold">
+            <span class="board-rank">#1</span>
+            <span class="board-name">Hoàng Long (K20)</span>
+            <span class="board-score">1,450</span>
           </div>
-          <div class="guide-row">
-            <span class="guide-badge"><span class="badge-tag tag-reward"></span> Code Sạch / A+</span>
-            <span style="color:var(--emerald-ok); font-weight:700;">+10..30 Điểm</span>
+          <div class="board-row">
+            <span class="board-rank">#2</span>
+            <span class="board-name">Thu Hà (K21)</span>
+            <span class="board-score">1,220</span>
           </div>
-          <div class="guide-row">
-            <span class="guide-badge"><span class="badge-tag tag-buff"></span> Cà Phê Tăng Lực</span>
-            <span style="color:var(--cyan-cyber); font-weight:700;">x2 Điểm 5s</span>
+          <div class="board-row">
+            <span class="board-rank">#3</span>
+            <span class="board-name">Hải Nam (K22)</span>
+            <span class="board-score">980</span>
+          </div>
+          <div class="board-row">
+            <span class="board-rank">#4</span>
+            <span class="board-name">Quang Nhật (Gen 9)</span>
+            <span class="board-score">850</span>
+          </div>
+          <div class="board-row">
+            <span class="board-rank">#5</span>
+            <span class="board-name">Bảo Trâm (K21)</span>
+            <span class="board-score">720</span>
           </div>
         </div>
       </div>
@@ -1151,32 +1008,28 @@
   <!-- Footer Quick Bar -->
   <footer class="footer-bar">
     <div class="shortcuts-list">
-      <div class="shortcut-k"><kbd>C</kbd> Calibrate tâm giữa</div>
-      <div class="shortcut-k"><kbd>D</kbd> Bật/Tắt Debug</div>
-      <div class="shortcut-k"><kbd>M</kbd> Bật/Tắt Âm thanh</div>
-      <div class="shortcut-k"><kbd>←</kbd> <kbd>→</kbd> Giả lập đổi làn</div>
+      <div><kbd>SPACE</kbd> Chơi / Tiếp tục</div>
+      <div><kbd>C</kbd> Calibrate tâm giữa</div>
+      <div><kbd>D</kbd> Bật/Tắt Debug</div>
+      <div><kbd>M</kbd> Bật/Tắt Âm thanh</div>
+      <div><kbd>←</kbd> <kbd>→</kbd> Giả lập đổi làn</div>
     </div>
-    <div>FU-DEVER • DỰ ÁN BUG DASH MVP v0.1</div>
+    <div>CLB LẬP TRÌNH FU-DEVER • WORK HARD, PLAY HARD</div>
   </footer>
 </div>
 
 <!-- Modal Hướng Dẫn -->
 <div class="modal-overlay" id="helpModal">
   <div class="modal-card">
-    <div class="modal-header">
-      <h3>Hướng Dẫn Trải Nghiệm</h3>
-      <button class="btn-icon" id="btnCloseHelp">✕</button>
-    </div>
-    <div class="modal-body">
-      <p><strong>Chào mừng bạn đến với BUG DASH</strong> — game né bug và chạy deadline điều khiển bằng AI Computer Vision!</p>
-      <ul>
-        <li><strong>Bước 1:</strong> Bấm <em>"BẬT WEBCAM AI"</em> và cho phép trình duyệt truy cập camera.</li>
-        <li><strong>Bước 2:</strong> Đứng thẳng, căn khuôn mặt vào vùng vạch xuất phát màu vàng ở giữa trong khoảng 1 giây để hệ thống khóa người chơi.</li>
-        <li><strong>Bước 3:</strong> Nghiêng hoặc dịch chuyển đầu sang <strong>Trái / Phải</strong> để chuyển làn né các chướng ngại vật và nhặt vật phẩm thưởng!</li>
-        <li><strong>Bàn phím dự phòng:</strong> Bấm phím mũi tên <code>←</code> và <code>→</code> để đổi làn nếu không dùng webcam.</li>
-      </ul>
-      <p style="font-size:11px; color:var(--text-muted)">* Dữ liệu hình ảnh được xử lý trực tiếp trên thiết bị (On-Device WebAssembly), hoàn toàn bảo mật và không lưu lại video.</p>
-    </div>
+    <h3>Hướng Dẫn Né Bug Chạy Deadline</h3>
+    <p>Chào mừng bạn đến với gian hàng trải nghiệm công nghệ của <strong>CLB Lập Trình FU-DEVER (Đại học FPT Đà Nẵng)</strong>!</p>
+    <ul>
+      <li><strong>1. Camera:</strong> Bấm <em>"Bật Camera Điều Khiển"</em>. Đứng thẳng và giữ mặt trong khung vàng 1 giây để khóa người chơi.</li>
+      <li><strong>2. Đổi làn:</strong> Nghiêng hoặc dịch đầu sang <strong>Trái / Giữa / Phải</strong> để điều khiển chú bọ Buggy.</li>
+      <li><strong>3. Né tránh:</strong> Bug đỏ (Syntax Error), Deadline 23:59 và Điểm F gây trừ mạng.</li>
+      <li><strong>4. Nhặt thưởng:</strong> Cà phê FPTU (+Tốc độ & x2 Điểm), Clean Code (+50 Điểm) và Khiên Git Revert.</li>
+    </ul>
+    <button class="btn-outline" id="btnCloseHelp" style="align-self:flex-end; margin-top:8px;">Đã Hiểu</button>
   </div>
 </div>
 
@@ -1185,15 +1038,14 @@ import { FilesetResolver, FaceDetector } from "https://cdn.jsdelivr.net/npm/@med
 
 const $ = id => document.getElementById(id);
 const video = $("video"), cv = $("overlay"), ctx = cv.getContext("2d");
+const gameCanvas = $("gameCanvas"), gCtx = gameCanvas.getContext("2d");
 
-// ====== Web Audio API Procedural Sound Engine ======
+// ====== Web Audio API Procedural Synthesizer ======
 let audioCtx = null;
 let soundEnabled = true;
 
 function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
 function playTone(freq, type, duration, gainLevel = 0.1) {
@@ -1215,78 +1067,79 @@ function playTone(freq, type, duration, gainLevel = 0.1) {
 }
 
 const sfx = {
-  click: () => playTone(800, 'sine', 0.06, 0.08),
-  laneSwitch: () => playTone(520, 'triangle', 0.12, 0.12),
+  click: () => playTone(750, 'sine', 0.05, 0.08),
+  laneSwitch: () => playTone(480, 'triangle', 0.08, 0.1),
   lock: () => {
-    playTone(660, 'sine', 0.1, 0.12);
-    setTimeout(() => playTone(990, 'sine', 0.18, 0.15), 90);
+    playTone(600, 'sine', 0.08, 0.1);
+    setTimeout(() => playTone(960, 'sine', 0.15, 0.12), 80);
   },
-  lost: () => playTone(240, 'sawtooth', 0.2, 0.1)
+  hit: () => playTone(160, 'sawtooth', 0.22, 0.2),
+  item: () => {
+    playTone(880, 'sine', 0.08, 0.1);
+    setTimeout(() => playTone(1320, 'sine', 0.12, 0.12), 70);
+  },
+  victory: () => {
+    [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.2, 0.15), i * 110));
+  }
 };
 
-// ====== Cấu hình (chỉnh ở đây) ======
+// ====== Sprites Preloader ======
+const assets = {
+  running: new Image(),
+  dead: new Image(),
+  champion: new Image()
+};
+assets.running.src = "assets/player_running.png";
+assets.dead.src = "assets/player_dead.png";
+assets.champion.src = "assets/buggy_champion.png";
+
+// ====== Vision Face Tracking Config ======
 const CFG = {
-  roi: { x0: 0.25, x1: 0.75 },   // vùng "vạch xuất phát", tọa độ chuẩn hóa 0..1 (đã lật gương)
-  lockMs: 1000,                  // đứng yên trong ROI bao lâu thì khóa
-  lostFrames: 15,                // mất mặt bao nhiêu frame thì bỏ lock (~0.5s ở 30fps)
-  minIoU: 0.15,                  // ngưỡng IoU để coi là cùng 1 người
-  minArea: 0.02,                 // bbox nhỏ hơn 2% khung hình thì bỏ (người đứng xa phía sau)
-  ema: 0.4,                      // làm mượt x (nhỏ = mượt hơn nhưng trễ hơn)
-  hyst: 0.02,                    // vùng chết giữa các làn, tránh nhấp nháy
-  showDebug: false,              // cờ hiển thị overlay debug
+  roi: { x0: 0.25, x1: 0.75 },
+  lockMs: 1000,
+  lostFrames: 15,
+  minIoU: 0.15,
+  minArea: 0.02,
+  ema: 0.4,
+  hyst: 0.02,
+  showDebug: false
 };
 
-// ====== Trạng thái ======
 const S = {
-  phase: "wait",   // wait | cand | lock | lost
+  phase: "wait", // wait | cand | lock | lost
   cand: null, candSince: 0,
-  box: null,       // bbox đang khóa (chuẩn hóa)
+  box: null,
   lost: 0,
-  sx: 0.5,         // x đã làm mượt (đã lật gương)
-  center: 0.5,     // vị trí đứng lúc calibrate
-  lane: 1,
+  sx: 0.5,
+  center: 0.5,
+  lane: 1
 };
-window.gameInput = S; // phần game đọc S.lane (0|1|2) và S.phase === "lock"
+window.gameInput = S;
 
-// ====== Hàm phụ ======
 const iou = (a, b) => {
   const x1 = Math.max(a.x, b.x), y1 = Math.max(a.y, b.y);
   const x2 = Math.min(a.x + a.w, b.x + b.w), y2 = Math.min(a.y + a.h, b.y + b.h);
   const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
   return inter / (a.w * a.h + b.w * b.h - inter || 1);
 };
-
-// đổi bbox pixel -> chuẩn hóa + lật gương theo trục x
 const norm = d => {
-  const b = d.boundingBox, W = video.videoWidth, H = video.videoHeight;
+  const b = d.boundingBox, W = video.videoWidth || 640, H = video.videoHeight || 480;
   return { x: 1 - (b.originX + b.width) / W, y: b.originY / H, w: b.width / W, h: b.height / H };
 };
 const cx = b => b.x + b.w / 2;
 
-// ====== Tracker: khóa 1 mặt trong đám đông ======
-function track(faces, now) {
+function trackFaces(faces, now) {
   faces = faces.filter(f => f.w * f.h >= CFG.minArea);
 
   if (S.phase === "lock" || S.phase === "lost") {
-    // tìm mặt khớp nhất với bbox đang khóa
     let best = null, bi = CFG.minIoU;
     for (const f of faces) { const v = iou(f, S.box); if (v > bi) { bi = v; best = f; } }
-    if (best) { 
-      S.box = best; 
-      S.lost = 0; 
-      S.phase = "lock"; 
-    } else if (++S.lost > CFG.lostFrames) {
-      if (S.phase !== "lost") sfx.lost();
-      S.phase = "lost"; 
-    }
-    if (S.phase === "lost" && faces.length) { 
-      S.phase = "wait"; 
-      S.box = null; 
-    } // có mặt mới thì cho tìm lại
+    if (best) { S.box = best; S.lost = 0; S.phase = "lock"; }
+    else if (++S.lost > CFG.lostFrames) S.phase = "lost";
+    if (S.phase === "lost" && faces.length) { S.phase = "wait"; S.box = null; }
     return;
   }
 
-  // chưa khóa: chọn ứng viên trong ROI, ưu tiên mặt to + gần tâm
   const inRoi = faces.filter(f => cx(f) > CFG.roi.x0 && cx(f) < CFG.roi.x1);
   let pick = null, ps = -1;
   for (const f of inRoi) {
@@ -1295,12 +1148,9 @@ function track(faces, now) {
   }
   if (!pick) { S.phase = "wait"; S.cand = null; return; }
   if (S.cand && iou(pick, S.cand) > 0.3) {
-    S.cand = pick;
-    S.phase = "cand";
-    if (now - S.candSince >= CFG.lockMs) { // đứng đủ lâu -> khóa + calibrate
-      S.box = pick; 
-      S.phase = "lock"; 
-      S.lost = 0;
+    S.cand = pick; S.phase = "cand";
+    if (now - S.candSince >= CFG.lockMs) {
+      S.box = pick; S.phase = "lock"; S.lost = 0;
       S.sx = S.center = cx(pick);
       S.lane = 1;
       sfx.lock();
@@ -1308,149 +1158,420 @@ function track(faces, now) {
   } else { S.cand = pick; S.candSince = now; S.phase = "cand"; }
 }
 
-// ====== Map x -> lane (có hysteresis) ======
-function updateLane() {
+function updateLaneLogic() {
   if (S.phase !== "lock") return;
   S.sx += (cx(S.box) - S.sx) * CFG.ema;
   const raw = S.sx - S.center, t = parseFloat($("thr").value) / 100, h = CFG.hyst;
   const oldLane = S.lane;
 
-  if (S.lane === 1) { 
-    if (raw < -t) S.lane = 0; 
-    else if (raw > t) S.lane = 2; 
-  } else if (S.lane === 0) { 
-    if (raw > -t + h) S.lane = 1; 
-  } else if (S.lane === 2) { 
-    if (raw < t - h) S.lane = 1; 
+  if (S.lane === 1) {
+    if (raw < -t) S.lane = 0;
+    else if (raw > t) S.lane = 2;
+  } else if (S.lane === 0) {
+    if (raw > -t + h) S.lane = 1;
+  } else if (S.lane === 2) {
+    if (raw < t - h) S.lane = 1;
   }
 
   if (oldLane !== S.lane) {
     sfx.laneSwitch();
+    updateRunwayUI();
   }
 }
 
-// ====== Vẽ debug & HUD overlay ======
-function draw(faces) {
-  cv.width = video.videoWidth || 640; 
-  cv.height = video.videoHeight || 480;
+function updateRunwayUI() {
+  [0, 1, 2].forEach(i => {
+    $("l" + i).classList.toggle("active", S.lane === i);
+  });
+  const names = ["LÀN TRÁI (L0)", "LÀN GIỮA (L1)", "LÀN PHẢI (L2)"];
+  $("currentLaneText").textContent = names[S.lane];
+}
+
+function drawVisionPIP(faces) {
+  cv.width = video.videoWidth || 320;
+  cv.height = video.videoHeight || 240;
   const W = cv.width, H = cv.height;
   ctx.clearRect(0, 0, W, H);
 
-  // Vẽ Starter Gate ROI vạch xuất phát
+  // Vạch xuất phát
   if (S.phase === "wait" || S.phase === "cand") {
-    ctx.lineWidth = 2.5; 
-    ctx.strokeStyle = S.phase === "cand" ? "#f59e0b" : "rgba(245, 158, 11, 0.45)"; 
-    ctx.setLineDash([12, 8]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = S.phase === "cand" ? "#f59e0b" : "rgba(245, 158, 11, 0.4)";
+    ctx.setLineDash([8, 6]);
     ctx.strokeRect(CFG.roi.x0 * W, H * 0.15, (CFG.roi.x1 - CFG.roi.x0) * W, H * 0.7);
     ctx.setLineDash([]);
   }
 
-  // Khi bật debug hoặc khóa, vẽ khuôn mặt
   for (const f of faces) {
-    const locked = S.phase === "lock" && S.box && iou(f, S.box) > 0.85;
-    
-    if (locked) {
-      // Holographic corner bracket cho người chơi được khóa
-      const bx = (1 - f.x - f.w) * W;
-      const by = f.y * H;
-      const bw = f.w * W;
-      const bh = f.h * H;
-      const corner = Math.min(bw, bh) * 0.25;
-
-      ctx.lineWidth = 3;
+    const isLocked = S.phase === "lock" && S.box && iou(f, S.box) > 0.85;
+    if (isLocked) {
+      const bx = (1 - f.x - f.w) * W, by = f.y * H, bw = f.w * W, bh = f.h * H;
+      ctx.lineWidth = 2.5;
       ctx.strokeStyle = "#10b981";
-      
-      // 4 góc
-      ctx.beginPath();
-      // top-left
-      ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by);
-      // top-right
-      ctx.moveTo(bx + bw - corner, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + corner);
-      // bottom-left
-      ctx.moveTo(bx, by + bh - corner); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + corner, by + bh);
-      // bottom-right
-      ctx.moveTo(bx + bw - corner, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - corner);
-      ctx.stroke();
-
-      // Tag player
-      ctx.fillStyle = "rgba(16, 185, 129, 0.85)";
-      ctx.fillRect(bx, by - 22, 100, 20);
-      ctx.fillStyle = "#070a13";
-      ctx.font = "bold 11px 'JetBrains Mono', monospace";
-      ctx.fillText("PLAYER 1 LOCK", bx + 6, by - 8);
+      ctx.strokeRect(bx, by, bw, bh);
     } else if (CFG.showDebug) {
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(148, 163, 184, 0.5)";
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(255,255,255,0.4)";
       ctx.strokeRect((1 - f.x - f.w) * W, f.y * H, f.w * W, f.h * H);
     }
   }
 
-  // Đường calibrate & vạch ngưỡng làn khi bật Debug
-  if (CFG.showDebug && S.phase === "lock") {
-    const t = parseFloat($("thr").value) / 100;
-    ctx.strokeStyle = "rgba(6, 182, 212, 0.6)"; 
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 6]);
-    for (const x of [S.center - t, S.center + t]) {
-      ctx.beginPath(); ctx.moveTo((1 - x) * W, 0); ctx.lineTo((1 - x) * W, H); ctx.stroke();
-    }
-    // Đường tâm chuẩn
-    ctx.strokeStyle = "rgba(16, 185, 129, 0.8)";
-    ctx.beginPath(); ctx.moveTo((1 - S.center) * W, 0); ctx.lineTo((1 - S.center) * W, H); ctx.stroke();
-    ctx.setLineDash([]);
+  $("statusLed").classList.toggle("on", S.phase === "lock");
+  $("pipLed").classList.toggle("on", S.phase === "lock");
+  const pipMsgs = {
+    wait: "ĐỨNG VÀO KHUNG VÀNG",
+    cand: "GIỮ YÊN 1S...",
+    lock: "ĐÃ KHÓA NGƯỜI CHƠI",
+    lost: "TÌM LẠI MẶT..."
+  };
+  $("pipStatusText").textContent = pipMsgs[S.phase] || "CHỜ CAMERA";
+}
+
+// ====== CUSTOM 2D CANVAS ARCADE RUNNER GAME ENGINE ======
+const GAME = {
+  state: "start", // start | playing | gameover | victory
+  score: 0,
+  timeLeft: 60,
+  lives: 3,
+  combo: 1,
+  comboTimer: 0,
+  roadOffset: 0,
+  playerX: 320, // smooth interpolated X
+  targetX: 320,
+  shake: 0,
+  items: [],
+  floatingTexts: [],
+  spawnTimer: 0,
+  lastTime: performance.now(),
+  laneX: [130, 320, 510], // X positions for 3 lanes
+};
+
+function addFloatingText(x, y, text, color) {
+  GAME.floatingTexts.push({ x, y, text, color, alpha: 1.0, dy: -45 });
+}
+
+// Spawnable Objects Definitions
+const OBJECT_TYPES = [
+  { type: "bug", name: "NULL_PTR", label: "BUG", color: "#ef4444", radius: 26, isObstacle: true, damage: 1 },
+  { type: "deadline", name: "DEADLINE 23:59", label: "DEADLINE", color: "#f97316", radius: 30, isObstacle: true, damage: 1 },
+  { type: "grade_f", name: "ĐIỂM F", label: "F", color: "#dc2626", radius: 24, isObstacle: true, damage: 0, scoreDeduct: 30 },
+  { type: "coffee", name: "CÀ PHÊ FPTU", label: "COFFEE", color: "#06b6d4", radius: 24, isObstacle: false, points: 20, buff: "x2" },
+  { type: "clean_code", name: "CLEAN CODE", label: "CODE", color: "#10b981", radius: 26, isObstacle: false, points: 50 },
+];
+
+function resetGame() {
+  GAME.state = "playing";
+  GAME.score = 0;
+  GAME.timeLeft = 60;
+  GAME.lives = 3;
+  GAME.combo = 1;
+  GAME.comboTimer = 0;
+  GAME.items = [];
+  GAME.spawnTimer = 0;
+  GAME.playerX = GAME.laneX[S.lane];
+  GAME.targetX = GAME.laneX[S.lane];
+  GAME.shake = 0;
+  updateLivesUI();
+  updateTimerUI();
+  $("startScreenModal").classList.add("hidden");
+  $("gameOverModal").classList.add("hidden");
+  $("victoryModal").classList.add("hidden");
+}
+
+function updateLivesUI() {
+  for (let i = 1; i <= 3; i++) {
+    const el = $("heart" + i);
+    if (el) el.classList.toggle("lost", i > GAME.lives);
   }
 }
 
-function updateUI() {
-  const radar = $("radarCore");
-  radar.className = "radar-core s-" + S.phase;
+function updateTimerUI() {
+  const m = Math.floor(GAME.timeLeft / 60);
+  const s = Math.floor(GAME.timeLeft % 60);
+  $("timerVal").textContent = `0${m}:${s < 10 ? '0' : ''}${s}`;
+}
 
-  const msgs = {
-    wait: ["CHỜ NGƯỜI CHƠI", "Đứng vào khung vàng giữa màn hình để bắt đầu"],
-    cand: ["ĐANG XÁC NHẬN...", "Giữ yên vị trí 1s để khóa người chơi"],
-    lock: ["ĐÃ KHÓA MỤC TIÊU", "Dịch chuyển đầu Trái / Phải để né vật cản"],
-    lost: ["MẤT TRACKING", "Đang tìm lại người chơi..."],
-  }[S.phase];
+// Spawner Logic based on Difficulty Tiers
+function updateSpawner(dt) {
+  GAME.spawnTimer += dt;
+  let spawnInterval = 1.3; // 0-15s
+  if (GAME.timeLeft < 45) spawnInterval = 1.0;  // 15-30s
+  if (GAME.timeLeft < 30) spawnInterval = 0.8;  // 30-45s
+  if (GAME.timeLeft < 15) spawnInterval = 0.65; // 45-60s
 
-  $("statusTitle").textContent = msgs[0];
-  $("statusMsg").textContent = msgs[1];
+  if (GAME.spawnTimer >= spawnInterval) {
+    GAME.spawnTimer = 0;
 
-  $("targetState").textContent = S.phase === "lock" ? "LOCKED" : (S.phase === "cand" ? "SYNC..." : "NONE");
-  $("targetState").style.color = S.phase === "lock" ? "var(--emerald-ok)" : (S.phase === "cand" ? "var(--amber-primary)" : "var(--text-muted)");
+    // Pick 1 or 2 lanes (guaranteeing at least 1 safe path)
+    const availableLanes = [0, 1, 2];
+    const laneCount = (GAME.timeLeft < 30 && Math.random() < 0.45) ? 2 : 1;
+    
+    // Shuffle available lanes
+    availableLanes.sort(() => Math.random() - 0.5);
+    const chosenLanes = availableLanes.slice(0, laneCount);
 
-  // Banner & Starter Gate Hint
-  if (S.phase === "lock") {
-    $("attractBanner").style.display = "none";
-    $("starterHint").style.display = "none";
-  } else {
-    $("attractBanner").style.display = "flex";
-    $("starterHint").style.display = "flex";
-    $("bannerText").textContent = S.phase === "cand" ? "GIỮ YÊN... ĐANG KHÓA NGƯỜI CHƠI" : "ĐỨNG VÀO KHUNG VÀNG ĐỂ KHÓA MỤC TIÊU";
+    chosenLanes.forEach(l => {
+      // 65% obstacle, 35% reward
+      const isObs = Math.random() < 0.68;
+      let objDef;
+      if (isObs) {
+        const obsList = OBJECT_TYPES.filter(o => o.isObstacle);
+        objDef = obsList[Math.floor(Math.random() * obsList.length)];
+      } else {
+        const rewList = OBJECT_TYPES.filter(o => !o.isObstacle);
+        objDef = rewList[Math.floor(Math.random() * rewList.length)];
+      }
+
+      GAME.items.push({
+        ...objDef,
+        lane: l,
+        x: GAME.laneX[l],
+        y: -40,
+        speed: 340 + (60 - GAME.timeLeft) * 3.5, // accelerates over time
+      });
+    });
+  }
+}
+
+// Main 2D Canvas Render Loop
+function renderGame(now) {
+  const dt = Math.min(0.06, (now - GAME.lastTime) / 1000);
+  GAME.lastTime = now;
+
+  const W = gameCanvas.width;
+  const H = gameCanvas.height;
+
+  // Screen shake calculation
+  gCtx.save();
+  if (GAME.shake > 0) {
+    const sx = (Math.random() - 0.5) * GAME.shake * 12;
+    const sy = (Math.random() - 0.5) * GAME.shake * 12;
+    gCtx.translate(sx, sy);
+    GAME.shake = Math.max(0, GAME.shake - dt * 2.5);
   }
 
-  // Cập nhật 3 Làn
-  [0, 1, 2].forEach(i => {
-    const el = $("l" + i);
-    const isActive = (S.lane === i);
-    el.classList.toggle("active", isActive);
+  // 1. Draw Neon Cyber Highway Road
+  gCtx.fillStyle = "#070c18";
+  gCtx.fillRect(0, 0, W, H);
+
+  // Road Surface (Darker core)
+  gCtx.fillStyle = "#0a1122";
+  gCtx.fillRect(40, 0, W - 80, H);
+
+  // Moving Highway Dash Lines
+  GAME.roadOffset = (GAME.roadOffset + 400 * dt) % 60;
+  gCtx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  gCtx.lineWidth = 3;
+  gCtx.setLineDash([25, 35]);
+
+  // Lane dividers (between L0-L1 and L1-L2)
+  const divX1 = (GAME.laneX[0] + GAME.laneX[1]) / 2;
+  const divX2 = (GAME.laneX[1] + GAME.laneX[2]) / 2;
+
+  gCtx.lineDashOffset = -GAME.roadOffset;
+  gCtx.beginPath();
+  gCtx.moveTo(divX1, 0); gCtx.lineTo(divX1, H);
+  gCtx.moveTo(divX2, 0); gCtx.lineTo(divX2, H);
+  gCtx.stroke();
+  gCtx.setLineDash([]);
+
+  // Road Glowing Borders (FPT Orange & DEVER Amber)
+  gCtx.strokeStyle = "rgba(242, 111, 33, 0.4)";
+  gCtx.lineWidth = 4;
+  gCtx.beginPath();
+  gCtx.moveTo(40, 0); gCtx.lineTo(40, H);
+  gCtx.moveTo(W - 40, 0); gCtx.lineTo(W - 40, H);
+  gCtx.stroke();
+
+  // Highlight Current Active Lane Floor
+  const activeX = GAME.laneX[S.lane];
+  gCtx.fillStyle = "rgba(245, 158, 11, 0.05)";
+  gCtx.fillRect(activeX - 85, 0, 170, H);
+
+  // 2. Logic Update if playing
+  if (GAME.state === "playing") {
+    // Timer update
+    GAME.timeLeft -= dt;
+    if (GAME.timeLeft <= 0) {
+      GAME.timeLeft = 0;
+      GAME.state = "victory";
+      sfx.victory();
+      $("victoryScoreDesc").textContent = `Bạn đã hoàn thành xuất sắc thử thách với tổng điểm ${GAME.score.toLocaleString()} PTS!`;
+      $("victoryModal").classList.remove("hidden");
+    }
+    updateTimerUI();
+
+    // Combo timer
+    if (GAME.comboTimer > 0) {
+      GAME.comboTimer -= dt;
+      if (GAME.comboTimer <= 0) {
+        GAME.combo = 1;
+        $("canvasCombo").textContent = "1X";
+        $("canvasCombo").style.color = "var(--fpt-orange)";
+      }
+    }
+
+    // Spawner update
+    updateSpawner(dt);
+
+    // Smooth Player X position towards current lane
+    GAME.targetX = GAME.laneX[S.lane];
+    GAME.playerX += (GAME.targetX - GAME.playerX) * 0.22;
+
+    // Update & Collision with falling items
+    const playerY = H - 120;
+    const playerRadius = 45;
+
+    for (let i = GAME.items.length - 1; i >= 0; i--) {
+      const it = GAME.items[i];
+      it.y += it.speed * dt;
+
+      // Check collision
+      const dx = it.x - GAME.playerX;
+      const dy = it.y - playerY;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < playerRadius + it.radius) {
+        // Collision happened!
+        if (it.isObstacle) {
+          sfx.hit();
+          GAME.shake = 1.0;
+          if (it.damage) {
+            GAME.lives = Math.max(0, GAME.lives - it.damage);
+            updateLivesUI();
+            addFloatingText(it.x, it.y - 15, "-1 HP (DEADLINE DÍ)!", "#ef4444");
+            if (GAME.lives <= 0) {
+              GAME.state = "gameover";
+              $("gameOverScoreDesc").textContent = `Bạn đã dừng lại tại giây thứ ${Math.round(60 - GAME.timeLeft)} với ${GAME.score} PTS!`;
+              $("gameOverModal").classList.remove("hidden");
+            }
+          }
+          if (it.scoreDeduct) {
+            GAME.score = Math.max(0, GAME.score - it.scoreDeduct);
+            GAME.combo = 1;
+            $("canvasCombo").textContent = "1X";
+            addFloatingText(it.x, it.y - 15, "-30 PTS (RỚT MÔN)!", "#dc2626");
+          }
+        } else {
+          // Collect item!
+          sfx.item();
+          GAME.score += it.points * GAME.combo;
+          if (it.buff === "x2") {
+            GAME.combo = 2;
+            GAME.comboTimer = 5.0; // 5 seconds buff
+            $("canvasCombo").textContent = "2X BUFF!";
+            $("canvasCombo").style.color = "var(--dever-cyan)";
+            addFloatingText(it.x, it.y - 15, "+20 PTS (CÀ PHÊ GÁNH TEAM)!", "#06b6d4");
+          } else {
+            addFloatingText(it.x, it.y - 15, `+${it.points * GAME.combo} PTS (PR MERGED)!`, "#10b981");
+          }
+        }
+        $("canvasScore").textContent = GAME.score.toString().padStart(4, "0");
+        GAME.items.splice(i, 1);
+        continue;
+      }
+
+      // Remove out of screen items
+      if (it.y > H + 50) {
+        GAME.items.splice(i, 1);
+      }
+    }
+  }
+
+  // 3. Render Falling Items
+  GAME.items.forEach(it => {
+    gCtx.save();
+    gCtx.translate(it.x, it.y);
+
+    // Glowing circle badge
+    gCtx.beginPath();
+    gCtx.arc(0, 0, it.radius, 0, Math.PI * 2);
+    gCtx.fillStyle = it.color;
+    gCtx.shadowColor = it.color;
+    gCtx.shadowBlur = 14;
+    gCtx.fill();
+
+    // White border & inner label
+    gCtx.shadowBlur = 0;
+    gCtx.strokeStyle = "#ffffff";
+    gCtx.lineWidth = 2.5;
+    gCtx.stroke();
+
+    gCtx.fillStyle = "#ffffff";
+    gCtx.font = "bold 11px 'JetBrains Mono', monospace";
+    gCtx.textAlign = "center";
+    gCtx.textBaseline = "middle";
+    gCtx.fillText(it.label, 0, 1);
+
+    gCtx.restore();
   });
 
-  const laneNames = ["LÀN TRÁI (L0)", "LÀN GIỮA (L1)", "LÀN PHẢI (L2)"];
-  $("currentLaneText").textContent = laneNames[S.lane];
+  // 4. Render Player Mascot Buggy (Real Dever Mascot)
+  const playerY = H - 120;
+  const pSize = 105;
+  gCtx.save();
+  gCtx.translate(GAME.playerX, playerY);
 
-  // Head Delta Gauge Slider update
-  const rawDelta = S.sx - S.center;
-  const clampedPct = Math.max(10, Math.min(90, 50 + (rawDelta * 180)));
-  $("gaugeThumb").style.left = clampedPct + "%";
+  // Tilting effect when switching lanes
+  const tilt = (GAME.targetX - GAME.playerX) * 0.0018;
+  gCtx.rotate(tilt);
+
+  // Buff aura if x2 combo
+  if (GAME.combo > 1) {
+    gCtx.beginPath();
+    gCtx.arc(0, 0, pSize * 0.52, 0, Math.PI * 2);
+    gCtx.strokeStyle = "var(--dever-cyan)";
+    gCtx.lineWidth = 4;
+    gCtx.shadowColor = "#06b6d4";
+    gCtx.shadowBlur = 20;
+    gCtx.stroke();
+  }
+
+  // Draw Buggy Mascot Image
+  const currentImg = GAME.state === "gameover" ? assets.dead : assets.running;
+  if (currentImg.complete && currentImg.naturalWidth > 0) {
+    gCtx.drawImage(currentImg, -pSize / 2, -pSize / 2, pSize, pSize);
+  } else {
+    // Fallback circle if image still decoding
+    gCtx.beginPath();
+    gCtx.arc(0, 0, 36, 0, Math.PI * 2);
+    gCtx.fillStyle = "#f26f21";
+    gCtx.fill();
+  }
+
+  gCtx.restore();
+
+  // 5. Render Floating Texts
+  for (let i = GAME.floatingTexts.length - 1; i >= 0; i--) {
+    const ft = GAME.floatingTexts[i];
+    ft.y += ft.dy * dt;
+    ft.alpha -= dt * 1.3;
+    if (ft.alpha <= 0) {
+      GAME.floatingTexts.splice(i, 1);
+      continue;
+    }
+    gCtx.save();
+    gCtx.globalAlpha = Math.max(0, ft.alpha);
+    gCtx.fillStyle = ft.color;
+    gCtx.shadowColor = ft.color;
+    gCtx.shadowBlur = 10;
+    gCtx.font = "bold 13px 'JetBrains Mono', monospace";
+    gCtx.textAlign = "center";
+    gCtx.fillText(ft.text, ft.x, ft.y);
+    gCtx.restore();
+  }
+
+  gCtx.restore(); // Restore shake
+
+  requestAnimationFrame(renderGame);
 }
 
-// ====== Khởi động Computer Vision Loop ======
+// ====== Computer Vision Detection Loop ======
 let detector, lastT = 0, frames = 0, fpsT = performance.now();
 
-async function start() {
-  $("start").disabled = true; 
-  $("statusTitle").textContent = "ĐANG TẢI MODEL...";
-  $("statusMsg").textContent = "Nạp MediaPipe BlazeFace float16";
+async function startVision() {
+  $("startCamera").disabled = true;
+  $("btnCameraText").textContent = "Đang Nạp Model...";
 
   try {
     const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
@@ -1459,70 +1580,73 @@ async function start() {
         modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
         delegate: "GPU",
       },
-      runningMode: "VIDEO", 
+      runningMode: "VIDEO",
       minDetectionConfidence: 0.5,
     });
 
-    video.srcObject = await navigator.mediaDevices.getUserMedia({ 
-      video: { width: 640, height: 480, facingMode: "user" } 
+    video.srcObject = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: "user" }
     });
     await video.play();
 
-    $("start").style.display = "none";
-    requestAnimationFrame(loop);
+    $("startCamera").style.display = "none";
+    requestAnimationFrame(visionLoop);
   } catch (err) {
-    console.error("Camera/Model error:", err);
-    $("statusTitle").textContent = "LỖI KHỞI ĐỘNG";
-    $("statusMsg").textContent = err.message || "Không thể mở camera";
-    $("start").disabled = false;
+    console.error("Camera error:", err);
+    $("btnCameraText").textContent = "Lỗi Camera";
+    $("startCamera").disabled = false;
   }
 }
 
-function loop() {
-  requestAnimationFrame(loop);
+function visionLoop() {
+  requestAnimationFrame(visionLoop);
   if (video.readyState < 2 || video.currentTime === lastT) return;
   lastT = video.currentTime;
   const now = performance.now();
 
-  const startInf = performance.now();
   const faces = detector.detectForVideo(video, now).detections.map(norm);
-  const infDuration = Math.round(performance.now() - startInf);
+  trackFaces(faces, now);
+  updateLaneLogic();
+  drawVisionPIP(faces);
 
-  track(faces, now); 
-  updateLane(); 
-  draw(faces); 
-  updateUI();
-
-  if (++frames % 15 === 0) {
-    $("infLatency").textContent = infDuration + " ms";
-  }
-
-  if (frames % 30 === 0) { 
+  if (++frames % 30 === 0) {
     const fpsVal = Math.round(30000 / (now - fpsT));
     $("fpsBadge").textContent = fpsVal + " FPS";
-    fpsT = now; 
+    fpsT = now;
   }
 }
 
-// ====== Tương tác & Sự kiện UI ======
-$("start").onclick = () => {
+// ====== Event Listeners & Game Controls ======
+$("startCamera").onclick = () => {
   initAudio();
   sfx.click();
-  start();
+  startVision();
 };
 
-$("thr").oninput = e => {
-  $("thrv").textContent = e.target.value + "%";
+$("btnStartGame").onclick = () => {
+  initAudio();
+  sfx.click();
+  resetGame();
 };
 
-const recal = () => { 
-  if (S.phase === "lock") { 
-    S.center = S.sx; 
-    S.lane = 1; 
+$("btnRestartGame").onclick = () => {
+  sfx.click();
+  resetGame();
+};
+
+$("btnVictoryRestart").onclick = () => {
+  sfx.click();
+  resetGame();
+};
+
+$("recal").onclick = () => {
+  if (S.phase === "lock") {
+    S.center = S.sx;
+    S.lane = 1;
     sfx.click();
-  } 
+    updateRunwayUI();
+  }
 };
-$("recal").onclick = recal;
 
 $("btnToggleDebug").onclick = () => {
   CFG.showDebug = !CFG.showDebug;
@@ -1530,7 +1654,6 @@ $("btnToggleDebug").onclick = () => {
   sfx.click();
 };
 
-// Sound Toggle
 $("btnSound").onclick = () => {
   soundEnabled = !soundEnabled;
   $("iconSoundOn").style.display = soundEnabled ? "block" : "none";
@@ -1538,7 +1661,6 @@ $("btnSound").onclick = () => {
   if (soundEnabled) sfx.click();
 };
 
-// Help Modal
 $("btnHelp").onclick = () => {
   $("helpModal").classList.add("open");
   sfx.click();
@@ -1551,31 +1673,37 @@ $("helpModal").onclick = (e) => {
   if (e.target === $("helpModal")) $("helpModal").classList.remove("open");
 };
 
-// Touch on lanes
+// Touch or click on lanes
 [0, 1, 2].forEach(i => {
   $("l" + i).onclick = () => {
     S.lane = i;
     sfx.laneSwitch();
-    updateUI();
+    updateRunwayUI();
   };
 });
 
-// Phím tắt bàn phím
+// Keyboard controls
 addEventListener("keydown", e => {
-  if (e.key === "c" || e.key === "C") recal();
+  if (e.key === " " && GAME.state !== "playing") {
+    resetGame();
+  }
+  if (e.key === "c" || e.key === "C") $("recal").click();
   if (e.key === "d" || e.key === "D") $("btnToggleDebug").click();
   if (e.key === "m" || e.key === "M") $("btnSound").click();
   if (e.key === "ArrowLeft") {
     S.lane = Math.max(0, S.lane - 1);
     sfx.laneSwitch();
-    updateUI();
+    updateRunwayUI();
   }
   if (e.key === "ArrowRight") {
     S.lane = Math.min(2, S.lane + 1);
     sfx.laneSwitch();
-    updateUI();
+    updateRunwayUI();
   }
 });
+
+// Start Canvas Loop immediately
+requestAnimationFrame(renderGame);
 </script>
 </body>
 </html>
