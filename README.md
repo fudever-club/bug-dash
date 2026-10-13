@@ -70,30 +70,73 @@ Giao diện được chế tác theo bộ quy chuẩn thẩm mỹ **`taste-skill
 
 ---
 
-## 📁 5. Cấu trúc Thư mục
+## 📁 5. Cấu trúc Thư mục Dự Án (Full-Stack Modular Architecture)
 
 ```text
 bug-dash/
-├── index.html                  # Giao diện chính Arcade Cockpit & Controller
+├── index.html                  # App Shell HTML tải module CSS & JavaScript
+├── vite.config.js              # Cấu hình Vite Dev Server & API Reverse Proxy
+├── package.json                # Dependencies: Express, Cors, Vite
+├── assets/                     # Tài nguyên đồ họa thương hiệu (Logos, Mascots)
+├── server/                     # Backend API & Server
+│   ├── server.js               # Express Server (Port 3001), Health check & Static host
+│   ├── routes/
+│   │   └── leaderboard.js      # REST API: GET/POST bảng vàng điểm số top 10
+│   └── data/
+│       └── leaderboard.json    # Cơ sở dữ liệu điểm số cục bộ
+├── src/                        # Kiến trúc Frontend ES Modules
+│   ├── config.js               # Tham số cân bằng (Vision, Game, Spawner, Assets)
+│   ├── main.js                 # Entry Point khởi tạo và điều phối game loop
+│   ├── api/
+│   │   └── apiClient.js        # REST Client + Auto Fallback LocalStorage
+│   ├── audio/
+│   │   └── SoundEngine.js      # Web Audio API Procedural Synthesizer
+│   ├── vision/                 # Phân hệ Computer Vision MediaPipe BlazeFace
+│   │   ├── camera.js           # Quản lý Webcam stream & quyền truy cập
+│   │   ├── detector.js         # Wrapper BlazeFace Short-Range GPU Delegate
+│   │   ├── tracker.js          # Single-Player Confirmation, IoU, EMA filter
+│   │   └── laneController.js   # Bộ điều khiển chuyển 3 làn (Hysteresis & Keyboard)
+│   ├── engine/                 # Động cơ 2D Canvas Arcade Runner 60 FPS
+│   │   ├── GameState.js        # FSM (Idle, Countdown, Playing, GameOver, Victory)
+│   │   ├── Spawner.js          # Thuật toán sinh chướng ngại vật & đảm bảo làn thoát
+│   │   ├── Collision.js        # Hệ thống kiểm tra va chạm Circle-Circle
+│   │   ├── ParticleSystem.js   # Hạt nổ burst sparks & text bay combat
+│   │   └── RoadRenderer.js     # Render đường đua phối cảnh Neon & Sprite Mascot
+│   ├── ui/
+│   │   └── UIController.js     # Quản lý HUD, PIP Video, Modals, Live Leaderboard
+│   └── styles/
+│       └── main.css            # Hệ thống phong cách Neo-Arcade Craftsmanship
 ├── plan_ne_bug_chay_deadline.md# Bản kế hoạch chi tiết MVP 3 tuần
-└── README.md                   # Tài liệu hướng dẫn và kiến trúc tổng quan
+└── README.md                   # Tài liệu kiến trúc và hướng dẫn vận hành booth
 ```
 
 ---
 
-## 🚀 6. Hướng Dẫn Chạy Cục Bộ
+## 🚀 6. Hướng Dẫn Cài Đặt & Chạy Dự Án
 
-1. Mở thư mục bằng Live Server hoặc bất kỳ local HTTP server nào (do yêu cầu quyền truy cập `getUserMedia`):
-   ```bash
-   # Cách 1: Dùng Python
-   python3 -m http.server 8080
+### Chế độ Full-stack Server (Khuyến nghị cho Booth triển lãm)
+```bash
+# 1. Cài đặt các gói phụ thuộc
+npm install
 
-   # Cách 2: Dùng Node http-server / npx serve
-   npx serve .
-   ```
-2. Truy cập `http://localhost:8080` trên Google Chrome hoặc Microsoft Edge.
-3. Bấm **"BẬT WEBCAM AI"** và cấp quyền camera khi trình duyệt hỏi.
-4. Đứng thẳng trước camera, căn chỉnh mặt vào khung vạch xuất phát màu vàng trong 1 giây để khóa mục tiêu và bắt đầu trải nghiệm!
+# 2. Khởi động Express Server (bao gồm cả Leaderboard API và Game)
+npm start
+# Game sẽ chạy tại: http://localhost:3001
+# API Leaderboard: http://localhost:3001/api/leaderboard
+```
+
+### Chế độ Development (Vite HMR)
+```bash
+# Khởi động Vite dev server với Hot Module Replacement
+npm run dev
+# Mở trình duyệt tại: http://localhost:5173
+```
+
+### Đóng gói Production
+```bash
+npm run build
+# Bản build tối ưu hóa sẽ được tạo tại thư mục dist/
+```
 
 ---
 
