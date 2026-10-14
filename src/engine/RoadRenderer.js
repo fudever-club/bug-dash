@@ -25,7 +25,7 @@ export class RoadRenderer {
     this.shake = intensity;
   }
 
-  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver) {
+  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3") {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
@@ -65,17 +65,22 @@ export class RoadRenderer {
     ctx.setLineDash([]);
 
     // Glowing Neon Road Curbs (FPT Orange & DEVER Amber)
-    ctx.strokeStyle = "rgba(242, 111, 33, 0.45)";
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = isFever ? "rgba(245, 158, 11, 0.9)" : "rgba(242, 111, 33, 0.45)";
+    ctx.lineWidth = isFever ? 6 : 4;
     ctx.beginPath();
     ctx.moveTo(40, 0); ctx.lineTo(40, H);
     ctx.moveTo(W - 40, 0); ctx.lineTo(W - 40, H);
     ctx.stroke();
 
-    // Active Lane Floor Accent Glow
-    const activeLaneX = GAME_CONFIG.laneX[currentLane];
-    ctx.fillStyle = "rgba(245, 158, 11, 0.06)";
-    ctx.fillRect(activeLaneX - 85, 0, 170, H);
+    // Active Floor Accent Glow
+    if (steeringMode === "analog") {
+      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)";
+      ctx.fillRect(playerX - 60, 0, 120, H);
+    } else {
+      const activeLaneX = GAME_CONFIG.laneX[currentLane];
+      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.06)";
+      ctx.fillRect(activeLaneX - 85, 0, 170, H);
+    }
 
     // 3. Render Falling Items
     items.forEach(it => {
@@ -87,7 +92,7 @@ export class RoadRenderer {
       ctx.arc(0, 0, it.radius, 0, Math.PI * 2);
       ctx.fillStyle = it.color;
       ctx.shadowColor = it.color;
-      ctx.shadowBlur = 14;
+      ctx.shadowBlur = isFever ? 20 : 14;
       ctx.fill();
 
       // Sharp white rim
@@ -113,12 +118,40 @@ export class RoadRenderer {
     ctx.save();
     ctx.translate(playerX, playerY);
 
-    // Tilting effect when steering
-    const tilt = (targetX - playerX) * 0.0018;
+    // Dynamic tilt & squash-stretch feel
+    const moveDiff = targetX - playerX;
+    const tilt = Math.max(-0.25, Math.min(0.25, moveDiff * 0.003));
     ctx.rotate(tilt);
 
-    // Combo Aura if Coffee Buff active
-    if (isBuffed) {
+    const squashX = 1 + Math.abs(tilt) * 0.30;
+    const stretchY = 1 - Math.abs(tilt) * 0.15;
+    ctx.scale(squashX, stretchY);
+
+    // Invulnerability i-frames blink
+    if (isInvulnerable) {
+      const blink = Math.sin(performance.now() * 0.035) > 0;
+      ctx.globalAlpha = blink ? 0.35 : 0.95;
+    }
+
+    // Fever Mode or Coffee Aura
+    if (isFever) {
+      // Golden Fever Shield
+      ctx.beginPath();
+      ctx.arc(0, 0, pSize * 0.58, 0, Math.PI * 2);
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 5;
+      ctx.shadowColor = "#f59e0b";
+      ctx.shadowBlur = 24;
+      ctx.stroke();
+
+      // Outer Pulse Ring
+      const pulse = (Math.sin(performance.now() * 0.01) + 1) * 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, pSize * 0.62 + pulse, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else if (isBuffed) {
       ctx.beginPath();
       ctx.arc(0, 0, pSize * 0.52, 0, Math.PI * 2);
       ctx.strokeStyle = "#06b6d4";

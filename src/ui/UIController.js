@@ -50,6 +50,11 @@ export class UIController {
       btnStartGame: $("btnStartGame"),
       btnRestartGame: $("btnRestartGame"),
       btnVictoryRestart: $("btnVictoryRestart"),
+      btnPolaroidGameOver: $("btnPolaroidGameOver"),
+      btnPolaroidVictory: $("btnPolaroidVictory"),
+      steeringModeBadge: $("steeringModeBadge"),
+      btnModeSnap3: $("btnModeSnap3"),
+      btnModeAnalog: $("btnModeAnalog"),
       recal: $("recal"),
       thr: $("thr"),
       thrVal: $("thrVal"),
@@ -67,6 +72,42 @@ export class UIController {
       this.dom.btnSound.onclick = () => {
         const enabled = sound.toggleSound();
         this.updateSoundIcons(enabled);
+      };
+    }
+
+    // Steering Mode Switch
+    if (this.dom.btnModeSnap3) {
+      this.dom.btnModeSnap3.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSetSteeringMode) {
+          this.callbacks.onSetSteeringMode("snap3");
+        } else if (this.callbacks.onToggleSteeringMode) {
+          this.callbacks.onToggleSteeringMode();
+        }
+      };
+    }
+    if (this.dom.btnModeAnalog) {
+      this.dom.btnModeAnalog.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSetSteeringMode) {
+          this.callbacks.onSetSteeringMode("analog");
+        } else if (this.callbacks.onToggleSteeringMode) {
+          this.callbacks.onToggleSteeringMode();
+        }
+      };
+    }
+
+    // Polaroid capture buttons
+    if (this.dom.btnPolaroidGameOver) {
+      this.dom.btnPolaroidGameOver.onclick = () => {
+        sound.playClick();
+        this.generatePolaroid(this.lastSummary || { score: 0, timeSurvived: 30 });
+      };
+    }
+    if (this.dom.btnPolaroidVictory) {
+      this.dom.btnPolaroidVictory.onclick = () => {
+        sound.playClick();
+        this.generatePolaroid(this.lastSummary || { score: 100, timeSurvived: 60 });
       };
     }
 
@@ -230,6 +271,20 @@ export class UIController {
     }
   }
 
+  updateSteeringModeUI(mode) {
+    const isAnalog = mode === "analog";
+    if (this.dom.steeringModeBadge) {
+      this.dom.steeringModeBadge.textContent = isAnalog ? "LẮC ĐẦU TỰ DO" : "3 LÀN (SNAP)";
+      this.dom.steeringModeBadge.style.color = isAnalog ? "#06b6d4" : "var(--fpt-orange)";
+    }
+    if (this.dom.btnModeSnap3) {
+      this.dom.btnModeSnap3.classList.toggle("active-mode", !isAnalog);
+    }
+    if (this.dom.btnModeAnalog) {
+      this.dom.btnModeAnalog.classList.toggle("active-mode", isAnalog);
+    }
+  }
+
   drawVisionOverlay(trackerStatus, faces, roi) {
     const cv = this.dom.overlayCanvas;
     if (!cv) return;
@@ -263,12 +318,61 @@ export class UIController {
         ctx.lineWidth = 2.5;
         ctx.strokeStyle = "#10b981";
         ctx.strokeRect(bx, by, bw, bh);
+
+        // Lock icon badge
+        ctx.fillStyle = "#10b981";
+        ctx.fillRect(bx, by - 18, 54, 18);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.fillText("LOCKED", bx + 6, by - 5);
+      } else if (trackerStatus.phase === "cand") {
+        const bx = (1 - f.x - f.w) * W;
+        const by = f.y * H;
+        const bw = f.w * W;
+        const bh = f.h * H;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#f59e0b";
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Lock progress bar
+        const prog = trackerStatus.candProgress || 0;
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(bx, by - 12, bw, 8);
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillRect(bx, by - 12, bw * prog, 8);
       } else if (this.showDebug) {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
         ctx.strokeRect((1 - f.x - f.w) * W, f.y * H, f.w * W, f.h * H);
       }
     });
+
+    // 3. Head Tilt Horizon Indicator
+    if (trackerStatus.phase === "lock") {
+      const roll = trackerStatus.rollAngle || 0;
+      const deg = Math.round(roll * 180 / Math.PI);
+      const centerX = W / 2;
+      const centerY = H - 24;
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(roll);
+
+      // Horizon line
+      ctx.strokeStyle = Math.abs(deg) > 8 ? "#f59e0b" : "rgba(255, 255, 255, 0.7)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-35, 0); ctx.lineTo(35, 0);
+      ctx.stroke();
+
+      ctx.restore();
+
+      // Degree readout
+      ctx.fillStyle = Math.abs(deg) > 8 ? "#f59e0b" : "#ffffff";
+      ctx.font = "bold 11px 'JetBrains Mono', monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`TILT ${deg > 0 ? '+' : ''}${deg}°`, centerX, H - 8);
+    }
   }
 
   showStartScreen() {
@@ -284,6 +388,7 @@ export class UIController {
   }
 
   showGameOver(summary) {
+    this.lastSummary = summary;
     if (this.dom.gameOverScoreDesc) {
       this.dom.gameOverScoreDesc.textContent = `Bạn đã dừng lại tại giây thứ ${summary.timeSurvived} với ${summary.score} PTS!`;
     }
@@ -292,6 +397,7 @@ export class UIController {
   }
 
   showVictory(summary) {
+    this.lastSummary = summary;
     if (this.dom.victoryScoreDesc) {
       this.dom.victoryScoreDesc.textContent = `Bạn đã hoàn thành xuất sắc thử thách với tổng điểm ${summary.score.toLocaleString()} PTS!`;
     }
@@ -299,8 +405,76 @@ export class UIController {
     this.promptScoreSubmission(summary);
   }
 
+  generatePolaroid(summary) {
+    const video = this.dom.video;
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 760;
+    const ctx = canvas.getContext("2d");
+
+    // 1. Polaroid White Paper Frame
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 600, 760);
+
+    // Subtle drop shadow / inner edge
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, 598, 758);
+
+    // 2. Photo Area (Mirrored video snapshot)
+    const photoX = 30;
+    const photoY = 30;
+    const photoW = 540;
+    const photoH = 540;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(photoX, photoY, photoW, photoH);
+    ctx.clip();
+
+    if (video && video.videoWidth > 0) {
+      // Flip snapshot horizontally so it matches mirror preview
+      ctx.translate(photoX + photoW, photoY);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, photoW, photoH);
+    } else {
+      ctx.fillStyle = "#0a1122";
+      ctx.fillRect(photoX, photoY, photoW, photoH);
+    }
+    ctx.restore();
+
+    // Photo inner border
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(photoX, photoY, photoW, photoH);
+
+    // 3. Caption / Polaroid Label Area
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "800 24px 'Space Grotesk', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("FU-DEVER BUG DASH 2026", 36, 620);
+
+    ctx.fillStyle = "#f26f21";
+    ctx.font = "800 32px 'JetBrains Mono', monospace";
+    ctx.fillText(`${summary.score.toLocaleString()} PTS`, 36, 665);
+
+    ctx.fillStyle = "#475569";
+    ctx.font = "600 14px 'Be Vietnam Pro', sans-serif";
+    ctx.fillText(`Thời gian: ${summary.timeSurvived}s  •  Chuỗi né: ${summary.highestStreak || 1}x`, 36, 700);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "600 12px 'Be Vietnam Pro', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText("FPT UNIVERSITY DA NANG", 564, 700);
+
+    // Download file
+    const link = document.createElement("a");
+    link.download = `bug_dash_polaroid_${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
+
   async promptScoreSubmission(summary) {
-    // If score > 100, prompt name to record in leaderboard
     if (summary.score >= 50) {
       setTimeout(async () => {
         const name = window.prompt(`Xuất sắc! Nhập tên bạn để lưu bảng vàng FU-DEVER (${summary.score} PTS):`, "Dev FPTU");

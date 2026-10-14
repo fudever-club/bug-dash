@@ -14,7 +14,7 @@ export class Spawner {
     this.items = [];
   }
 
-  update(dt, timeLeft) {
+  update(dt, timeLeft, steeringMode = "snap3") {
     this.spawnTimer += dt;
 
     // Difficulty curve based on time left in 60s session
@@ -25,7 +25,7 @@ export class Spawner {
 
     if (this.spawnTimer >= spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnWave(timeLeft);
+      this.spawnWave(timeLeft, steeringMode);
     }
 
     // Move existing items down
@@ -40,7 +40,7 @@ export class Spawner {
     }
   }
 
-  spawnWave(timeLeft) {
+  spawnWave(timeLeft, steeringMode = "snap3") {
     const lanes = [0, 1, 2];
     // Guarantee at least 1 lane is completely empty/safe
     const countToSpawn = (timeLeft < 30 && Math.random() < 0.45) ? 2 : 1;
@@ -57,11 +57,18 @@ export class Spawner {
       const candidates = OBJECT_DEFINITIONS.filter(o => o.isObstacle === isObstacle);
       const def = candidates[Math.floor(Math.random() * candidates.length)];
 
+      let posX = GAME_CONFIG.laneX[laneIdx];
+      // In analog racer mode, slightly perturb obstacle X coordinates for slalom challenge
+      if (steeringMode === "analog") {
+        const jitter = (Math.random() - 0.5) * 55;
+        posX = Math.max(GAME_CONFIG.roadMinX + 35, Math.min(GAME_CONFIG.roadMaxX - 35, posX + jitter));
+      }
+
       this.items.push({
         ...def,
         id: Math.random().toString(36).substring(2, 9),
         lane: laneIdx,
-        x: GAME_CONFIG.laneX[laneIdx],
+        x: posX,
         y: -40,
         speed: speed,
         scale: 1.0,

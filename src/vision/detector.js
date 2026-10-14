@@ -40,13 +40,39 @@ export class FaceDetectorWrapper {
       // Normalize bounding boxes (mirrored for intuitive left-right steering)
       return result.detections.map(d => {
         const b = d.boundingBox;
+        let rollAngle = 0;
+        let tilt = 0;
+
+        // Compute Head Tilt (Roll angle) from eye keypoints if available
+        if (d.keypoints && d.keypoints.length >= 2) {
+          const kp0 = d.keypoints[0]; // Subject's right eye
+          const kp1 = d.keypoints[1]; // Subject's left eye
+          if (kp0 && kp1) {
+            // Mirrored X coordinates
+            const eyeRx = 1 - kp0.x;
+            const eyeRy = kp0.y;
+            const eyeLx = 1 - kp1.x;
+            const eyeLy = kp1.y;
+
+            const dx = eyeRx - eyeLx;
+            const dy = eyeRy - eyeLy;
+            if (Math.abs(dx) > 0.001) {
+              rollAngle = Math.atan2(dy, dx); // radians
+              // Normalize to [-1.0, 1.0] for +/-20 degrees (~0.35 rad)
+              tilt = Math.max(-1.0, Math.min(1.0, rollAngle / 0.35));
+            }
+          }
+        }
+
         return {
           // Flip X horizontally so player tilting right maps to right lane
           x: 1 - (b.originX + b.width) / W,
           y: b.originY / H,
           w: b.width / W,
           h: b.height / H,
-          confidence: (d.categories && d.categories[0]) ? d.categories[0].score : 1.0
+          confidence: (d.categories && d.categories[0]) ? d.categories[0].score : 1.0,
+          rollAngle: rollAngle,
+          tilt: tilt
         };
       });
     } catch (err) {

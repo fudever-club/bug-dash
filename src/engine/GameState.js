@@ -44,6 +44,8 @@ export class GameStateManager {
     this.lives = GAME_CONFIG.initialLives;
     this.combo = 1;
     this.comboTimer = 0;
+    this.feverTimer = 0;
+    this.invulnerableTimer = 0;
     this.highestStreak = 0;
     this.currentStreak = 0;
     this.timeSurvived = 0;
@@ -53,6 +55,14 @@ export class GameStateManager {
     this.callbacks.onLivesUpdate(this.lives);
     this.callbacks.onTimerUpdate(this.timeLeft);
     this.callbacks.onComboUpdate(this.combo, false);
+  }
+
+  get isInvulnerable() {
+    return this.invulnerableTimer > 0;
+  }
+
+  get isFever() {
+    return this.feverTimer > 0;
   }
 
   update(dt) {
@@ -70,8 +80,20 @@ export class GameStateManager {
     }
     this.callbacks.onTimerUpdate(this.timeLeft);
 
-    // Combo timer
-    if (this.comboTimer > 0) {
+    // Invulnerability timer decay
+    if (this.invulnerableTimer > 0) {
+      this.invulnerableTimer -= dt;
+    }
+
+    // Fever mode timer decay
+    if (this.feverTimer > 0) {
+      this.feverTimer -= dt;
+      if (this.feverTimer <= 0) {
+        this.combo = 1;
+        this.callbacks.onComboUpdate(this.combo, false);
+      }
+    } else if (this.comboTimer > 0) {
+      // Standard coffee combo timer decay
       this.comboTimer -= dt;
       if (this.comboTimer <= 0) {
         this.combo = 1;
@@ -81,19 +103,25 @@ export class GameStateManager {
   }
 
   takeDamage(amount = 1) {
-    if (this.state !== GameStates.PLAYING) return;
+    if (this.state !== GameStates.PLAYING) return false;
+    // Immunized during i-frames or Fever Mode
+    if (this.invulnerableTimer > 0 || this.feverTimer > 0) return false;
 
     this.lives = Math.max(0, this.lives - amount);
     this.currentStreak = 0;
+    this.invulnerableTimer = GAME_CONFIG.invulnerableDuration || 1.2;
     this.callbacks.onLivesUpdate(this.lives);
 
     if (this.lives <= 0) {
       this.setState(GameStates.GAMEOVER);
     }
+    return true;
   }
 
   deductScore(amount) {
     if (this.state !== GameStates.PLAYING) return;
+    // Protected during Fever Mode
+    if (this.feverTimer > 0) return;
 
     this.score = Math.max(0, this.score - amount);
     this.combo = 1;
@@ -102,7 +130,7 @@ export class GameStateManager {
     this.callbacks.onComboUpdate(this.combo, false);
   }
 
-  addReward(points, isBuff = false) {
+  addReward(points, buffType = null) {
     if (this.state !== GameStates.PLAYING) return;
 
     this.score += points * this.combo;
@@ -111,9 +139,14 @@ export class GameStateManager {
       this.highestStreak = this.currentStreak;
     }
 
-    if (isBuff) {
+    if (buffType === "fever") {
+      // Nitro Bug Buster Rush: x3 combo, invulnerable
+      this.feverTimer = GAME_CONFIG.feverDuration || 5.0;
+      this.combo = 3;
+      this.callbacks.onComboUpdate(this.combo, true);
+    } else if (buffType === "x2") {
       this.combo = 2;
-      this.comboTimer = 5.0; // 5 seconds duration
+      this.comboTimer = 5.0;
       this.callbacks.onComboUpdate(this.combo, true);
     }
 

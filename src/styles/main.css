@@ -208,6 +208,12 @@ body::before {
   background: rgba(245, 158, 11, 0.1);
   border-color: var(--dever-amber);
 }
+.btn-outline.active-mode {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: var(--dever-amber);
+  color: var(--dever-amber);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+}
 
 /* Cockpit Grid */
 .cockpit-grid {

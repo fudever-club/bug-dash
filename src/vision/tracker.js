@@ -28,6 +28,33 @@ export class FaceTracker {
     return inter / (areaA + areaB - inter || 1);
   }
 
+  // Hybrid matching: IoU + Euclidean Distance + Area Similarity
+  static computeMatchScore(a, b) {
+    if (!a || !b) return 0;
+    const iou = FaceTracker.computeIoU(a, b);
+    const cxA = FaceTracker.getCenterX(a);
+    const cyA = a.y + a.h / 2;
+    const cxB = FaceTracker.getCenterX(b);
+    const cyB = b.y + b.h / 2;
+    const dist = Math.hypot(cxA - cxB, cyA - cyB);
+
+    const areaA = a.w * a.h;
+    const areaB = b.w * b.h;
+    const areaRatio = Math.min(areaA, areaB) / Math.max(areaA, areaB);
+
+    // Primary: IoU is positive and significant
+    if (iou >= VISION_CONFIG.minIoU) {
+      return 0.5 * iou + 0.3 * (1 - Math.min(1, dist * 3)) + 0.2 * areaRatio;
+    }
+
+    // Fallback: Sudden head dodge/tilt causing IoU drop to zero, but center distance & size are close
+    if (dist < 0.28 && areaRatio > 0.50) {
+      return 0.25 + 0.45 * (1 - dist / 0.28) + 0.30 * areaRatio;
+    }
+
+    return 0;
+  }
+
   static getCenterX(box) {
     return box.x + box.w / 2;
   }
@@ -39,11 +66,14 @@ export class FaceTracker {
     this.lostFrames = 0;
     this.smoothedX = 0.5;
     this.centerX = 0.5;
+    this.smoothedTilt = 0;
+    this.centerTilt = 0;
   }
 
   calibrateCenter() {
     if (this.phase === "lock" && this.box) {
       this.centerX = this.smoothedX;
+      this.centerTilt = this.smoothedTilt;
       return true;
     }
     return false;
@@ -56,12 +86,12 @@ export class FaceTracker {
     // 2. If locked or temporarily lost: keep tracking the target person
     if (this.phase === "lock" || this.phase === "lost") {
       let bestMatch = null;
-      let highestIoU = VISION_CONFIG.minIoU;
+      let highestScore = 0.30; // Threshold score for continuous tracking
 
       for (const f of validFaces) {
-        const val = FaceTracker.computeIoU(f, this.box);
-        if (val > highestIoU) {
-          highestIoU = val;
+        const score = FaceTracker.computeMatchScore(f, this.box);
+        if (score > highestScore) {
+          highestScore = score;
           bestMatch = f;
         }
       }
@@ -75,17 +105,19 @@ export class FaceTracker {
         if (this.lostFrames > VISION_CONFIG.lostFrames) {
           this.phase = "lost";
         }
-      }
-
-      // If lost for too long and new face in ROI appears, release lock
-      if (this.phase === "lost" && validFaces.length > 0) {
-        this.phase = "wait";
-        this.box = null;
+        // Only release lock after generous grace period (maxLostFrames = 60 frames ~ 2s)
+        if (this.lostFrames > (VISION_CONFIG.maxLostFrames || 60)) {
+          this.phase = "wait";
+          this.box = null;
+        }
       }
 
       if (this.phase === "lock" && this.box) {
         const cx = FaceTracker.getCenterX(this.box);
         this.smoothedX += (cx - this.smoothedX) * VISION_CONFIG.ema;
+
+        const currentTilt = this.box.tilt || 0;
+        this.smoothedTilt += (currentTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
       }
       return;
     }
@@ -122,6 +154,7 @@ export class FaceTracker {
         this.phase = "lock";
         this.lostFrames = 0;
         this.smoothedX = this.centerX = FaceTracker.getCenterX(primary);
+        this.smoothedTilt = this.centerTilt = primary.tilt || 0;
         this.onLock(this.box);
       }
     } else {
@@ -137,7 +170,11 @@ export class FaceTracker {
       box: this.box,
       smoothedX: this.smoothedX,
       centerX: this.centerX,
-      deltaX: this.smoothedX - this.centerX
+      deltaX: this.smoothedX - this.centerX,
+      smoothedTilt: this.smoothedTilt || 0,
+      rollAngle: this.box ? (this.box.rollAngle || 0) : 0,
+      lostFrames: this.lostFrames,
+      candProgress: (this.phase === "cand") ? Math.min(1.0, (performance.now() - this.candSince) / VISION_CONFIG.lockMs) : 0
     };
   }
 }

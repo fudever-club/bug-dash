@@ -68,6 +68,22 @@
           </div>
         </div>
 
+        <!-- Steering Mode Selector -->
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--text-secondary); font-weight:700;">CHẾ ĐỘ ĐIỀU KHIỂN</span>
+            <span id="steeringModeBadge" style="font-family:'JetBrains Mono'; font-size:10px; font-weight:800; color:var(--fpt-orange); background:rgba(242,111,33,0.15); padding:2px 6px; border-radius:4px;">3 LÀN (SNAP)</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-outline active-mode" id="btnModeSnap3" style="flex:1; font-size:11px; padding:6px 8px;">
+              3 Làn Snap
+            </button>
+            <button class="btn-outline" id="btnModeAnalog" style="flex:1; font-size:11px; padding:6px 8px;">
+              Lắc Đầu Tự Do (T)
+            </button>
+          </div>
+        </div>
+
         <!-- Lane Sensor Gauge -->
         <div class="lane-telemetry-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -136,7 +152,7 @@
       <div class="game-state-modal" id="startScreenModal">
         <img src="assets/player_running.png" alt="Buggy Running" class="modal-mascot-img">
         <h2>NÉ BUG CHẠY DEADLINE</h2>
-        <p>Dịch đầu sang <strong>Trái / Phải</strong> trước camera để điều khiển bọ Buggy né bug Syntax Error, deadline 23:59 và nhặt Cà phê FPTU!</p>
+        <p>Dịch đầu sang <strong>Trái / Phải</strong> hoặc <strong>Nghiêng Đầu</strong> trước camera để điều khiển bọ Buggy né bug Syntax Error, deadline 23:59 và nhặt Cà phê FPTU!</p>
         <button class="btn-primary" id="btnStartGame" style="padding:12px 28px; font-size:15px; margin-top:8px;">
           Bắt Đầu Chơi Ngay (SPACE)
         </button>
@@ -147,9 +163,14 @@
         <img src="assets/player_dead.png" alt="Buggy Dead" class="modal-mascot-img">
         <h2 style="color:var(--crimson-bad);">BỊ DEADLINE ĐÈ BẸP!</h2>
         <p id="gameOverScoreDesc">Bạn đã mất hết 3 mạng trước 23:59!</p>
-        <button class="btn-primary" id="btnRestartGame" style="padding:12px 28px; font-size:15px; margin-top:8px;">
-          Chơi Lại Lượt Mới (SPACE)
-        </button>
+        <div style="display:flex; gap:10px; margin-top:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn-primary" id="btnRestartGame" style="padding:10px 22px; font-size:14px;">
+            Chơi Lại Lượt Mới (SPACE)
+          </button>
+          <button class="btn-outline" id="btnPolaroidGameOver" style="padding:10px 16px; font-size:13px;">
+            Tải Ảnh Kỷ Niệm
+          </button>
+        </div>
       </div>
 
       <!-- 3. Victory Modal -->
@@ -157,9 +178,14 @@
         <img src="assets/buggy_champion.png" alt="Buggy Champion" class="modal-mascot-img">
         <h2 style="color:var(--dever-amber);">PASS MÔN THÀNH CÔNG!</h2>
         <p id="victoryScoreDesc">Bạn đã sống sót qua 60 giây nghẹt thở và nộp bài đúng hạn!</p>
-        <button class="btn-primary" id="btnVictoryRestart" style="padding:12px 28px; font-size:15px; margin-top:8px;">
-          Chơi Lại Phục Thù (SPACE)
-        </button>
+        <div style="display:flex; gap:10px; margin-top:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn-primary" id="btnVictoryRestart" style="padding:10px 22px; font-size:14px;">
+            Chơi Lại Phục Thù (SPACE)
+          </button>
+          <button class="btn-outline" id="btnPolaroidVictory" style="padding:10px 16px; font-size:13px;">
+            Tải Ảnh Kỷ Niệm
+          </button>
+        </div>
       </div>
     </section>
 

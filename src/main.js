@@ -52,7 +52,12 @@ class BugDashApp {
       onToggleSound: () => sound.toggleSound(),
       onToggleDebug: (show) => {},
       onLaneSelect: (lane) => this.laneController.setLane(lane, true),
-      onStartCamera: () => this.startCamera()
+      onStartCamera: () => this.startCamera(),
+      onToggleSteeringMode: () => {
+        const mode = this.laneController.toggleSteeringMode();
+        this.ui.updateSteeringModeUI(mode);
+        sound.playClick();
+      }
     });
 
     // 3. Runtime Animation State
@@ -85,6 +90,12 @@ class BugDashApp {
       // Debug toggle
       if (e.key === "d" || e.key === "D") {
         if (this.ui.dom.btnToggleDebug) this.ui.dom.btnToggleDebug.click();
+      }
+      // Steering mode toggle (3-Lane vs Free Analog Racer)
+      if (e.key === "t" || e.key === "T") {
+        const mode = this.laneController.toggleSteeringMode();
+        this.ui.updateSteeringModeUI(mode);
+        sound.playClick();
       }
       // Keyboard steering
       if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
@@ -186,14 +197,15 @@ class BugDashApp {
       const dt = Math.min(0.06, (now - this.lastGameTime) / 1000);
       this.lastGameTime = now;
 
-      // 1. Smooth Player Position Interpolation
-      const targetLaneX = GAME_CONFIG.laneX[this.laneController.currentLane];
-      this.playerX += (targetLaneX - this.playerX) * 0.22;
+      // 1. Smooth Player Position Interpolation (Supports both 3-Lane Snap and Free Analog Racer)
+      const targetX = this.laneController.getTargetX();
+      const lerpSpeed = (this.laneController.steeringMode === "analog") ? 0.30 : 0.22;
+      this.playerX += (targetX - this.playerX) * lerpSpeed;
 
       // 2. Gameplay Logic Updates
       if (this.gameState.state === GameStates.PLAYING) {
         this.gameState.update(dt);
-        this.spawner.update(dt, this.gameState.timeLeft);
+        this.spawner.update(dt, this.gameState.timeLeft, this.laneController.steeringMode);
 
         // Check Collisions
         const collidingIdx = CollisionSystem.findFirstCollision(this.playerX, this.spawner.items);
@@ -201,30 +213,42 @@ class BugDashApp {
           const item = this.spawner.items[collidingIdx];
 
           if (item.isObstacle) {
-            // Hit obstacle
-            sound.playHit();
-            this.renderer.triggerShake(1.0);
-            this.particles.addSparks(item.x, item.y, "#ef4444", 15);
-
-            if (item.damage) {
-              this.gameState.takeDamage(item.damage);
-              this.particles.addFloatingText(item.x, item.y - 15, "-1 HP (DEADLINE DÍ)!", "#ef4444");
-            }
-            if (item.scoreDeduct) {
-              this.gameState.deductScore(item.scoreDeduct);
-              this.particles.addFloatingText(item.x, item.y - 15, "-30 PTS (RỚT MÔN)!", "#dc2626");
+            if (this.gameState.isFever) {
+              // FEVER MODE: Smash right through bugs and convert them to huge bonus points!
+              sound.playBuffActive();
+              this.renderer.triggerShake(0.6);
+              this.particles.addSparks(item.x, item.y, "#f59e0b", 22);
+              this.gameState.addReward(60);
+              this.particles.addFloatingText(item.x, item.y - 15, "+60 PTS (BUG SMASHED)!", "#f59e0b");
+            } else {
+              // Standard obstacle collision with i-Frames check
+              const isDamaged = item.damage ? this.gameState.takeDamage(item.damage) : false;
+              if (isDamaged) {
+                sound.playHit();
+                this.renderer.triggerShake(1.0);
+                this.particles.addSparks(item.x, item.y, "#ef4444", 16);
+                this.particles.addFloatingText(item.x, item.y - 15, "-1 HP (DEADLINE DÍ)!", "#ef4444");
+              }
+              if (item.scoreDeduct && !this.gameState.isInvulnerable) {
+                this.gameState.deductScore(item.scoreDeduct);
+                this.particles.addFloatingText(item.x, item.y - 15, "-30 PTS (RỚT MÔN)!", "#dc2626");
+              }
             }
           } else {
             // Collect Reward
-            this.particles.addSparks(item.x, item.y, "#10b981", 12);
+            this.particles.addSparks(item.x, item.y, item.color || "#10b981", 14);
 
-            if (item.buff === "x2") {
+            if (item.buff === "fever") {
+              sound.playVictory();
+              this.gameState.addReward(item.points, "fever");
+              this.particles.addFloatingText(item.x, item.y - 15, "NITRO FEVER RUSH (X3 PTS)!", "#f59e0b");
+            } else if (item.buff === "x2") {
               sound.playBuffActive();
-              this.gameState.addReward(item.points, true);
+              this.gameState.addReward(item.points, "x2");
               this.particles.addFloatingText(item.x, item.y - 15, "+20 PTS (CÀ PHÊ GÁNH TEAM)!", "#06b6d4");
             } else {
               sound.playItemCollect();
-              this.gameState.addReward(item.points, false);
+              this.gameState.addReward(item.points, null);
               this.particles.addFloatingText(item.x, item.y - 15, `+${item.points * this.gameState.combo} PTS (PR MERGED)!`, "#10b981");
             }
           }
@@ -241,12 +265,15 @@ class BugDashApp {
       this.renderer.render(
         dt,
         this.playerX,
-        targetLaneX,
+        targetX,
         this.laneController.currentLane,
         this.spawner.items,
         this.particles,
         isBuffed,
-        isGameOver
+        isGameOver,
+        this.gameState.isInvulnerable,
+        this.gameState.isFever,
+        this.laneController.steeringMode
       );
 
       requestAnimationFrame(loop);
