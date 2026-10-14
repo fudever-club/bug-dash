@@ -25,7 +25,7 @@ export class RoadRenderer {
     this.shake = intensity;
   }
 
-  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic") {
+  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic", jumpState = null, slideState = null) {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
@@ -119,10 +119,41 @@ export class RoadRenderer {
     const playerY = GAME_CONFIG.playerY;
     const pSize = GAME_CONFIG.playerSize;
 
+    // Jump & Slide Physics
+    let jumpOffsetY = 0;
+    let jumpScale = 1.0;
+    let shadowScale = 1.0;
+    if (jumpState && jumpState.isJumping) {
+      const p = jumpState.progress || 0;
+      jumpOffsetY = -Math.sin(p * Math.PI) * 75; // Peak 75px vertical jump
+      jumpScale = 1 + Math.sin(p * Math.PI) * 0.16;
+      shadowScale = Math.max(0.40, 1 - Math.sin(p * Math.PI) * 0.55);
+    }
+
+    let slideScaleX = 1.0;
+    let slideScaleY = 1.0;
+    let slideOffsetY = 0;
+    if (slideState && slideState.isSliding) {
+      const p = slideState.progress || 0;
+      const crouchFactor = Math.sin(p * Math.PI);
+      slideScaleX = 1 + crouchFactor * 0.35; // Widens while sliding
+      slideScaleY = 1 - crouchFactor * 0.52; // Compresses to ~48% height
+      slideOffsetY = crouchFactor * 22; // Drops closer to road
+    }
+
+    // Dynamic Ground Shadow at base playerY
+    ctx.save();
+    ctx.translate(playerX, playerY + pSize * 0.38);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, (pSize * 0.35) * shadowScale, (pSize * 0.12) * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.40)";
+    ctx.fill();
+    ctx.restore();
+
     // Catcher Minigame: Render High-Tech PR Collector Basket
     if (gameMode === "catcher") {
       ctx.save();
-      ctx.translate(playerX, playerY - pSize * 0.42);
+      ctx.translate(playerX, playerY + jumpOffsetY + slideOffsetY - pSize * 0.42);
       ctx.strokeStyle = "#10b981";
       ctx.lineWidth = 3;
       ctx.shadowColor = "#10b981";
@@ -150,16 +181,35 @@ export class RoadRenderer {
     }
 
     ctx.save();
-    ctx.translate(playerX, playerY);
+    ctx.translate(playerX, playerY + jumpOffsetY + slideOffsetY);
 
     // Dynamic tilt & squash-stretch feel
     const moveDiff = targetX - playerX;
     const tilt = Math.max(-0.25, Math.min(0.25, moveDiff * 0.003));
     ctx.rotate(tilt);
 
-    const squashX = 1 + Math.abs(tilt) * 0.30;
-    const stretchY = 1 - Math.abs(tilt) * 0.15;
+    const squashX = (1 + Math.abs(tilt) * 0.30) * slideScaleX * jumpScale;
+    const stretchY = (1 - Math.abs(tilt) * 0.15) * slideScaleY * jumpScale;
     ctx.scale(squashX, stretchY);
+
+    // Slide Skid Sparks & Jump Air Swoosh
+    if (slideState && slideState.isSliding) {
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.75)";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-pSize * 0.35, pSize * 0.35);
+      ctx.lineTo(-pSize * 0.55, pSize * 0.42);
+      ctx.moveTo(pSize * 0.35, pSize * 0.35);
+      ctx.lineTo(pSize * 0.55, pSize * 0.42);
+      ctx.stroke();
+    }
+    if (jumpState && jumpState.isJumping) {
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.65)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, pSize * 0.45, pSize * 0.35, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+    }
 
     // Invulnerability i-frames blink
     if (isInvulnerable) {

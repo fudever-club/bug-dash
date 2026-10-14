@@ -1,10 +1,11 @@
 // FU-DEVER BUG DASH — Main Application Entry Point
 // Connects Computer Vision, Audio Synthesizer, 2D Game Engine, UI, and Backend API.
 
-import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG } from "./config.js";
+import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG, CONTROL_INPUTS } from "./config.js";
 import { sound } from "./audio/SoundEngine.js";
 import { CameraController } from "./vision/camera.js";
 import { FaceDetectorWrapper } from "./vision/detector.js";
+import { HandDetectorWrapper } from "./vision/handDetector.js";
 import { FaceTracker } from "./vision/tracker.js";
 import { DualFaceTracker } from "./vision/dualTracker.js";
 import { LaneController } from "./vision/laneController.js";
@@ -22,12 +23,18 @@ class BugDashApp {
     this.gameCanvas = document.getElementById("gameCanvas");
 
     this.gameMode = GAME_MODES.CLASSIC;
+    this.inputSource = CONTROL_INPUTS.FACE;
     this.opponentData = null;
     this.lastNetSync = 0;
+
+    // Jump & Slide State
+    this.jumpState = { isJumping: false, progress: 0, duration: 0.65, elapsed: 0 };
+    this.slideState = { isSliding: false, progress: 0, duration: 0.65, elapsed: 0 };
 
     // 1. Initialize Subsystems
     this.camera = new CameraController(this.videoElement);
     this.detector = new FaceDetectorWrapper();
+    this.handDetector = new HandDetectorWrapper();
     
     this.tracker = new FaceTracker((lockedBox) => {
       sound.playLock();
@@ -138,6 +145,12 @@ class BugDashApp {
       onSelectGameMode: (mode) => this.setGameMode(mode),
       onSelectDuelType: (type) => this.setDuelType(type),
       onStartSplitMatch: () => this.startSplitMatch(),
+      onSelectInputSource: (src) => this.setInputSource(src),
+      onSelectSteeringMode: (mode) => {
+        this.laneController.setSteeringMode(mode);
+        this.ui.updateSteeringModeUI(mode);
+        sound.playClick();
+      },
       onToggleSteeringMode: () => {
         const mode = this.laneController.toggleSteeringMode();
         this.ui.updateSteeringModeUI(mode);
@@ -163,10 +176,24 @@ class BugDashApp {
 
   initKeyboardControls() {
     window.addEventListener("keydown", (e) => {
-      // Space to start / restart
-      if (e.key === " " && this.gameState.state !== GameStates.PLAYING) {
+      // Space to start / restart or Jump during play
+      if (e.key === " ") {
+        if (this.gameState.state !== GameStates.PLAYING) {
+          e.preventDefault();
+          this.startGame();
+        } else {
+          e.preventDefault();
+          this.jump();
+        }
+      }
+      // Jump & Slide keyboard controls
+      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
         e.preventDefault();
-        this.startGame();
+        this.jump();
+      }
+      if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        this.slide();
       }
       // Calibration shortcut
       if (e.key === "c" || e.key === "C") {
@@ -224,21 +251,59 @@ class BugDashApp {
     }
   }
 
+  async setInputSource(src) {
+    this.inputSource = src;
+    this.ui.updateInputSourceUI(src);
+    if (src === CONTROL_INPUTS.HAND) {
+      if (!this.handDetector.isReady && !this.handDetector.isLoading) {
+        this.particles.addFloatingText(320, 260, "ĐANG NẠP AI BÀN TAY...", "#10b981");
+        try {
+          await this.handDetector.init();
+          this.particles.addFloatingText(320, 260, "AI BÀN TAY ĐÃ SẴN SÀNG!", "#10b981");
+          sound.playBuffActive();
+        } catch (e) {
+          console.error("[BugDashApp] Hand tracking init error:", e);
+        }
+      }
+    }
+  }
+
+  jump() {
+    if (this.jumpState.isJumping || this.slideState.isSliding) return;
+    this.jumpState.isJumping = true;
+    this.jumpState.progress = 0;
+    this.jumpState.elapsed = 0;
+    sound.playJump();
+    this.particles.addCollectBurst(this.playerX, GAME_CONFIG.playerY + 20, "#06b6d4", 8);
+  }
+
+  slide() {
+    if (this.slideState.isSliding || this.jumpState.isJumping) return;
+    this.slideState.isSliding = true;
+    this.slideState.progress = 0;
+    this.slideState.elapsed = 0;
+    sound.playSlide();
+    this.particles.addCollectBurst(this.playerX, GAME_CONFIG.playerY + 35, "#f59e0b", 8);
+  }
+
   setGameMode(mode) {
     this.gameMode = mode;
     this.gameState.setGameMode(mode);
     this.ui.updateGameModeUI(mode);
 
+    if (this.gameState.state === GameStates.PLAYING) {
+      this.gameState.setState(GameStates.IDLE);
+    }
+
     if (mode === GAME_MODES.HIGHWAY) {
       this.laneController.setSteeringMode("analog");
       this.ui.updateSteeringModeUI("analog");
-      this.particles.addFloatingText(GAME_CONFIG.laneX[1], 300, "CHẾ ĐỘ: FPT HIGHWAY RACER!", "#f59e0b");
+      this.ui.showStartScreenForMode(GAME_MODES.HIGHWAY);
       sound.playBuffActive();
     } else if (mode === GAME_MODES.CATCHER) {
       this.laneController.setSteeringMode("analog");
       this.ui.updateSteeringModeUI("analog");
-      this.particles.addFloatingText(GAME_CONFIG.laneX[1], 300, "CHẾ ĐỘ: HỨNG PR MERGED!", "#10b981");
-      this.ui.showStartScreen();
+      this.ui.showStartScreenForMode(GAME_MODES.CATCHER);
       sound.playBuffActive();
     } else if (mode === GAME_MODES.DUEL) {
       this.ui.showDuelLobby();
@@ -251,7 +316,7 @@ class BugDashApp {
     } else {
       this.laneController.setSteeringMode("snap3");
       this.ui.updateSteeringModeUI("snap3");
-      this.ui.showStartScreen();
+      this.ui.showStartScreenForMode(GAME_MODES.CLASSIC);
       sound.playClick();
     }
   }
@@ -292,9 +357,11 @@ class BugDashApp {
 
   startGame() {
     sound.init();
+    this.laneController.reset();
     this.spawner.reset();
     this.particles.reset();
-    this.laneController.setLane(1, false);
+    this.jumpState = { isJumping: false, progress: 0, duration: 0.65, elapsed: 0 };
+    this.slideState = { isSliding: false, progress: 0, duration: 0.65, elapsed: 0 };
     this.playerX = GAME_CONFIG.laneX[1];
     this.ui.hideAllModals();
     this.gameState.startSession();
@@ -327,29 +394,48 @@ class BugDashApp {
     if (video.readyState < 2) return;
 
     const now = performance.now();
+
+    // FPS calculation
+    this.fpsFrames++;
+    let currentFps;
+    if (this.fpsFrames % 30 === 0) {
+      currentFps = Math.round(30000 / (now - this.lastFpsTime));
+      this.lastFpsTime = now;
+      this.ui.updateCameraStatus("lock", currentFps);
+    }
+
+    // 1. Hand Tracking Mode
+    if (this.inputSource === CONTROL_INPUTS.HAND) {
+      let handStatus = null;
+      if (this.handDetector.isReady) {
+        handStatus = this.handDetector.detectForVideo(video, now);
+        if (handStatus) {
+          this.laneController.updateFromHand(handStatus);
+          // High Hand -> Jump; Low Hand -> Slide
+          if (handStatus.isHighHand && !this.jumpState.isJumping) {
+            this.jump();
+          } else if (handStatus.isLowHand && !this.slideState.isSliding) {
+            this.slide();
+          }
+        }
+      }
+      this.ui.drawVisionOverlay(null, null, null, false, null, handStatus, this.inputSource);
+      return;
+    }
+
+    // 2. Face Tracking Mode (BlazeFace)
     const faces = this.detector.detectForVideo(video, now);
 
     if (this.gameMode === GAME_MODES.SPLIT_SCREEN) {
       this.dualTracker.update(faces, now);
       const dualStatus = this.dualTracker.getStatus();
-      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus);
+      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, null, this.inputSource);
     } else {
       this.tracker.update(faces, now);
       const trackerStatus = this.tracker.getStatus();
       this.laneController.updateFromTracker(trackerStatus);
-
-      // FPS calculation
-      this.fpsFrames++;
-      let currentFps;
-      if (this.fpsFrames % 30 === 0) {
-        currentFps = Math.round(30000 / (now - this.lastFpsTime));
-        this.lastFpsTime = now;
-        this.ui.updateCameraStatus(trackerStatus.phase, currentFps);
-      } else {
-        this.ui.updateCameraStatus(trackerStatus.phase);
-      }
-
-      this.ui.drawVisionOverlay(trackerStatus, faces, VISION_CONFIG.roi, false, null);
+      this.ui.updateCameraStatus(trackerStatus.phase, currentFps);
+      this.ui.drawVisionOverlay(trackerStatus, faces, VISION_CONFIG.roi, false, null, null, this.inputSource);
     }
   }
 
@@ -508,9 +594,57 @@ class BugDashApp {
           );
         }
 
+        // Update Jump Physics
+        if (this.jumpState.isJumping) {
+          this.jumpState.elapsed += dt;
+          this.jumpState.progress = Math.min(1.0, this.jumpState.elapsed / this.jumpState.duration);
+          if (this.jumpState.progress >= 1.0) {
+            this.jumpState.isJumping = false;
+            this.jumpState.progress = 0;
+          }
+        }
+
+        // Update Slide Physics
+        if (this.slideState.isSliding) {
+          this.slideState.elapsed += dt;
+          this.slideState.progress = Math.min(1.0, this.slideState.elapsed / this.slideState.duration);
+          if (this.slideState.progress >= 1.0) {
+            this.slideState.isSliding = false;
+            this.slideState.progress = 0;
+          }
+        }
+
+        // Check obstacle evasion rewards for jump and slide
+        if (this.jumpState.isJumping || this.slideState.isSliding) {
+          const checkRad = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
+          for (let i = 0; i < this.spawner.items.length; i++) {
+            const it = this.spawner.items[i];
+            if (it.isObstacle && !it.evaded && Math.hypot(it.x - this.playerX, it.y - GAME_CONFIG.playerY) < (checkRad + it.radius)) {
+              if (this.jumpState.isJumping && (it.type === "bug" || it.type === "bug_crash" || it.type === "drop_db" || it.type === "grade_f")) {
+                it.evaded = true;
+                this.gameState.addReward(50);
+                this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 80, "⚡ NHẢY NÉ CÚ PHÁP! (+50)", "#38bdf8");
+                sound.playBuffActive();
+              } else if (this.slideState.isSliding && (it.type === "deadline" || it.type === "conflict")) {
+                it.evaded = true;
+                this.gameState.addReward(50);
+                this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 20, "⚡ TRƯỢT NÉ DEADLINE! (+50)", "#f59e0b");
+                sound.playBuffActive();
+              }
+            }
+          }
+        }
+
         // Check Collisions (Catcher mode has slightly wider collector basket hitbox)
         const radius = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
-        const collidingIdx = CollisionSystem.findFirstCollision(this.playerX, this.spawner.items, GAME_CONFIG.playerY, radius);
+        const collidingIdx = CollisionSystem.findFirstCollision(
+          this.playerX,
+          this.spawner.items,
+          GAME_CONFIG.playerY,
+          radius,
+          this.jumpState.isJumping,
+          this.slideState.isSliding
+        );
         if (collidingIdx !== -1) {
           const item = this.spawner.items[collidingIdx];
 
@@ -578,7 +712,9 @@ class BugDashApp {
         this.gameState.isFever,
         renderSteerMode,
         (this.gameMode === GAME_MODES.DUEL) ? this.opponentData : null,
-        this.gameMode
+        this.gameMode,
+        this.jumpState,
+        this.slideState
       );
 
       requestAnimationFrame(loop);

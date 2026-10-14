@@ -37,6 +37,14 @@ export class LaneController {
     this.threshold = Math.max(0.04, Math.min(0.20, percent / 100));
   }
 
+  reset() {
+    this.currentLane = 1;
+    this.analogNormalizedX = 0.5;
+    this.analogTargetX = GAME_CONFIG.laneX[1];
+    this.manualOverride = false;
+    this.effectiveSteer = 0;
+  }
+
   setLane(newLane, isManual = false) {
     newLane = Math.max(0, Math.min(2, newLane));
     if (this.currentLane !== newLane) {
@@ -119,6 +127,30 @@ export class LaneController {
 
     if (target !== this.currentLane) {
       this.setLane(target, false);
+    }
+  }
+
+  updateFromHand(handStatus) {
+    if (!handStatus) return;
+    const rawX = handStatus.palmX; // Normalized 0..1 (already mirrored)
+    if (rawX === undefined || rawX === null) return;
+
+    // Smooth hand position using EMA (0.60 weight for responsive feel)
+    const emaAlpha = 0.60;
+    this.analogNormalizedX = this.analogNormalizedX * (1 - emaAlpha) + rawX * emaAlpha;
+    this.analogNormalizedX = Math.max(0.05, Math.min(0.95, this.analogNormalizedX));
+
+    if (this.steeringMode === STEERING_MODES.ANALOG) {
+      this.analogTargetX = GAME_CONFIG.roadMinX + this.analogNormalizedX * (GAME_CONFIG.roadMaxX - GAME_CONFIG.roadMinX);
+      this.updateLaneFromNormalized();
+    } else {
+      // 3-Lane Snap from hand position
+      let target = 1;
+      if (this.analogNormalizedX < 0.38) target = 0;
+      else if (this.analogNormalizedX > 0.62) target = 2;
+      if (target !== this.currentLane) {
+        this.setLane(target, false);
+      }
     }
   }
 }

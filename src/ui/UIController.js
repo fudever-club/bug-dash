@@ -3,6 +3,7 @@
 
 import { ApiClient } from "../api/apiClient.js";
 import { sound } from "../audio/SoundEngine.js";
+import { MODE_METADATA } from "../config.js";
 
 const $ = id => document.getElementById(id);
 
@@ -16,6 +17,12 @@ export class UIController {
       onToggleDebug: callbacks.onToggleDebug || (() => {}),
       onLaneSelect: callbacks.onLaneSelect || (() => {}),
       onStartCamera: callbacks.onStartCamera || (() => {}),
+      onSelectGameMode: callbacks.onSelectGameMode || (() => {}),
+      onSelectDuelType: callbacks.onSelectDuelType || (() => {}),
+      onStartSplitMatch: callbacks.onStartSplitMatch || (() => {}),
+      onToggleSteeringMode: callbacks.onToggleSteeringMode || (() => {}),
+      onSelectSteeringMode: callbacks.onSelectSteeringMode || (() => {}),
+      onSelectInputSource: callbacks.onSelectInputSource || (() => {}),
     };
 
     this.showDebug = false;
@@ -43,6 +50,12 @@ export class UIController {
       startCamera: $("startCamera"),
       btnCameraText: $("btnCameraText"),
       startScreenModal: $("startScreenModal"),
+      startModalBadge: $("startModalBadge"),
+      startModalTitle: $("startModalTitle"),
+      startModalDesc: $("startModalDesc"),
+      startRulesGrid: $("startRulesGrid"),
+      startModalMascot: $("startModalMascot"),
+      btnStartGameText: $("btnStartGameText"),
       gameOverModal: $("gameOverModal"),
       victoryModal: $("victoryModal"),
       gameOverScoreDesc: $("gameOverScoreDesc"),
@@ -52,6 +65,9 @@ export class UIController {
       btnVictoryRestart: $("btnVictoryRestart"),
       btnPolaroidGameOver: $("btnPolaroidGameOver"),
       btnPolaroidVictory: $("btnPolaroidVictory"),
+      btnInputFace: $("btnInputFace"),
+      btnInputHand: $("btnInputHand"),
+      controlInputBadge: $("controlInputBadge"),
       steeringModeBadge: $("steeringModeBadge"),
       btnModeSnap3: $("btnModeSnap3"),
       btnModeAnalog: $("btnModeAnalog"),
@@ -168,12 +184,26 @@ export class UIController {
       };
     }
 
+    // Input Source Toggle (Face vs Hand)
+    if (this.dom.btnInputFace) {
+      this.dom.btnInputFace.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectInputSource) this.callbacks.onSelectInputSource("face");
+      };
+    }
+    if (this.dom.btnInputHand) {
+      this.dom.btnInputHand.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectInputSource) this.callbacks.onSelectInputSource("hand");
+      };
+    }
+
     // Steering Mode Switch
     if (this.dom.btnModeSnap3) {
       this.dom.btnModeSnap3.onclick = () => {
         sound.playClick();
-        if (this.callbacks.onSetSteeringMode) {
-          this.callbacks.onSetSteeringMode("snap3");
+        if (this.callbacks.onSelectSteeringMode) {
+          this.callbacks.onSelectSteeringMode("snap3");
         } else if (this.callbacks.onToggleSteeringMode) {
           this.callbacks.onToggleSteeringMode();
         }
@@ -431,7 +461,24 @@ export class UIController {
     }
   }
 
-  drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null) {
+  updateInputSourceUI(source) {
+    const isHand = source === "hand";
+    if (this.dom.controlInputBadge) {
+      this.dom.controlInputBadge.textContent = isHand ? "BÀN TAY" : "LẮC ĐẦU";
+      this.dom.controlInputBadge.style.color = isHand ? "#10b981" : "var(--fpt-orange)";
+    }
+    if (this.dom.btnInputFace) {
+      this.dom.btnInputFace.classList.toggle("active-mode", !isHand);
+    }
+    if (this.dom.btnInputHand) {
+      this.dom.btnInputHand.classList.toggle("active-mode", isHand);
+    }
+    if (this.dom.pipStatusText) {
+      this.dom.pipStatusText.textContent = isHand ? "GIƠ TAY ĐỂ ĐIỀU KHIỂN" : "NHÌN VÀO GƯƠNG ĐỂ BẮT ĐẦU";
+    }
+  }
+
+  drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null, handStatus = null, inputSource = "face") {
     const cv = this.dom.overlayCanvas;
     if (!cv) return;
     const ctx = cv.getContext("2d");
@@ -443,6 +490,97 @@ export class UIController {
     const H = cv.height;
 
     ctx.clearRect(0, 0, W, H);
+
+    // ==========================================
+    // HAND TRACKING OVERLAY (MediaPipe Skeleton)
+    // ==========================================
+    if (inputSource === "hand") {
+      if (!handStatus || !handStatus.landmarks) {
+        ctx.fillStyle = "rgba(5, 8, 17, 0.70)";
+        ctx.beginPath();
+        ctx.roundRect(W * 0.08, H * 0.38, W * 0.84, 34, 6);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = "#10b981";
+        ctx.font = "700 10.5px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("GIƠ BÀN TAY TRƯỚC CAMERA ĐỂ ĐIỀU KHIỂN", W * 0.5, H * 0.38 + 21);
+        return;
+      }
+
+      const pts = handStatus.landmarks;
+
+      // Draw bone connections
+      const bones = [
+        [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
+        [0, 5], [5, 6], [6, 7], [7, 8],       // Index
+        [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+        [0, 13], [13, 14], [14, 15], [15, 16],// Ring
+        [0, 17], [17, 18], [18, 19], [19, 20],// Pinky
+        [5, 9], [9, 13], [13, 17]              // Palm base
+      ];
+
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.7)";
+      ctx.lineWidth = 2.5;
+      bones.forEach(([i, j]) => {
+        if (pts[i] && pts[j]) {
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x * W, pts[i].y * H);
+          ctx.lineTo(pts[j].x * W, pts[j].y * H);
+          ctx.stroke();
+        }
+      });
+
+      // Draw landmark joints
+      pts.forEach((pt, idx) => {
+        const px = pt.x * W;
+        const py = pt.y * H;
+        const isTip = (idx === 4 || idx === 8 || idx === 12 || idx === 16 || idx === 20);
+        ctx.fillStyle = isTip ? "#38bdf8" : "#10b981";
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = isTip ? 8 : 4;
+        ctx.beginPath();
+        ctx.arc(px, py, isTip ? 4.5 : 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Palm Center Target Ring
+      const cx = handStatus.palmX * W;
+      const cy = handStatus.palmY * H;
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Realtime Gesture Feedback Pill
+      let gestureText = "LÁI BÀN TAY (TRÁI / PHẢI)";
+      let gestureColor = "#10b981";
+      if (handStatus.isHighHand) {
+        gestureText = "NHẢY LÊN (JUMP)";
+        gestureColor = "#38bdf8";
+      } else if (handStatus.isLowHand) {
+        gestureText = "TRƯỢT XUỐNG (SLIDE)";
+        gestureColor = "#f59e0b";
+      }
+
+      ctx.fillStyle = "rgba(5, 8, 17, 0.85)";
+      ctx.beginPath();
+      ctx.roundRect(W * 0.12, H - 28, W * 0.76, 22, 6);
+      ctx.fill();
+      ctx.strokeStyle = gestureColor;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = gestureColor;
+      ctx.font = "800 10px 'Be Vietnam Pro', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(gestureText, W * 0.5, H - 14);
+      return;
+    }
 
     // ==========================================
     // SPLIT-SCREEN 1-CAMERA MULTIPLAYER OVERLAY
@@ -643,9 +781,39 @@ export class UIController {
     if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel" || mode === "splitscreen");
   }
 
-  showStartScreen() {
+  showStartScreenForMode(mode = "classic") {
     this.hideAllModals();
+    const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
+    if (this.dom.startModalBadge) {
+      this.dom.startModalBadge.textContent = meta.badge;
+      this.dom.startModalBadge.style.color = meta.badgeColor || "var(--fpt-orange)";
+    }
+    if (this.dom.startModalTitle) {
+      this.dom.startModalTitle.textContent = meta.title;
+    }
+    if (this.dom.startModalDesc) {
+      this.dom.startModalDesc.textContent = meta.desc;
+    }
+    if (this.dom.startModalMascot && meta.mascot) {
+      this.dom.startModalMascot.src = meta.mascot;
+    }
+    if (this.dom.btnStartGameText) {
+      this.dom.btnStartGameText.textContent = meta.ctaText;
+    }
+    if (this.dom.startRulesGrid && meta.rules) {
+      this.dom.startRulesGrid.innerHTML = meta.rules.map(r => `
+        <div class="rule-card">
+          <span class="rule-badge ${r.badgeClass}">${r.badge}</span>
+          <strong>${r.title}</strong>
+          <span>${r.desc}</span>
+        </div>
+      `).join("");
+    }
     if (this.dom.startScreenModal) this.dom.startScreenModal.classList.remove("hidden");
+  }
+
+  showStartScreen(mode = "classic") {
+    this.showStartScreenForMode(mode);
   }
 
   hideAllModals() {

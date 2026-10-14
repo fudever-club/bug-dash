@@ -75,18 +75,34 @@
           </div>
         </div>
 
-        <!-- Steering Mode Selector -->
-        <div class="steering-selector-box">
-          <div class="steering-selector-header">
-            <span>KIỂU ĐIỀU KHIỂN</span>
-            <span id="steeringModeBadge">3 LÀN NHẠY</span>
+        <!-- Camera Sensor Mode Selector (Face Head-Tilt vs Hand Gesture) -->
+        <div class="control-card-section">
+          <div class="section-label-row">
+            <span>CẢM BIẾN CAMERA</span>
+            <span id="controlInputBadge" class="status-pill">LẮC ĐẦU</span>
           </div>
-          <div class="steering-buttons-row">
+          <div class="btn-group-row">
+            <button class="btn-outline active-mode" id="btnInputFace">
+              Lắc Đầu (Mặt)
+            </button>
+            <button class="btn-outline" id="btnInputHand">
+              Bàn Tay & Cử Chỉ
+            </button>
+          </div>
+        </div>
+
+        <!-- Steering Mode Selector -->
+        <div class="control-card-section">
+          <div class="section-label-row">
+            <span>KIỂU ĐIỀU KHIỂN</span>
+            <span id="steeringModeBadge" class="status-pill">3 LÀN NHẠY</span>
+          </div>
+          <div class="btn-group-row">
             <button class="btn-outline active-mode" id="btnModeSnap3">
               3 Làn Nhạy
             </button>
             <button class="btn-outline" id="btnModeAnalog">
-              Lắc Đầu Tự Do (T)
+              Lái Tự Do (T)
             </button>
           </div>
         </div>
@@ -181,31 +197,32 @@
       <!-- Overlay Modals inside Stage -->
       <!-- 1. Start Screen -->
       <div class="game-state-modal" id="startScreenModal">
-        <img src="assets/player_running.png" alt="Buggy Running" class="modal-mascot-img">
-        <h2>NÉ BUG CHẠY DEADLINE</h2>
-        <p>Trải nghiệm né chướng ngại vật bằng chuyển động lắc đầu độc đáo tại Booth FU-DEVER!</p>
+        <img src="assets/player_running.png" alt="Buggy Running" id="startModalMascot" class="modal-mascot-img">
+        <span class="modal-mode-badge" id="startModalBadge">CHẾ ĐỘ NÉ BUG SOLO</span>
+        <h2 id="startModalTitle">NÉ BUG CHẠY DEADLINE</h2>
+        <p id="startModalDesc">Trải nghiệm né chướng ngại vật bằng chuyển động lắc đầu hoặc cử chỉ bàn tay tại Booth FU-DEVER!</p>
 
         <!-- 3 Quick Rule Cards -->
-        <div class="start-rules-grid">
-          <div class="rule-card avoid">
+        <div class="start-rules-grid" id="startRulesGrid">
+          <div class="rule-card">
             <span class="rule-badge avoid-badge">CẦN NÉ</span>
             <strong>Bug & Deadline</strong>
-            <span>Né Syntax Error & 23:59</span>
+            <span>Né Syntax Error & 23:59 (-1 Mạng)</span>
           </div>
-          <div class="rule-card loot">
-            <span class="rule-badge loot-badge">CẦN NHẶT</span>
+          <div class="rule-card">
+            <span class="rule-badge loot-badge">CẦN ĂN</span>
             <strong>Cà Phê & Clean Code</strong>
-            <span>Ăn cà phê x2 & PR Merged</span>
+            <span>Ăn Cà Phê x2 Combo, nhặt PR Merged</span>
           </div>
-          <div class="rule-card steer">
-            <span class="rule-badge steer-badge">CÁCH LÁI</span>
-            <strong>Nghiêng Đầu Tự Nhiên</strong>
-            <span>Lắc trái / phải trước camera</span>
+          <div class="rule-card">
+            <span class="rule-badge steer-badge">ĐIỀU KHIỂN</span>
+            <strong>Lắc Đầu / Bàn Tay</strong>
+            <span>Nghiêng đầu hoặc quét tay trái/phải, W/S nhảy trượt</span>
           </div>
         </div>
 
-        <button class="btn-primary" id="btnStartGame" style="padding:12px 32px; font-size:15px; margin-top:10px;">
-          Bắt Đầu Chơi Ngay (SPACE)
+        <button class="btn-primary" id="btnStartGame" style="padding:14px 36px; font-size:15px; margin-top:8px;">
+          <span id="btnStartGameText">Bắt Đầu Né Bug Solo (SPACE)</span>
         </button>
       </div>
 
@@ -240,49 +257,50 @@
       </div>
 
       <!-- 4. 1v1 Duel Network & Split-Screen Lobby Modal -->
-      <div class="game-state-modal hidden" id="duelLobbyModal" style="max-width:460px;">
-        <h2 style="color:var(--crimson-bad);" id="duelLobbyTitle">SONG ĐẤU 1V1</h2>
+      <div class="game-state-modal hidden" id="duelLobbyModal" style="max-width:520px; padding:36px 30px; gap:18px;">
+        <span class="modal-mode-badge" style="color:var(--crimson-bad); border-color:rgba(239, 68, 68, 0.4);">ĐỐI KHÁNG ĐỒNG ĐỘI</span>
+        <h2 style="color:#ffffff;" id="duelLobbyTitle">SONG ĐẤU 1V1</h2>
         
         <!-- Sub-Tabs: 2 Máy Wi-Fi vs 1 Máy Chung Camera -->
-        <div style="display:flex; gap:8px; width:100%; margin:8px 0 12px;">
-          <button class="btn-outline active-mode" id="btnDuelTabWifi" style="flex:1; font-size:12px; padding:7px 10px; justify-content:center;">
+        <div style="display:flex; gap:10px; width:100%; margin:4px 0 14px;">
+          <button class="btn-outline active-mode" id="btnDuelTabWifi" style="flex:1; font-size:12.5px; padding:9px 12px; justify-content:center;">
             2 Laptop (Wi-Fi/LAN)
           </button>
-          <button class="btn-outline" id="btnDuelTabSplit" style="flex:1; font-size:12px; padding:7px 10px; justify-content:center;">
+          <button class="btn-outline" id="btnDuelTabSplit" style="flex:1; font-size:12.5px; padding:9px 12px; justify-content:center;">
             1 Laptop (Chung Camera)
           </button>
         </div>
 
         <!-- Mode A: 2 Laptops over Wi-Fi -->
-        <div id="duelWifiSection" style="display:flex; flex-direction:column; gap:12px; width:100%;">
-          <p style="font-size:12px; color:var(--text-secondary); margin:0;">
-            Mỗi máy dùng camera riêng. Lắc đầu né deadline, ăn chuỗi combo để gửi bug bom tấn công máy đối thủ!
+        <div id="duelWifiSection" style="display:flex; flex-direction:column; gap:14px; width:100%;">
+          <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
+            Mỗi máy dùng webcam riêng. Lắc đầu né deadline, ăn chuỗi combo để gửi bug bom tấn công máy đối thủ!
           </p>
           <div>
             <input type="text" id="duelPlayerName" placeholder="Tên Bạn (VD: Hưng K20)" maxlength="15" 
-              style="width:100%; box-sizing:border-box; padding:8px 12px; border-radius:6px; background:#0f172a; border:1px solid var(--border-amber); color:#fff; font-size:13px;">
+              style="width:100%; box-sizing:border-box; padding:10px 14px; border-radius:8px; background:#0f172a; border:1px solid var(--border-amber); color:#fff; font-size:13px;">
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <!-- Host Room Section -->
-            <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
+            <div style="background:rgba(255,255,255,0.035); padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
               <span style="font-size:11px; font-weight:700; color:var(--dever-amber);">TẠO PHÒNG MÁY 1</span>
-              <button class="btn-primary" id="btnDuelCreateRoom" style="padding:8px 10px; font-size:12px; justify-content:center;">
+              <button class="btn-primary" id="btnDuelCreateRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
                 Tạo Mã Phòng
               </button>
-              <div id="duelCreatedCodeBox" class="hidden" style="text-align:center; padding:6px; background:rgba(245,158,11,0.1); border-radius:4px;">
+              <div id="duelCreatedCodeBox" class="hidden" style="text-align:center; padding:8px; background:rgba(245,158,11,0.1); border-radius:6px;">
                 <span style="font-size:10px; color:var(--text-muted);">MÃ PHÒNG:</span>
-                <div id="duelRoomCodeText" style="font-size:22px; font-family:'JetBrains Mono'; font-weight:800; color:var(--dever-amber);">----</div>
+                <div id="duelRoomCodeText" style="font-size:24px; font-family:'JetBrains Mono'; font-weight:800; color:var(--dever-amber); margin:2px 0;">----</div>
                 <span id="duelHostStatus" style="font-size:10px; color:var(--cyan-neon);">Chờ máy 2 nhập mã...</span>
               </div>
             </div>
 
             <!-- Join Room Section -->
-            <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
+            <div style="background:rgba(255,255,255,0.035); padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
               <span style="font-size:11px; font-weight:700; color:var(--cyan-neon);">VÀO PHÒNG MÁY 2</span>
               <input type="text" id="duelJoinCodeInput" placeholder="Mã 4 số (VD: 8821)" maxlength="6"
-                style="width:100%; box-sizing:border-box; padding:6px 10px; border-radius:4px; background:#0f172a; border:1px solid #334155; color:#fff; font-size:12px; font-family:'JetBrains Mono'; text-align:center;">
-              <button class="btn-outline" id="btnDuelJoinRoom" style="padding:8px 10px; font-size:12px; justify-content:center;">
+                style="width:100%; box-sizing:border-box; padding:8px 12px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:#fff; font-size:13px; font-family:'JetBrains Mono'; text-align:center;">
+              <button class="btn-outline" id="btnDuelJoinRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
                 Tham Gia Đấu
               </button>
             </div>
@@ -290,46 +308,46 @@
 
           <div id="duelLobbyMsg" style="font-size:12px; color:var(--dever-amber); font-weight:700; min-height:18px; text-align:center;"></div>
 
-          <div style="display:flex; gap:8px; justify-content:center; margin-top:4px;">
-            <button class="btn-primary hidden" id="btnDuelStartMatch" style="padding:10px 24px; font-size:14px; background:#10b981; border-color:#10b981;">
+          <div style="display:flex; gap:12px; justify-content:center; margin-top:6px;">
+            <button class="btn-primary hidden" id="btnDuelStartMatch" style="padding:11px 26px; font-size:14px; background:#10b981; border-color:#10b981;">
               Bắt Đầu Trận Đấu Ngay!
             </button>
-            <button class="btn-outline" id="btnCloseDuelLobby" style="padding:8px 16px; font-size:12px;">
-              Đóng / Về Chế Độ Solo
+            <button class="btn-outline" id="btnCloseDuelLobby" style="padding:10px 18px; font-size:12.5px;">
+              Đóng / Về Menu
             </button>
           </div>
         </div>
 
         <!-- Mode B: 1 Laptop Split-Screen (Chung 1 Camera) -->
-        <div id="duelSplitSection" class="hidden" style="display:flex; flex-direction:column; gap:12px; width:100%;">
-          <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+        <div id="duelSplitSection" class="hidden" style="display:flex; flex-direction:column; gap:14px; width:100%;">
+          <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
             Hai bạn cùng đứng kè vai trước webcam. Màn hình game chia đôi thành 2 đường đua đối kháng song song.
           </p>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div style="background:rgba(6,182,212,0.08); padding:10px; border-radius:8px; border:1px solid rgba(6,182,212,0.4); text-align:center;">
-              <span style="font-size:11px; font-weight:800; color:var(--cyan-neon);">NGƯỜI CHƠI 1 (TRÁI)</span>
-              <p style="font-size:11px; color:var(--text-muted); margin:4px 0;">Đứng nửa trái camera</p>
-              <div id="splitP1Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:4px; background:rgba(16,185,129,0.1); border-radius:4px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:rgba(6,182,212,0.08); padding:14px; border-radius:10px; border:1px solid rgba(6,182,212,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:11.5px; font-weight:800; color:var(--cyan-neon);">NGƯỜI CHƠI 1 (TRÁI)</span>
+              <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa trái camera</p>
+              <div id="splitP1Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
                 ĐANG DÒ MẶT P1
               </div>
             </div>
 
-            <div style="background:rgba(245,158,11,0.08); padding:10px; border-radius:8px; border:1px solid rgba(245,158,11,0.4); text-align:center;">
-              <span style="font-size:11px; font-weight:800; color:var(--dever-amber);">NGƯỜI CHƠI 2 (PHẢI)</span>
-              <p style="font-size:11px; color:var(--text-muted); margin:4px 0;">Đứng nửa phải camera</p>
-              <div id="splitP2Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:4px; background:rgba(16,185,129,0.1); border-radius:4px;">
+            <div style="background:rgba(245,158,11,0.08); padding:14px; border-radius:10px; border:1px solid rgba(245,158,11,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:11.5px; font-weight:800; color:var(--dever-amber);">NGƯỜI CHƠI 2 (PHẢI)</span>
+              <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa phải camera</p>
+              <div id="splitP2Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
                 ĐANG DÒ MẶT P2
               </div>
             </div>
           </div>
 
-          <div style="display:flex; gap:8px; justify-content:center; margin-top:4px;">
-            <button class="btn-primary" id="btnStartSplitMatch" style="padding:10px 24px; font-size:14px; background:#10b981; border-color:#10b981;">
+          <div style="display:flex; gap:12px; justify-content:center; margin-top:8px;">
+            <button class="btn-primary" id="btnStartSplitMatch" style="padding:12px 28px; font-size:14.5px; background:#10b981; border-color:#10b981;">
               Bắt Đầu Đấu Split-Screen Ngay!
             </button>
-            <button class="btn-outline" id="btnCloseSplitLobby" style="padding:8px 16px; font-size:12px;">
-              Đóng / Về Chế Độ Solo
+            <button class="btn-outline" id="btnCloseSplitLobby" style="padding:10px 18px; font-size:12.5px;">
+              Đóng / Về Menu
             </button>
           </div>
         </div>
@@ -374,13 +392,15 @@
   <!-- Footer Quick Bar -->
   <footer class="footer-bar">
     <div class="shortcuts-list">
-      <div><kbd>SPACE</kbd> Chơi / Tiếp tục</div>
-      <div><kbd>C</kbd> Calibrate tâm giữa</div>
-      <div><kbd>D</kbd> Bật/Tắt Debug</div>
-      <div><kbd>M</kbd> Bật/Tắt Âm thanh</div>
-      <div><kbd>←</kbd> <kbd>→</kbd> Giả lập đổi làn</div>
+      <div><kbd>SPACE</kbd> Chơi / Nhảy</div>
+      <div><kbd>↑ / W</kbd> Nhảy qua bug</div>
+      <div><kbd>↓ / S</kbd> Trượt lách deadline</div>
+      <div><kbd>←</kbd> <kbd>→</kbd> Chuyển làn</div>
+      <div><kbd>C</kbd> Calibrate tâm</div>
+      <div><kbd>T</kbd> Đổi kiểu lái</div>
+      <div><kbd>M</kbd> Âm thanh</div>
     </div>
-    <div>CLB LẬP TRÌNH FU-DEVER • WORK HARD, PLAY HARD</div>
+    <div>CLB LẬP TRÌNH FU-DEVER • BOOTH FPTU 2026</div>
   </footer>
 </div>
 
@@ -390,10 +410,11 @@
     <h3>Hướng Dẫn Né Bug Chạy Deadline</h3>
     <p>Chào mừng bạn đến với gian hàng trải nghiệm công nghệ của <strong>CLB Lập Trình FU-DEVER (Đại học FPT Đà Nẵng)</strong>!</p>
     <ul>
-      <li><strong>1. Camera:</strong> Bấm <em>"Bật Camera Điều Khiển"</em>. Đứng thẳng và giữ mặt trong khung vàng 1 giây để khóa người chơi.</li>
-      <li><strong>2. Đổi làn:</strong> Nghiêng hoặc dịch đầu sang <strong>Trái / Giữa / Phải</strong> để điều khiển chú bọ Buggy.</li>
-      <li><strong>3. Né tránh:</strong> Bug đỏ (Syntax Error), Deadline 23:59 và Điểm F gây trừ mạng hoặc điểm số.</li>
-      <li><strong>4. Nhặt thưởng:</strong> Cà phê FPTU (+Tốc độ & x2 Điểm) và Clean Code (+50 Điểm PR Merged).</li>
+      <li><strong>1. Camera:</strong> Bấm <em>"Bật Camera Điều Khiển"</em>. Có thể chọn cảm biến <strong>Lắc Đầu</strong> hoặc <strong>Cử Chỉ Bàn Tay</strong>.</li>
+      <li><strong>2. Đổi làn:</strong> Nghiêng đầu hoặc quét bàn tay sang <strong>Trái / Giữa / Phải</strong> để Buggy lướt theo bạn.</li>
+      <li><strong>3. Nhảy & Trượt:</strong> Giơ tay cao / bấm <strong>W / ↑</strong> để <em>Nhảy</em> qua bug mặt đất; hạ tay thấp / bấm <strong>S / ↓</strong> để <em>Trượt</em> cúi người qua đồng hồ deadline!</li>
+      <li><strong>4. Nhặt thưởng:</strong> Cà phê FPTU (+Tốc độ & x2 Điểm), Clean Code (+50đ) và Sao Vàng (+150đ).</li>
+      <li><strong>5. Đa chế độ:</strong> Bấm chọn <strong>Hứng PR Merged</strong>, <strong>FPT Highway Racer</strong> hoặc <strong>Song Đấu 1v1</strong> trên thanh menu!</li>
     </ul>
     <button class="btn-outline" id="btnCloseHelp" style="align-self:flex-end; margin-top:8px;">Đã Hiểu</button>
   </div>

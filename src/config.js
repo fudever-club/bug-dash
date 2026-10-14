@@ -21,12 +21,72 @@ export const STEERING_MODES = {
   ANALOG: "analog"                 // Lắc đầu tự do (Continuous Analog / Highway Racer)
 };
 
+export const CONTROL_INPUTS = {
+  FACE: "face",                    // Cảm biến mặt & lắc đầu
+  HAND: "hand"                     // Cảm biến bàn tay & ngón tay (Swipe Up / Down)
+};
+
 export const GAME_MODES = {
   CLASSIC: "classic",              // Né Bug Chạy Deadline (Solo Arcade)
   CATCHER: "catcher",              // Hứng PR Merged (Analog Basket Catcher)
   HIGHWAY: "highway",              // FPT Highway Racer (Đua Xe Cao Tốc FPTU)
   DUEL: "duel",                    // Song Đấu 1v1 (2 Laptops qua Wi-Fi/LAN)
   SPLIT_SCREEN: "splitscreen"      // Song Đấu 1 Máy (Chung 1 Camera Chia Đôi Màn Hình)
+};
+
+export const MODE_METADATA = {
+  [GAME_MODES.CLASSIC]: {
+    badge: "CHẾ ĐỘ NÉ BUG SOLO",
+    badgeColor: "var(--fpt-orange)",
+    title: "NÉ BUG CHẠY DEADLINE",
+    mascot: "assets/player_running.png",
+    desc: "Đua với deadline 23:59 bằng camera lắc đầu hoặc cử chỉ bàn tay. Né Syntax Error, nhặt cà phê tăng tốc để giành điểm số cao nhất!",
+    rules: [
+      { badge: "CẦN NÉ", badgeClass: "avoid-badge", title: "Bug & Deadline", desc: "Né Syntax Error & 23:59 (-1 Mạng)" },
+      { badge: "CẦN ĂN", badgeClass: "loot-badge", title: "Cà Phê & Clean Code", desc: "Ăn Cà Phê x2 Combo, nhặt PR Merged" },
+      { badge: "ĐIỀU KHIỂN", badgeClass: "steer-badge", title: "Lắc Đầu / Bàn Tay", desc: "Nghiêng đầu hoặc quét tay trái/phải, W/S nhảy trượt" }
+    ],
+    ctaText: "Bắt Đầu Né Bug Solo (SPACE)"
+  },
+  [GAME_MODES.CATCHER]: {
+    badge: "MINIGAME HỨNG CODE MERGED",
+    badgeColor: "#10b981",
+    title: "HỨNG PR & GIT CRYSTAL",
+    mascot: "assets/buggy_champion.png",
+    desc: "Trang bị giỏ hứng công nghệ PR Catcher! Lái Buggy di chuyển liên tục gom trọn Pull Request, Git Crystal và Sao Vàng, tránh xa Syntax Error!",
+    rules: [
+      { badge: "CẦN HỨNG", badgeClass: "loot-badge", title: "PR Merged & Sao Vàng", desc: "Hứng PR Merged +100đ, Sao Vàng +150đ" },
+      { badge: "CẦN TRÁNH", badgeClass: "avoid-badge", title: "Server Crash & Drop DB", desc: "Tránh né bug 500 đỏ và thùng sập database" },
+      { badge: "CƠ CHẾ LÁI", badgeClass: "steer-badge", title: "Lái Tự Do (Analog)", desc: "Di chuyển tự do mượt mà không giới hạn 3 làn" }
+    ],
+    ctaText: "Bắt Đầu Hứng PR Merged (SPACE)"
+  },
+  [GAME_MODES.HIGHWAY]: {
+    badge: "ĐUA XE CAO TỐC FPTU — TỐC ĐỘ X1.5",
+    badgeColor: "#f59e0b",
+    title: "FPT HIGHWAY RACER",
+    mascot: "assets/player_running.png",
+    desc: "Lướt trên đại lộ FPT University Đà Nẵng với tốc độ cao! Lắc đầu hoặc quét tay drift tự do lách qua các chướng ngại vật xuất hiện liên tục.",
+    rules: [
+      { badge: "TỐC ĐỘ CAO", badgeClass: "avoid-badge", title: "Tốc Độ Gấp 1.5 Lần", desc: "Đường băng trôi nhanh, chướng ngại vật dồn dập" },
+      { badge: "DRIFT TỰ DO", badgeClass: "steer-badge", title: "Lái Tự Do Không Làn", desc: "Nghiêng đầu hoặc quét tay drift mượt mà" },
+      { badge: "NITRO BOOST", badgeClass: "loot-badge", title: "Bình Nitro NOS", desc: "Ăn bình Nitro để kích hoạt Fever Mode 5s" }
+    ],
+    ctaText: "Vào Đua FPT Highway Ngay (SPACE)"
+  },
+  [GAME_MODES.DUEL]: {
+    badge: "ĐỐI KHÁNG ĐỒNG ĐỘI",
+    badgeColor: "#ef4444",
+    title: "SONG ĐẤU 1V1",
+    mascot: "assets/player_running.png",
+    desc: "Thử tài so trình né deadline giữa 2 lập trình viên! Chọn đấu 2 máy qua Wi-Fi/LAN hoặc 2 người cùng chơi trên 1 webcam máy tính.",
+    rules: [
+      { badge: "1 MÁY CHUNG CAM", badgeClass: "steer-badge", title: "Split-Screen", desc: "2 bạn cùng đứng trước webcam chia đôi màn hình" },
+      { badge: "2 MÁY WI-FI", badgeClass: "loot-badge", title: "Mạng LAN / Wi-Fi", desc: "Tạo phòng 4 số, mỗi máy dùng 1 webcam riêng" },
+      { badge: "PHẢN CÔNG", badgeClass: "avoid-badge", title: "Tấn Công Đối Thủ", desc: "Ăn chuỗi combo để bắn deadline sang máy đối thủ" }
+    ],
+    ctaText: "Mở Sảnh Chờ Song Đấu"
+  }
 };
 
 export const GAME_CONFIG = {
