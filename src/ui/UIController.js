@@ -482,7 +482,7 @@ export class UIController {
         ctx.fillStyle = "#06b6d4";
         ctx.fillRect(bx, by - 18, 64, 18);
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.font = "700 10px 'Be Vietnam Pro', sans-serif";
         ctx.fillText(p1.phase === "lock" ? "P1 LOCKED" : "P1 DÒ MẶT", bx + 4, by - 5);
       }
 
@@ -501,7 +501,7 @@ export class UIController {
         ctx.fillStyle = "#f59e0b";
         ctx.fillRect(bx, by - 18, 64, 18);
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.font = "700 10px 'Be Vietnam Pro', sans-serif";
         ctx.fillText(p2.phase === "lock" ? "P2 LOCKED" : "P2 DÒ MẶT", bx + 4, by - 5);
       }
 
@@ -629,7 +629,7 @@ export class UIController {
 
       // Degree readout
       ctx.fillStyle = Math.abs(deg) > 7 ? "#f59e0b" : "#ffffff";
-      ctx.font = "bold 10px 'JetBrains Mono', monospace";
+      ctx.font = "700 10px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
       const steerText = deg < -7 ? "NGHIÊNG TRÁI" : (deg > 7 ? "NGHIÊNG PHẢI" : "TÂM THẲNG");
       ctx.fillText(`${steerText} (${deg > 0 ? '+' : ''}${deg}°)`, centerX, H - 4);
@@ -786,7 +786,7 @@ export class UIController {
 
     // 3. Caption / Polaroid Label Area
     ctx.fillStyle = "#0f172a";
-    ctx.font = "800 24px 'Space Grotesk', sans-serif";
+    ctx.font = "800 24px 'Be Vietnam Pro', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText("FU-DEVER BUG DASH 2026", 36, 620);
 

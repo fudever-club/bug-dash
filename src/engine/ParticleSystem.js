@@ -82,7 +82,7 @@ export class ParticleSystem {
       ctx.fillStyle = ft.color;
       ctx.shadowColor = ft.color;
       ctx.shadowBlur = 10;
-      ctx.font = "bold 13px 'JetBrains Mono', monospace";
+      ctx.font = "800 13px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(ft.text, ft.x, ft.y);
       ctx.restore();

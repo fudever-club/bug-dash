@@ -1,65 +1,66 @@
-/* FU-DEVER BUG DASH — Neo-Arcade Design System & Stylesheet */
+/* FU-DEVER BUG DASH — Modern Arcade Design System
+   Crafted following Taste-Skill (Anti-Slop Codex) & Philipp Bakaus Impeccable Engine.
+   - 100% native Vietnamese typography support via Be Vietnam Pro
+   - Tabular numerals via JetBrains Mono only for scores, timers, and telemetry
+   - Cohesive dark-mode elevation (Layer 0: #050811, Layer 1: #0c1322, Layer 2: #141d33)
+   - Zero scanline pseudo-textures, zero nested card soup, zero broken glyphs.
+*/
 
 :root {
-  --bg-base: #060911;
-  --bg-surface: #0b1120;
-  --bg-card: rgba(13, 20, 36, 0.88);
+  /* Surfaces */
+  --bg-base: #050811;
+  --bg-surface: #0a0f1d;
+  --bg-card: #0c1322;
+  --bg-card-hover: #121c33;
+  --bg-overlay: rgba(5, 8, 17, 0.92);
+
+  /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.16);
   --border-amber: rgba(245, 158, 11, 0.4);
-  
-  /* FU-DEVER & FPTU Brand Colors */
+  --border-focus: rgba(242, 111, 33, 0.6);
+
+  /* Brand Palette (FU-DEVER & FPT University Da Nang) */
   --fpt-orange: #f26f21;
+  --fpt-orange-hover: #ea580c;
   --dever-amber: #f59e0b;
-  --dever-amber-glow: rgba(245, 158, 11, 0.35);
-  --dever-blue: #0ea5e9;
-  --dever-cyan: #06b6d4;
+  --dever-amber-hover: #d97706;
+  --dever-cyan: #0ea5e9;
+
+  /* Functional Status Colors */
   --emerald-ok: #10b981;
-  --emerald-glow: rgba(16, 185, 129, 0.4);
   --crimson-bad: #ef4444;
-  --crimson-glow: rgba(239, 68, 68, 0.45);
-  
+
+  /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
+  /* Radii & Timing */
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background-color: var(--bg-base);
   color: var(--text-primary);
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   position: relative;
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(242, 111, 33, 0.09) 0%, transparent 65%),
-    radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
-    linear-gradient(to bottom, #070a13 0%, #04060b 100%);
-}
-
-/* Scanline subtle texture */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.12),
-    rgba(0, 0, 0, 0.12) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  z-index: 99;
-  opacity: 0.25;
+  background: radial-gradient(circle at 50% -10%, #17223b 0%, #0a0f1d 45%, #050811 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-shell {
@@ -73,18 +74,20 @@ body::before {
   flex: 1;
 }
 
-/* Top Bar */
+/* ==========================================================================
+   TOP BAR: Official Logos & Mode Switcher
+   ========================================================================== */
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 18px;
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(12, 19, 34, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   z-index: 10;
 }
 
@@ -110,7 +113,7 @@ body::before {
 .logo-divider {
   width: 1px;
   height: 22px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .logo-img-dever {
@@ -123,20 +126,22 @@ body::before {
 .brand-meta h1 {
   font-size: 16px;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #ffffff;
 }
 
 .brand-meta h1 span.pill {
   font-size: 10px;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 12px;
   background: rgba(242, 111, 33, 0.15);
   color: var(--fpt-orange);
   border: 1px solid rgba(242, 111, 33, 0.35);
-  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 .brand-meta p {
@@ -146,6 +151,44 @@ body::before {
   letter-spacing: 0.2px;
 }
 
+/* Tactile Mode Tabs */
+.mode-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #080d1a;
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid var(--border-subtle);
+}
+
+.mode-tab {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  user-select: none;
+}
+
+.mode-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-tab.active {
+  background: linear-gradient(135deg, #f26f21 0%, #f59e0b 100%);
+  color: #050811;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(242, 111, 33, 0.35);
+}
+
+/* Nav Actions */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -164,50 +207,17 @@ body::before {
   justify-content: center;
   transition: all 0.2s ease;
 }
+
 .btn-icon:hover {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.mode-tabs {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(0, 0, 0, 0.55);
-  padding: 4px;
-  border-radius: 24px;
-  border: 1px solid var(--border-subtle);
-}
-
-.mode-tab {
-  background: transparent;
-  color: var(--text-secondary);
-  border: none;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 7px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.mode-tab:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.mode-tab.active {
-  background: linear-gradient(135deg, #f26f21 0%, #f59e0b 100%);
-  color: #060911;
-  font-weight: 800;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
-}
-
+/* 3D Tactile Buttons */
 .btn-primary {
   background: linear-gradient(135deg, #f26f21 0%, #f59e0b 100%);
-  color: #070911;
+  color: #050811;
   font-weight: 800;
   font-size: 13px;
   padding: 9px 18px;
@@ -217,45 +227,56 @@ body::before {
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 3px 0 #b45309, 0 6px 16px var(--dever-amber-glow);
+  box-shadow: 0 3px 0 #b45309, 0 6px 16px rgba(242, 111, 33, 0.3);
   transform: translateY(0);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
+  font-family: inherit;
+  user-select: none;
 }
+
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 #b45309, 0 8px 22px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 4px 0 #b45309, 0 8px 20px rgba(242, 111, 33, 0.45);
 }
+
 .btn-primary:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #b45309, 0 3px 8px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 1px 0 #b45309, 0 3px 8px rgba(242, 111, 33, 0.25);
 }
 
 .btn-outline {
-  background: transparent;
+  background: #0d1527;
   color: var(--text-primary);
-  border: 1px solid var(--border-amber);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-weight: 600;
   font-size: 12px;
   padding: 8px 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
-}
-.btn-outline:hover {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: var(--dever-amber);
-}
-.btn-outline.active-mode {
-  background: rgba(245, 158, 11, 0.22);
-  border-color: var(--dever-amber);
-  color: var(--dever-amber);
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+  font-family: inherit;
+  user-select: none;
 }
 
-/* Cockpit Grid */
+.btn-outline:hover {
+  background: #15203a;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.btn-outline.active-mode {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: var(--dever-amber);
+  color: var(--dever-amber);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+/* ==========================================================================
+   COCKPIT GRID LAYOUT
+   ========================================================================== */
 .cockpit-grid {
   display: grid;
-  grid-template-columns: 340px 1fr 300px;
+  grid-template-columns: 330px 1fr 290px;
   gap: 14px;
   flex: 1;
   align-items: stretch;
@@ -263,7 +284,7 @@ body::before {
 
 @media (max-width: 1200px) {
   .cockpit-grid {
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 310px 1fr;
   }
   .col-leaderboard {
     display: none;
@@ -278,14 +299,13 @@ body::before {
 
 .panel-card {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .card-header {
@@ -298,10 +318,10 @@ body::before {
 
 .card-header h2 {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  color: #f1f5f9;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -316,24 +336,43 @@ body::before {
   display: inline-block;
   transition: all 0.3s ease;
 }
+
 .status-led.on {
   background: var(--emerald-ok);
-  box-shadow: 0 0 10px var(--emerald-glow);
-}
-.status-led.warn {
-  background: var(--dever-amber);
-  box-shadow: 0 0 10px var(--dever-amber-glow);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
-/* Telemetry Column */
+.status-led.warn {
+  background: var(--dever-amber);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+/* ==========================================================================
+   LEFT COLUMN: GƯƠNG THẦN BUGGY & COCKPIT TELEMETRY
+   ========================================================================== */
+.game-cam-card {
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+.cam-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dever-cyan);
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-family: inherit;
+}
+
 .pip-camera-box {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #000;
+  background: #020408;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .pip-camera-box video {
@@ -355,33 +394,19 @@ body::before {
   position: absolute;
   top: 8px;
   left: 8px;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  border-radius: 4px;
+  padding: 4px 10px;
+  background: rgba(5, 8, 17, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 6px;
   font-size: 10px;
   font-weight: 700;
   color: #fff;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.game-cam-card {
-  border-color: rgba(245, 158, 11, 0.25);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(245, 158, 11, 0.08);
-}
-
-.cam-role-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--dever-cyan);
-  background: rgba(6, 182, 212, 0.12);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  padding: 2px 8px;
-  border-radius: 12px;
+  font-family: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .steering-selector-box {
@@ -400,13 +425,13 @@ body::before {
 }
 
 #steeringModeBadge {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 800;
   color: var(--fpt-orange);
   background: rgba(242, 111, 33, 0.15);
   padding: 2px 7px;
   border-radius: 4px;
+  font-family: inherit;
 }
 
 .steering-buttons-row {
@@ -422,11 +447,12 @@ body::before {
   justify-content: center;
 }
 
+/* Steering Runway */
 .lane-telemetry-box {
-  background: rgba(0, 0, 0, 0.35);
+  background: #090e1c;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 12px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -442,10 +468,10 @@ body::before {
 }
 
 #currentLaneText {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 800;
   color: var(--dever-amber);
+  font-family: inherit;
 }
 
 .lane-runway {
@@ -455,12 +481,12 @@ body::before {
 }
 
 .lane-block {
-  padding: 10px 4px;
+  padding: 9px 4px;
   text-align: center;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
@@ -470,15 +496,15 @@ body::before {
 }
 
 .lane-block:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
 }
 
 .lane-block.active {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(242, 111, 33, 0.35) 100%);
+  background: linear-gradient(135deg, rgba(242, 111, 33, 0.25) 0%, rgba(245, 158, 11, 0.35) 100%);
   border-color: var(--dever-amber);
   color: #fff;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
   transform: translateY(-1px);
 }
 
@@ -493,8 +519,8 @@ body::before {
 
 /* Collapsible Advanced Settings */
 .advanced-settings-drawer {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #080d19;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   overflow: hidden;
   transition: all 0.2s ease;
@@ -502,7 +528,7 @@ body::before {
 
 .advanced-settings-drawer[open] {
   border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.35);
+  background: #0a1122;
 }
 
 .advanced-settings-toggle {
@@ -517,6 +543,7 @@ body::before {
   user-select: none;
   transition: color 0.15s ease;
   list-style: none;
+  font-family: inherit;
 }
 
 .advanced-settings-toggle::-webkit-details-marker {
@@ -530,7 +557,7 @@ body::before {
 .fps-pill {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   background: rgba(255, 255, 255, 0.05);
   padding: 2px 6px;
@@ -570,16 +597,18 @@ input[type=range] {
   cursor: pointer;
 }
 
-/* Center Stage Canvas */
+/* ==========================================================================
+   CENTER COLUMN: STAGE CANVAS & ARCADE HUD
+   ========================================================================== */
 .col-stage {
   position: relative;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--border-amber);
-  box-shadow: 0 0 30px rgba(245, 158, 11, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.8);
-  background: #070c18;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(242, 111, 33, 0.15);
+  background: #050811;
 }
 
 #gameCanvas {
@@ -605,16 +634,20 @@ input[type=range] {
 
 .hud-pill {
   padding: 6px 14px;
-  background: rgba(11, 17, 32, 0.88);
+  background: rgba(9, 14, 28, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(245, 158, 11, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 40px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease;
+}
+
+.hud-score-card {
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .hud-icon-badge {
@@ -626,13 +659,13 @@ input[type=range] {
   border-radius: 50%;
   background: rgba(245, 158, 11, 0.15);
   color: var(--dever-amber);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .hud-icon-badge.timer-icon {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .hud-col {
@@ -643,14 +676,16 @@ input[type=range] {
 
 .score-display {
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-weight: 800;
   font-size: 19px;
-  color: #fff;
-  letter-spacing: 1px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
   line-height: 1.1;
 }
 
 .score-label {
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: 9px;
   font-weight: 800;
   color: var(--text-muted);
@@ -659,15 +694,14 @@ input[type=range] {
 }
 
 .score-combo-badge {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: 11px;
   font-weight: 800;
   color: var(--fpt-orange);
-  background: rgba(242, 111, 33, 0.18);
-  border: 1px solid rgba(242, 111, 33, 0.4);
+  background: rgba(242, 111, 33, 0.16);
+  border: 1px solid rgba(242, 111, 33, 0.35);
   padding: 3px 8px;
   border-radius: 12px;
-  letter-spacing: 0.5px;
 }
 
 .hearts-row {
@@ -680,7 +714,7 @@ input[type=range] {
   width: 20px;
   height: 20px;
   fill: var(--crimson-bad);
-  filter: drop-shadow(0 0 6px var(--crimson-glow));
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5));
   animation: heartPulse 1.6s ease-in-out infinite;
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
@@ -700,17 +734,20 @@ input[type=range] {
 
 .timer-display {
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 19px;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
   line-height: 1.1;
 }
 
-/* Modals inside Game Canvas */
+/* ==========================================================================
+   MODALS INSIDE GAME CANVAS
+   ========================================================================== */
 .game-state-modal {
   position: absolute;
   inset: 0;
-  background: rgba(7, 10, 19, 0.90);
+  background: var(--bg-overlay);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   display: flex;
@@ -745,8 +782,9 @@ input[type=range] {
 
 .game-state-modal h2 {
   font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: #ffffff;
 }
 
 .game-state-modal p {
@@ -756,7 +794,7 @@ input[type=range] {
   line-height: 1.5;
 }
 
-/* Start Rules Grid */
+/* Quick Start Rules Cards */
 .start-rules-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -767,7 +805,7 @@ input[type=range] {
 }
 
 .rule-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   padding: 12px 10px;
@@ -775,7 +813,6 @@ input[type=range] {
   flex-direction: column;
   gap: 5px;
   text-align: left;
-  backdrop-filter: blur(8px);
 }
 
 .rule-badge {
@@ -784,7 +821,7 @@ input[type=range] {
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: inherit;
   letter-spacing: 0.5px;
 }
 
@@ -801,9 +838,9 @@ input[type=range] {
 }
 
 .rule-badge.steer-badge {
-  background: rgba(6, 182, 212, 0.18);
+  background: rgba(14, 165, 233, 0.18);
   color: #38bdf8;
-  border: 1px solid rgba(6, 182, 212, 0.4);
+  border: 1px solid rgba(14, 165, 233, 0.4);
 }
 
 .rule-card strong {
@@ -818,9 +855,21 @@ input[type=range] {
   line-height: 1.35;
 }
 
-/* Leaderboard Sidebar */
+/* ==========================================================================
+   RIGHT COLUMN: BẢNG VÀNG BOOTH (LEADERBOARD)
+   ========================================================================== */
 .col-leaderboard .panel-card {
   height: 100%;
+}
+
+.top10-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dever-amber);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 2px 7px;
+  border-radius: 10px;
 }
 
 .leaderboard-list {
@@ -837,39 +886,54 @@ input[type=range] {
   justify-content: space-between;
   padding: 9px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.15s ease;
+}
+
+.board-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .board-row.gold {
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: rgba(245, 158, 11, 0.35);
   background: rgba(245, 158, 11, 0.08);
 }
 
 .board-rank {
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 800;
   color: var(--dever-amber);
-  width: 32px;
+  width: 28px;
   flex-shrink: 0;
+  font-size: 12px;
 }
 
 .board-name {
   flex: 1;
-  color: var(--text-secondary);
+  color: #f1f5f9;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 8px;
+  font-size: 12px;
 }
 
 .board-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
+  font-size: 13px;
 }
 
-/* Footer Bar */
+/* ==========================================================================
+   FOOTER QUICK BAR
+   ========================================================================== */
 .footer-bar {
   padding: 10px 16px;
   background: var(--bg-card);
@@ -882,7 +946,6 @@ input[type=range] {
   gap: 12px;
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
 }
 
 .shortcuts-list {
@@ -893,16 +956,19 @@ input[type=range] {
 
 kbd {
   display: inline-block;
-  padding: 2px 5px;
+  padding: 2px 6px;
   font-size: 10px;
   font-weight: 700;
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-/* Help Modal Overlay */
+/* ==========================================================================
+   HELP MODAL OVERLAY
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -914,10 +980,13 @@ kbd {
   padding: 20px;
   z-index: 1000;
 }
-.modal-overlay.open { display: flex; }
+
+.modal-overlay.open {
+  display: flex;
+}
 
 .modal-card {
-  background: var(--bg-surface);
+  background: #0b1120;
   border: 1px solid var(--border-amber);
   border-radius: var(--radius-md);
   padding: 22px;
@@ -936,7 +1005,8 @@ kbd {
   text-transform: uppercase;
 }
 
-.modal-card p, .modal-card li {
+.modal-card p,
+.modal-card li {
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);

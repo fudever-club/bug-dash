@@ -231,7 +231,7 @@ export class RoadRenderer {
 
       // Opponent Info
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 11px 'JetBrains Mono', monospace";
+      ctx.font = "700 11px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(`${opponentData.name || 'ĐỐI THỦ'}: ${opponentData.score || 0}`, barX + 12, barY + 21);
 
@@ -403,7 +403,7 @@ export class RoadRenderer {
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 11px 'JetBrains Mono', monospace";
+    ctx.font = "700 11px 'Be Vietnam Pro', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText(`P1 (CYAN): ${p1.score || 0}`, 30, 36);
 
@@ -424,7 +424,7 @@ export class RoadRenderer {
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 11px 'JetBrains Mono', monospace";
+    ctx.font = "700 11px 'Be Vietnam Pro', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText(`P2 (AMBER): ${p2.score || 0}`, 450, 36);
 
@@ -1020,7 +1020,7 @@ export class RoadRenderer {
 
         // Bold Varsity Letter 'F'
         ctx.fillStyle = "#ffffff";
-        ctx.font = `900 ${Math.round(R * 1.1)}px 'Space Grotesk', 'Be Vietnam Pro', sans-serif`;
+        ctx.font = `900 ${Math.round(R * 1.1)}px 'Be Vietnam Pro', sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("F", 0, R * 0.04);
@@ -1111,7 +1111,7 @@ export class RoadRenderer {
         ctx.stroke();
 
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${Math.round(10 * scale)}px 'JetBrains Mono', monospace`;
+        ctx.font = `700 ${Math.round(10 * scale)}px 'Be Vietnam Pro', sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(it.label || "?", 0, 1);
