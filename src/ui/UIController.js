@@ -55,6 +55,27 @@ export class UIController {
       steeringModeBadge: $("steeringModeBadge"),
       btnModeSnap3: $("btnModeSnap3"),
       btnModeAnalog: $("btnModeAnalog"),
+      tabModeClassic: $("tabModeClassic"),
+      tabModeHighway: $("tabModeHighway"),
+      tabModeDuel: $("tabModeDuel"),
+      duelLobbyModal: $("duelLobbyModal"),
+      duelPlayerName: $("duelPlayerName"),
+      btnDuelCreateRoom: $("btnDuelCreateRoom"),
+      duelCreatedCodeBox: $("duelCreatedCodeBox"),
+      duelRoomCodeText: $("duelRoomCodeText"),
+      duelHostStatus: $("duelHostStatus"),
+      duelJoinCodeInput: $("duelJoinCodeInput"),
+      btnDuelJoinRoom: $("btnDuelJoinRoom"),
+      duelLobbyMsg: $("duelLobbyMsg"),
+      btnDuelStartMatch: $("btnDuelStartMatch"),
+      btnCloseDuelLobby: $("btnCloseDuelLobby"),
+      duelResultModal: $("duelResultModal"),
+      duelResultTitle: $("duelResultTitle"),
+      duelResultDesc: $("duelResultDesc"),
+      duelMyScore: $("duelMyScore"),
+      duelOpponentScore: $("duelOpponentScore"),
+      btnDuelPlayAgain: $("btnDuelPlayAgain"),
+      btnDuelExit: $("btnDuelExit"),
       recal: $("recal"),
       thr: $("thr"),
       thrVal: $("thrVal"),
@@ -72,6 +93,26 @@ export class UIController {
       this.dom.btnSound.onclick = () => {
         const enabled = sound.toggleSound();
         this.updateSoundIcons(enabled);
+      };
+    }
+
+    // Game Mode Tabs
+    if (this.dom.tabModeClassic) {
+      this.dom.tabModeClassic.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
+      };
+    }
+    if (this.dom.tabModeHighway) {
+      this.dom.tabModeHighway.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("highway");
+      };
+    }
+    if (this.dom.tabModeDuel) {
+      this.dom.tabModeDuel.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("duel");
       };
     }
 
@@ -94,6 +135,59 @@ export class UIController {
         } else if (this.callbacks.onToggleSteeringMode) {
           this.callbacks.onToggleSteeringMode();
         }
+      };
+    }
+
+    // Duel Lobby Event Handlers
+    if (this.dom.btnDuelCreateRoom) {
+      this.dom.btnDuelCreateRoom.onclick = () => {
+        sound.playClick();
+        const name = (this.dom.duelPlayerName && this.dom.duelPlayerName.value.trim()) || "Host Dev";
+        if (this.callbacks.onDuelCreateRoom) this.callbacks.onDuelCreateRoom(name);
+      };
+    }
+
+    if (this.dom.btnDuelJoinRoom) {
+      this.dom.btnDuelJoinRoom.onclick = () => {
+        sound.playClick();
+        const code = (this.dom.duelJoinCodeInput && this.dom.duelJoinCodeInput.value.trim()) || "";
+        const name = (this.dom.duelPlayerName && this.dom.duelPlayerName.value.trim()) || "Challenger Dev";
+        if (!code) {
+          this.setDuelLobbyMessage("Vui lòng nhập mã phòng 4 số!");
+          return;
+        }
+        if (this.callbacks.onDuelJoinRoom) this.callbacks.onDuelJoinRoom(code, name);
+      };
+    }
+
+    if (this.dom.btnDuelStartMatch) {
+      this.dom.btnDuelStartMatch.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onDuelStartMatch) this.callbacks.onDuelStartMatch();
+      };
+    }
+
+    if (this.dom.btnCloseDuelLobby) {
+      this.dom.btnCloseDuelLobby.onclick = () => {
+        sound.playClick();
+        this.hideAllModals();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
+      };
+    }
+
+    if (this.dom.btnDuelPlayAgain) {
+      this.dom.btnDuelPlayAgain.onclick = () => {
+        sound.playClick();
+        this.showDuelLobby();
+      };
+    }
+
+    if (this.dom.btnDuelExit) {
+      this.dom.btnDuelExit.onclick = () => {
+        sound.playClick();
+        this.hideAllModals();
+        this.showStartScreen();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
       };
     }
 
@@ -375,16 +469,90 @@ export class UIController {
     }
   }
 
+  updateGameModeUI(mode) {
+    if (this.dom.tabModeClassic) this.dom.tabModeClassic.classList.toggle("active", mode === "classic");
+    if (this.dom.tabModeHighway) this.dom.tabModeHighway.classList.toggle("active", mode === "highway");
+    if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel");
+  }
+
   showStartScreen() {
+    this.hideAllModals();
     if (this.dom.startScreenModal) this.dom.startScreenModal.classList.remove("hidden");
-    if (this.dom.gameOverModal) this.dom.gameOverModal.classList.add("hidden");
-    if (this.dom.victoryModal) this.dom.victoryModal.classList.add("hidden");
   }
 
   hideAllModals() {
     if (this.dom.startScreenModal) this.dom.startScreenModal.classList.add("hidden");
     if (this.dom.gameOverModal) this.dom.gameOverModal.classList.add("hidden");
     if (this.dom.victoryModal) this.dom.victoryModal.classList.add("hidden");
+    if (this.dom.duelLobbyModal) this.dom.duelLobbyModal.classList.add("hidden");
+    if (this.dom.duelResultModal) this.dom.duelResultModal.classList.add("hidden");
+  }
+
+  showDuelLobby() {
+    this.hideAllModals();
+    if (this.dom.duelLobbyModal) this.dom.duelLobbyModal.classList.remove("hidden");
+    if (this.dom.btnDuelStartMatch) this.dom.btnDuelStartMatch.classList.add("hidden");
+    this.setDuelLobbyMessage("");
+  }
+
+  setDuelRoomCode(code) {
+    if (this.dom.duelCreatedCodeBox) this.dom.duelCreatedCodeBox.classList.remove("hidden");
+    if (this.dom.duelRoomCodeText) this.dom.duelRoomCodeText.textContent = code;
+    if (this.dom.duelHostStatus) this.dom.duelHostStatus.textContent = "Chờ máy 2 nhập mã...";
+  }
+
+  setDuelOpponentJoined(opponentName) {
+    if (this.dom.duelHostStatus) {
+      this.dom.duelHostStatus.textContent = `⚔️ ${opponentName} ĐÃ SẴN SÀNG!`;
+      this.dom.duelHostStatus.style.color = "#10b981";
+    }
+    if (this.dom.btnDuelStartMatch) {
+      this.dom.btnDuelStartMatch.classList.remove("hidden");
+    }
+    this.setDuelLobbyMessage(`Đối thủ "${opponentName}" đã vào phòng. Bấm Bắt Đầu để chiến!`);
+  }
+
+  setDuelLobbyMessage(msg) {
+    if (this.dom.duelLobbyMsg) {
+      this.dom.duelLobbyMsg.textContent = msg || "";
+    }
+  }
+
+  showDuelResult(isWinner, result) {
+    this.hideAllModals();
+    if (!this.dom.duelResultModal) return;
+
+    if (this.dom.duelResultTitle) {
+      if (result.winnerRole === 'draw') {
+        this.dom.duelResultTitle.textContent = "KẾT QUẢ: HÒA NHAU!";
+        this.dom.duelResultTitle.style.color = "var(--dever-amber)";
+      } else if (isWinner) {
+        this.dom.duelResultTitle.textContent = "🏆 BẠN ĐÃ CHIẾN THẮNG!";
+        this.dom.duelResultTitle.style.color = "var(--emerald-ok)";
+      } else {
+        this.dom.duelResultTitle.textContent = "💀 BẠN ĐÃ THUA CUỘC!";
+        this.dom.duelResultTitle.style.color = "var(--crimson-bad)";
+      }
+    }
+
+    if (this.dom.duelResultDesc) {
+      if (result.reason === 'knockout') {
+        this.dom.duelResultDesc.textContent = isWinner ? "Đối thủ đã mất hết mạng trước bạn!" : "Bạn đã bị deadline đè bẹp trước đối thủ!";
+      } else {
+        this.dom.duelResultDesc.textContent = `Hết 60 giây đối kháng kịch tính!`;
+      }
+    }
+
+    if (this.dom.duelMyScore) {
+      const myScore = result.hostScore !== undefined ? (isWinner ? Math.max(result.hostScore, result.guestScore) : Math.min(result.hostScore, result.guestScore)) : 0;
+      this.dom.duelMyScore.textContent = myScore.toLocaleString();
+    }
+    if (this.dom.duelOpponentScore) {
+      const oppScore = result.guestScore !== undefined ? (isWinner ? Math.min(result.hostScore, result.guestScore) : Math.max(result.hostScore, result.guestScore)) : 0;
+      this.dom.duelOpponentScore.textContent = oppScore.toLocaleString();
+    }
+
+    this.dom.duelResultModal.classList.remove("hidden");
   }
 
   showGameOver(summary) {

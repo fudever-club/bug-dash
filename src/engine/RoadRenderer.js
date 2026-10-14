@@ -25,7 +25,7 @@ export class RoadRenderer {
     this.shake = intensity;
   }
 
-  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3") {
+  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null) {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
@@ -48,8 +48,9 @@ export class RoadRenderer {
     ctx.fillStyle = "#0a1122";
     ctx.fillRect(40, 0, W - 80, H);
 
-    // Highway Dash Lines (animated downwards)
-    this.roadOffset = (this.roadOffset + 420 * dt) % 60;
+    // Highway Dash Lines (speed scales in highway mode)
+    const roadSpeed = (steeringMode === "highway") ? 620 : 420;
+    this.roadOffset = (this.roadOffset + roadSpeed * dt) % 60;
     ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
     ctx.lineWidth = 3;
     ctx.setLineDash([25, 35]);
@@ -178,6 +179,40 @@ export class RoadRenderer {
     // 5. Render Particle FX & Floating Texts
     if (particleSystem) {
       particleSystem.render(ctx);
+    }
+
+    // 6. Duel Opponent Telemetry HUD
+    if (opponentData) {
+      ctx.save();
+      const barW = 270;
+      const barH = 34;
+      const barX = W / 2 - barW / 2;
+      const barY = 12;
+
+      ctx.fillStyle = "rgba(10, 17, 34, 0.88)";
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(barX, barY, barW, barH, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Opponent Info
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 11px 'JetBrains Mono', monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`⚔️ ${opponentData.name || 'ĐỐI THỦ'}: ${opponentData.score || 0}`, barX + 12, barY + 21);
+
+      // Opponent Lives
+      const oppLives = opponentData.lives !== undefined ? opponentData.lives : 3;
+      let heartsText = "";
+      for (let i = 0; i < 3; i++) {
+        heartsText += i < oppLives ? "❤️" : "🖤";
+      }
+      ctx.textAlign = "right";
+      ctx.fillText(heartsText, barX + barW - 12, barY + 21);
+
+      ctx.restore();
     }
 
     ctx.restore(); // Restore shake

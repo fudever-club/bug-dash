@@ -49,18 +49,22 @@ export class Spawner {
     lanes.sort(() => Math.random() - 0.5);
     const chosenLanes = lanes.slice(0, countToSpawn);
 
-    const speed = GAME_CONFIG.initialSpeed + (GAME_CONFIG.sessionDuration - timeLeft) * GAME_CONFIG.speedAcceleration;
+    let speed = GAME_CONFIG.initialSpeed + (GAME_CONFIG.sessionDuration - timeLeft) * GAME_CONFIG.speedAcceleration;
+    if (steeringMode === "highway") {
+      speed *= 1.35; // FPT Highway Racer higher velocity
+    }
 
     chosenLanes.forEach(laneIdx => {
-      // 68% obstacle, 32% reward
-      const isObstacle = Math.random() < 0.68;
+      // Highway mode spawns more nitro rewards (40% rewards, 60% obstacles)
+      const obstacleChance = (steeringMode === "highway") ? 0.60 : 0.68;
+      const isObstacle = Math.random() < obstacleChance;
       const candidates = OBJECT_DEFINITIONS.filter(o => o.isObstacle === isObstacle);
       const def = candidates[Math.floor(Math.random() * candidates.length)];
 
       let posX = GAME_CONFIG.laneX[laneIdx];
-      // In analog racer mode, slightly perturb obstacle X coordinates for slalom challenge
-      if (steeringMode === "analog") {
-        const jitter = (Math.random() - 0.5) * 55;
+      // In analog or highway racer mode, slightly perturb obstacle X coordinates for slalom challenge
+      if (steeringMode === "analog" || steeringMode === "highway") {
+        const jitter = (Math.random() - 0.5) * 60;
         posX = Math.max(GAME_CONFIG.roadMinX + 35, Math.min(GAME_CONFIG.roadMaxX - 35, posX + jitter));
       }
 
@@ -73,6 +77,27 @@ export class Spawner {
         speed: speed,
         scale: 1.0,
       });
+    });
+  }
+
+  spawnIncomingAttack(attackType = "deadline_surge", laneIdx = 1) {
+    const lane = Math.max(0, Math.min(2, laneIdx));
+    this.items.push({
+      type: "boss_deadline",
+      label: "DEADLINE!",
+      color: "#dc2626",
+      radius: 38,
+      isObstacle: true,
+      damage: 1,
+      scoreDeduct: 50,
+      textDesc: "Tấn công từ đối thủ!",
+      id: Math.random().toString(36).substring(2, 9),
+      lane: lane,
+      x: GAME_CONFIG.laneX[lane],
+      y: -60,
+      speed: 460,
+      scale: 1.3,
+      isAttack: true
     });
   }
 

@@ -1,7 +1,7 @@
 // FU-DEVER BUG DASH — Main Application Entry Point
 // Connects Computer Vision, Audio Synthesizer, 2D Game Engine, UI, and Backend API.
 
-import { VISION_CONFIG, GAME_CONFIG } from "./config.js";
+import { VISION_CONFIG, GAME_CONFIG, GAME_MODES } from "./config.js";
 import { sound } from "./audio/SoundEngine.js";
 import { CameraController } from "./vision/camera.js";
 import { FaceDetectorWrapper } from "./vision/detector.js";
@@ -13,11 +13,16 @@ import { CollisionSystem } from "./engine/Collision.js";
 import { ParticleSystem } from "./engine/ParticleSystem.js";
 import { RoadRenderer } from "./engine/RoadRenderer.js";
 import { UIController } from "./ui/UIController.js";
+import { DuelClient } from "./multiplayer/DuelClient.js";
 
 class BugDashApp {
   constructor() {
     this.videoElement = document.getElementById("video");
     this.gameCanvas = document.getElementById("gameCanvas");
+
+    this.gameMode = GAME_MODES.CLASSIC;
+    this.opponentData = null;
+    this.lastNetSync = 0;
 
     // 1. Initialize Subsystems
     this.camera = new CameraController(this.videoElement);
@@ -37,14 +42,75 @@ class BugDashApp {
       onLivesUpdate: (lives) => this.ui.updateLives(lives),
       onTimerUpdate: (time) => this.ui.updateTimer(time),
       onComboUpdate: (combo, isBuffed) => this.ui.updateCombo(combo, isBuffed),
-      onStateChange: (newState) => this.handleGameStateChange(newState)
+      onStateChange: (newState) => this.handleGameStateChange(newState),
+      onEliminated: () => {
+        if (this.gameMode === GAME_MODES.DUEL) this.duelClient.reportEliminated();
+      },
+      onTimeUp: () => {
+        if (this.gameMode === GAME_MODES.DUEL) this.duelClient.reportTimeUp();
+      },
+      onAttackTrigger: (attackType) => {
+        if (this.gameMode === GAME_MODES.DUEL) {
+          sound.playBuffActive();
+          this.duelClient.sendAttack(attackType, this.laneController.currentLane);
+          this.particles.addFloatingText(this.playerX, 350, "💥 ĐÃ TUNG DEADLINE TẤN CÔNG ĐỐI THỦ!", "#06b6d4");
+        }
+      }
     });
 
     this.spawner = new Spawner();
     this.particles = new ParticleSystem();
     this.renderer = new RoadRenderer(this.gameCanvas);
 
-    // 2. Initialize UI Controller
+    // 2. Initialize 1v1 Network Duel Client
+    this.duelClient = new DuelClient({
+      onRoomCreated: (code) => {
+        sound.playLock();
+        this.ui.setDuelRoomCode(code);
+      },
+      onRoomJoined: (code, isHost, oppName) => {
+        sound.playLock();
+        this.ui.setDuelLobbyMessage(`Đã vào phòng #${code}! Đối thủ: ${oppName}`);
+      },
+      onOpponentJoined: (oppName) => {
+        sound.playVictory();
+        this.ui.setDuelOpponentJoined(oppName);
+      },
+      onCountdown: (count) => {
+        sound.playClick();
+        this.particles.addFloatingText(GAME_CONFIG.laneX[1], 280, `ĐỐI ĐẦU TRONG ${count}...`, "#f59e0b");
+      },
+      onMatchStart: () => {
+        sound.playVictory();
+        this.ui.hideAllModals();
+        this.startGame();
+      },
+      onOpponentState: (state) => {
+        this.opponentData = state;
+      },
+      onIncomingAttack: (msg) => {
+        sound.playHit();
+        this.renderer.triggerShake(1.2);
+        this.spawner.spawnIncomingAttack(msg.attackType, msg.lane);
+        this.particles.addFloatingText(this.playerX, 320, "⚠️ ĐỐI THỦ PHẢN CÔNG: DEADLINE ĐANG LAO TỚI!", "#ef4444");
+      },
+      onMatchResult: (result) => {
+        const isWinner = (result.winnerRole === 'host' && this.duelClient.isHost) || 
+                         (result.winnerRole === 'guest' && !this.duelClient.isHost);
+        this.ui.showDuelResult(isWinner, result);
+        if (isWinner) sound.playVictory();
+        else sound.playGameOver();
+      },
+      onOpponentDisconnected: () => {
+        alert("Đối thủ đã ngắt kết nối khỏi phòng 1v1!");
+        this.setGameMode(GAME_MODES.CLASSIC);
+      },
+      onError: (msg) => {
+        this.ui.setDuelLobbyMessage(msg);
+      }
+    });
+
+    // 3. Initialize UI Controller
     this.ui = new UIController({
       onStartGame: () => this.startGame(),
       onRestartGame: () => this.startGame(),
@@ -53,14 +119,18 @@ class BugDashApp {
       onToggleDebug: (show) => {},
       onLaneSelect: (lane) => this.laneController.setLane(lane, true),
       onStartCamera: () => this.startCamera(),
+      onSelectGameMode: (mode) => this.setGameMode(mode),
       onToggleSteeringMode: () => {
         const mode = this.laneController.toggleSteeringMode();
         this.ui.updateSteeringModeUI(mode);
         sound.playClick();
-      }
+      },
+      onDuelCreateRoom: (name) => this.duelClient.createRoom(name),
+      onDuelJoinRoom: (code, name) => this.duelClient.joinRoom(code, name),
+      onDuelStartMatch: () => this.duelClient.startMatch()
     });
 
-    // 3. Runtime Animation State
+    // 4. Runtime Animation State
     this.playerX = GAME_CONFIG.laneX[1];
     this.lastGameTime = performance.now();
     this.isVisionRunning = false;
@@ -134,6 +204,27 @@ class BugDashApp {
     }
   }
 
+  setGameMode(mode) {
+    this.gameMode = mode;
+    this.gameState.setGameMode(mode);
+    this.ui.updateGameModeUI(mode);
+
+    if (mode === GAME_MODES.HIGHWAY) {
+      this.laneController.setSteeringMode("analog");
+      this.ui.updateSteeringModeUI("analog");
+      this.particles.addFloatingText(GAME_CONFIG.laneX[1], 300, "🏎️ CHẾ ĐỘ: FPT HIGHWAY RACER!", "#f59e0b");
+      sound.playBuffActive();
+    } else if (mode === GAME_MODES.DUEL) {
+      this.ui.showDuelLobby();
+      sound.playClick();
+    } else {
+      this.laneController.setSteeringMode("snap3");
+      this.ui.updateSteeringModeUI("snap3");
+      this.ui.showStartScreen();
+      sound.playClick();
+    }
+  }
+
   calibrateTracker() {
     if (this.tracker.calibrateCenter()) {
       sound.playClick();
@@ -155,10 +246,18 @@ class BugDashApp {
   handleGameStateChange(newState) {
     if (newState === GameStates.GAMEOVER) {
       sound.playGameOver();
-      this.ui.showGameOver(this.gameState.getSummary());
+      if (this.gameMode === GAME_MODES.DUEL) {
+        this.duelClient.reportEliminated();
+      } else {
+        this.ui.showGameOver(this.gameState.getSummary());
+      }
     } else if (newState === GameStates.VICTORY) {
       sound.playVictory();
-      this.ui.showVictory(this.gameState.getSummary());
+      if (this.gameMode === GAME_MODES.DUEL) {
+        this.duelClient.reportTimeUp();
+      } else {
+        this.ui.showVictory(this.gameState.getSummary());
+      }
     }
   }
 
@@ -205,7 +304,20 @@ class BugDashApp {
       // 2. Gameplay Logic Updates
       if (this.gameState.state === GameStates.PLAYING) {
         this.gameState.update(dt);
-        this.spawner.update(dt, this.gameState.timeLeft, this.laneController.steeringMode);
+        const spawnSteerMode = (this.gameMode === GAME_MODES.HIGHWAY) ? "highway" : this.laneController.steeringMode;
+        this.spawner.update(dt, this.gameState.timeLeft, spawnSteerMode);
+
+        // Network State Sync (10 times/second in DUEL mode)
+        if (this.gameMode === GAME_MODES.DUEL && now - this.lastNetSync > 100) {
+          this.lastNetSync = now;
+          this.duelClient.sendState(
+            this.gameState.score,
+            this.gameState.lives,
+            this.gameState.timeLeft,
+            this.laneController.currentLane,
+            this.gameState.isFever
+          );
+        }
 
         // Check Collisions
         const collidingIdx = CollisionSystem.findFirstCollision(this.playerX, this.spawner.items);
@@ -262,6 +374,7 @@ class BugDashApp {
       // 3. Render Canvas
       const isBuffed = this.gameState.combo > 1;
       const isGameOver = this.gameState.state === GameStates.GAMEOVER;
+      const renderSteerMode = (this.gameMode === GAME_MODES.HIGHWAY) ? "highway" : this.laneController.steeringMode;
       this.renderer.render(
         dt,
         this.playerX,
@@ -273,7 +386,8 @@ class BugDashApp {
         isGameOver,
         this.gameState.isInvulnerable,
         this.gameState.isFever,
-        this.laneController.steeringMode
+        renderSteerMode,
+        (this.gameMode === GAME_MODES.DUEL) ? this.opponentData : null
       );
 
       requestAnimationFrame(loop);

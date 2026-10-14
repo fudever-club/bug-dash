@@ -21,6 +21,12 @@ export const STEERING_MODES = {
   ANALOG: "analog"                 // Lắc đầu tự do (Continuous Analog / Highway Racer)
 };
 
+export const GAME_MODES = {
+  CLASSIC: "classic",              // Né Bug Chạy Deadline (Solo Arcade)
+  HIGHWAY: "highway",              // FPT Highway Racer (Đua Xe Cao Tốc FPTU)
+  DUEL: "duel"                     // Song Đấu 1v1 (Multiplayer 2 Laptops)
+};
+
 export const GAME_CONFIG = {
   sessionDuration: 60,             // Một lượt chơi chuẩn 60 giây
   initialLives: 3,                 // 3 Mạng (Khiên)

@@ -1,6 +1,6 @@
 // FU-DEVER BUG DASH - Finite State Machine & Gameplay State Manager
 
-import { GAME_CONFIG } from "../config.js";
+import { GAME_CONFIG, GAME_MODES } from "../config.js";
 
 export const GameStates = {
   IDLE: "idle",
@@ -13,6 +13,8 @@ export const GameStates = {
 export class GameStateManager {
   constructor(callbacks = {}) {
     this.state = GameStates.IDLE;
+    this.gameMode = GAME_MODES.CLASSIC;
+    this.opponentState = null;
     this.score = 0;
     this.timeLeft = GAME_CONFIG.sessionDuration; // 60s
     this.lives = GAME_CONFIG.initialLives;       // 3
@@ -27,7 +29,14 @@ export class GameStateManager {
       onLivesUpdate: callbacks.onLivesUpdate || (() => {}),
       onTimerUpdate: callbacks.onTimerUpdate || (() => {}),
       onComboUpdate: callbacks.onComboUpdate || (() => {}),
+      onEliminated: callbacks.onEliminated || (() => {}),
+      onTimeUp: callbacks.onTimeUp || (() => {}),
+      onAttackTrigger: callbacks.onAttackTrigger || (() => {}),
     };
+  }
+
+  setGameMode(mode) {
+    this.gameMode = mode;
   }
 
   setState(newState) {
@@ -76,6 +85,7 @@ export class GameStateManager {
       this.timeSurvived = GAME_CONFIG.sessionDuration;
       this.callbacks.onTimerUpdate(this.timeLeft);
       this.setState(GameStates.VICTORY);
+      this.callbacks.onTimeUp();
       return;
     }
     this.callbacks.onTimerUpdate(this.timeLeft);
@@ -114,6 +124,7 @@ export class GameStateManager {
 
     if (this.lives <= 0) {
       this.setState(GameStates.GAMEOVER);
+      this.callbacks.onEliminated();
     }
     return true;
   }
@@ -148,6 +159,13 @@ export class GameStateManager {
       this.combo = 2;
       this.comboTimer = 5.0;
       this.callbacks.onComboUpdate(this.combo, true);
+    }
+
+    // In 1v1 Duel Mode: Trigger attack against opponent on 5x streaks or coffee buff!
+    if (this.gameMode === GAME_MODES.DUEL) {
+      if (buffType === "fever" || buffType === "x2" || (this.currentStreak > 0 && this.currentStreak % 5 === 0)) {
+        this.callbacks.onAttackTrigger("deadline_surge");
+      }
     }
 
     this.callbacks.onScoreUpdate(this.score);

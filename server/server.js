@@ -1,14 +1,17 @@
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import leaderboardRouter from './routes/leaderboard.js';
+import { setupDuelWebSocket } from './duelServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
@@ -36,10 +39,14 @@ app.get('/api/health', (req, res) => {
 // Serve frontend static files
 app.use(express.static(ROOT_DIR));
 
-app.listen(PORT, '0.0.0.0', () => {
+// Setup Real-time 1v1 Duel WebSocket
+setupDuelWebSocket(server);
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n======================================================`);
   console.log(`🚀 FU-DEVER BUG DASH GAME SERVER RUNNING!`);
   console.log(`🌐 Local API & Game: http://localhost:${PORT}`);
+  console.log(`⚔️ 1v1 Duel Server: ws://localhost:${PORT}/ws/duel`);
   console.log(`📊 Leaderboard API: http://localhost:${PORT}/api/leaderboard`);
   console.log(`======================================================\n`);
 });
