@@ -21,10 +21,7 @@ export class CollisionSystem {
   /**
    * Scan items array and return colliding item index or -1
    */
-  static findFirstCollision(playerX, items) {
-    const playerY = GAME_CONFIG.playerY;
-    const radius = GAME_CONFIG.playerRadius;
-
+  static findFirstCollision(playerX, items, playerY = GAME_CONFIG.playerY, radius = GAME_CONFIG.playerRadius) {
     for (let i = 0; i < items.length; i++) {
       if (this.check(playerX, playerY, radius, items[i])) {
         return i;

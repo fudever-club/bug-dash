@@ -23,8 +23,10 @@ export const STEERING_MODES = {
 
 export const GAME_MODES = {
   CLASSIC: "classic",              // Né Bug Chạy Deadline (Solo Arcade)
+  CATCHER: "catcher",              // Hứng PR Merged (Analog Basket Catcher)
   HIGHWAY: "highway",              // FPT Highway Racer (Đua Xe Cao Tốc FPTU)
-  DUEL: "duel"                     // Song Đấu 1v1 (Multiplayer 2 Laptops)
+  DUEL: "duel",                    // Song Đấu 1v1 (2 Laptops qua Wi-Fi/LAN)
+  SPLIT_SCREEN: "splitscreen"      // Song Đấu 1 Máy (Chung 1 Camera Chia Đôi Màn Hình)
 };
 
 export const GAME_CONFIG = {
@@ -44,6 +46,15 @@ export const GAME_CONFIG = {
   speedAcceleration: 3.5,          // Tốc độ tăng dần theo thời gian còn lại
 };
 
+export const SPLIT_CONFIG = {
+  p1Lanes: [60, 160, 260],         // Nửa trái (0 - 320)
+  p2Lanes: [380, 480, 580],        // Nửa phải (320 - 640)
+  p1RoadBounds: { minX: 30, maxX: 290 },
+  p2RoadBounds: { minX: 350, maxX: 610 },
+  playerSize: 76,
+  playerRadius: 34,
+};
+
 export const OBJECT_DEFINITIONS = [
   { type: "bug", label: "BUG", color: "#ef4444", radius: 26, isObstacle: true, damage: 1, textDesc: "Syntax Error" },
   { type: "deadline", label: "DEADLINE", color: "#f97316", radius: 30, isObstacle: true, damage: 1, textDesc: "Deadline 23:59" },
@@ -51,6 +62,16 @@ export const OBJECT_DEFINITIONS = [
   { type: "coffee", label: "COFFEE", color: "#06b6d4", radius: 24, isObstacle: false, points: 20, buff: "x2", textDesc: "Cà Phê FPTU" },
   { type: "clean_code", label: "CODE", color: "#10b981", radius: 26, isObstacle: false, points: 50, textDesc: "PR Merged" },
   { type: "nitro", label: "NITRO", color: "#3b82f6", radius: 24, isObstacle: false, points: 40, buff: "fever", textDesc: "Nitro Rush" },
+];
+
+export const CATCHER_DEFINITIONS = [
+  { type: "pr_merged", label: "PR MERGE", color: "#10b981", radius: 26, isObstacle: false, points: 100, textDesc: "PR Merged" },
+  { type: "clean_code", label: "CODE", color: "#06b6d4", radius: 24, isObstacle: false, points: 60, textDesc: "Clean Code" },
+  { type: "star", label: "STAR", color: "#f59e0b", radius: 25, isObstacle: false, points: 150, textDesc: "GitHub Star" },
+  { type: "coffee", label: "COFFEE", color: "#a855f7", radius: 24, isObstacle: false, points: 40, buff: "x2", textDesc: "Cà Phê Boost" },
+  { type: "bug_crash", label: "BUG 500", color: "#ef4444", radius: 26, isObstacle: true, damage: 1, textDesc: "Server Crash 500" },
+  { type: "conflict", label: "CONFLICT", color: "#f97316", radius: 26, isObstacle: true, damage: 1, textDesc: "Merge Conflict" },
+  { type: "drop_db", label: "DROP DB", color: "#dc2626", radius: 24, isObstacle: true, damage: 0, scoreDeduct: 40, textDesc: "Drop Database" },
 ];
 
 export const ASSET_PATHS = {

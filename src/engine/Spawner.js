@@ -1,12 +1,14 @@
 // FU-DEVER BUG DASH - Intelligent Obstacle & Reward Spawner
 // Guarantees at least 1 safe path, accelerates speed and density dynamically.
 
-import { GAME_CONFIG, OBJECT_DEFINITIONS } from "../config.js";
+import { GAME_CONFIG, OBJECT_DEFINITIONS, CATCHER_DEFINITIONS, SPLIT_CONFIG } from "../config.js";
 
 export class Spawner {
-  constructor() {
+  constructor(customLanes = null, customBounds = null) {
     this.spawnTimer = 0;
     this.items = [];
+    this.customLanes = customLanes; // For Split-Screen P1 or P2
+    this.customBounds = customBounds;
   }
 
   reset() {
@@ -14,18 +16,24 @@ export class Spawner {
     this.items = [];
   }
 
-  update(dt, timeLeft, steeringMode = "snap3") {
+  update(dt, timeLeft, steeringMode = "snap3", gameMode = "classic") {
     this.spawnTimer += dt;
 
     // Difficulty curve based on time left in 60s session
-    let spawnInterval = 1.30; // Phase 1: 0 - 15s elapsed (timeLeft: 60 - 45)
-    if (timeLeft < 45) spawnInterval = 1.05; // Phase 2: 15 - 30s elapsed
-    if (timeLeft < 30) spawnInterval = 0.85; // Phase 3: 30 - 45s elapsed
-    if (timeLeft < 15) spawnInterval = 0.65; // Phase 4: 45 - 60s elapsed (rush)
+    let spawnInterval = 1.30;
+    if (gameMode === "catcher") {
+      spawnInterval = 0.85; // Faster, continuous rhythm for PR Catcher
+      if (timeLeft < 30) spawnInterval = 0.70;
+      if (timeLeft < 15) spawnInterval = 0.55;
+    } else {
+      if (timeLeft < 45) spawnInterval = 1.05;
+      if (timeLeft < 30) spawnInterval = 0.85;
+      if (timeLeft < 15) spawnInterval = 0.65;
+    }
 
     if (this.spawnTimer >= spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnWave(timeLeft, steeringMode);
+      this.spawnWave(timeLeft, steeringMode, gameMode);
     }
 
     // Move existing items down
@@ -40,14 +48,36 @@ export class Spawner {
     }
   }
 
-  spawnWave(timeLeft, steeringMode = "snap3") {
-    const lanes = [0, 1, 2];
-    // Guarantee at least 1 lane is completely empty/safe
+  spawnWave(timeLeft, steeringMode = "snap3", gameMode = "classic") {
+    // 1. Catcher Minigame Mode: PR & Star Collector
+    if (gameMode === "catcher") {
+      const isObstacle = Math.random() < 0.35; // 65% Catchable Rewards, 35% Bugs to avoid
+      const pool = CATCHER_DEFINITIONS.filter(o => o.isObstacle === isObstacle);
+      const def = pool[Math.floor(Math.random() * pool.length)];
+
+      const minX = GAME_CONFIG.roadMinX + 35;
+      const maxX = GAME_CONFIG.roadMaxX - 35;
+      const posX = minX + Math.random() * (maxX - minX);
+      const speed = 280 + (GAME_CONFIG.sessionDuration - timeLeft) * 2.2;
+
+      this.items.push({
+        ...def,
+        id: Math.random().toString(36).substring(2, 9),
+        x: posX,
+        y: -40,
+        speed: speed,
+        scale: 1.0,
+      });
+      return;
+    }
+
+    // 2. Standard / Highway / Split-Screen Modes
+    const baseLanes = this.customLanes || GAME_CONFIG.laneX;
+    const laneIndices = [0, 1, 2];
     const countToSpawn = (timeLeft < 30 && Math.random() < 0.45) ? 2 : 1;
 
-    // Shuffle lane indices
-    lanes.sort(() => Math.random() - 0.5);
-    const chosenLanes = lanes.slice(0, countToSpawn);
+    laneIndices.sort(() => Math.random() - 0.5);
+    const chosenLanes = laneIndices.slice(0, countToSpawn);
 
     let speed = GAME_CONFIG.initialSpeed + (GAME_CONFIG.sessionDuration - timeLeft) * GAME_CONFIG.speedAcceleration;
     if (steeringMode === "highway") {
@@ -55,17 +85,17 @@ export class Spawner {
     }
 
     chosenLanes.forEach(laneIdx => {
-      // Highway mode spawns more nitro rewards (40% rewards, 60% obstacles)
       const obstacleChance = (steeringMode === "highway") ? 0.60 : 0.68;
       const isObstacle = Math.random() < obstacleChance;
       const candidates = OBJECT_DEFINITIONS.filter(o => o.isObstacle === isObstacle);
       const def = candidates[Math.floor(Math.random() * candidates.length)];
 
-      let posX = GAME_CONFIG.laneX[laneIdx];
-      // In analog or highway racer mode, slightly perturb obstacle X coordinates for slalom challenge
+      let posX = baseLanes[laneIdx];
       if (steeringMode === "analog" || steeringMode === "highway") {
-        const jitter = (Math.random() - 0.5) * 60;
-        posX = Math.max(GAME_CONFIG.roadMinX + 35, Math.min(GAME_CONFIG.roadMaxX - 35, posX + jitter));
+        const jitter = (Math.random() - 0.5) * 50;
+        const minX = this.customBounds ? this.customBounds.minX : GAME_CONFIG.roadMinX + 35;
+        const maxX = this.customBounds ? this.customBounds.maxX : GAME_CONFIG.roadMaxX - 35;
+        posX = Math.max(minX, Math.min(maxX, posX + jitter));
       }
 
       this.items.push({
@@ -75,7 +105,7 @@ export class Spawner {
         x: posX,
         y: -40,
         speed: speed,
-        scale: 1.0,
+        scale: this.customLanes ? 0.85 : 1.0,
       });
     });
   }

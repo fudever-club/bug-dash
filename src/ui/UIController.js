@@ -56,10 +56,19 @@ export class UIController {
       btnModeSnap3: $("btnModeSnap3"),
       btnModeAnalog: $("btnModeAnalog"),
       tabModeClassic: $("tabModeClassic"),
+      tabModeCatcher: $("tabModeCatcher"),
       tabModeHighway: $("tabModeHighway"),
       tabModeDuel: $("tabModeDuel"),
       duelLobbyModal: $("duelLobbyModal"),
       duelPlayerName: $("duelPlayerName"),
+      btnDuelTabWifi: $("btnDuelTabWifi"),
+      btnDuelTabSplit: $("btnDuelTabSplit"),
+      duelWifiSection: $("duelWifiSection"),
+      duelSplitSection: $("duelSplitSection"),
+      splitP1Badge: $("splitP1Badge"),
+      splitP2Badge: $("splitP2Badge"),
+      btnStartSplitMatch: $("btnStartSplitMatch"),
+      btnCloseSplitLobby: $("btnCloseSplitLobby"),
       btnDuelCreateRoom: $("btnDuelCreateRoom"),
       duelCreatedCodeBox: $("duelCreatedCodeBox"),
       duelRoomCodeText: $("duelRoomCodeText"),
@@ -103,6 +112,12 @@ export class UIController {
         if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
       };
     }
+    if (this.dom.tabModeCatcher) {
+      this.dom.tabModeCatcher.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("catcher");
+      };
+    }
     if (this.dom.tabModeHighway) {
       this.dom.tabModeHighway.onclick = () => {
         sound.playClick();
@@ -113,6 +128,43 @@ export class UIController {
       this.dom.tabModeDuel.onclick = () => {
         sound.playClick();
         if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("duel");
+      };
+    }
+
+    // Duel Sub-Tab Switcher: 2 Máy Wi-Fi vs 1 Máy Chung Camera
+    if (this.dom.btnDuelTabWifi) {
+      this.dom.btnDuelTabWifi.onclick = () => {
+        sound.playClick();
+        this.dom.btnDuelTabWifi.classList.add("active-mode");
+        if (this.dom.btnDuelTabSplit) this.dom.btnDuelTabSplit.classList.remove("active-mode");
+        if (this.dom.duelWifiSection) this.dom.duelWifiSection.classList.remove("hidden");
+        if (this.dom.duelSplitSection) this.dom.duelSplitSection.classList.add("hidden");
+        if (this.callbacks.onSelectDuelType) this.callbacks.onSelectDuelType("wifi");
+      };
+    }
+    if (this.dom.btnDuelTabSplit) {
+      this.dom.btnDuelTabSplit.onclick = () => {
+        sound.playClick();
+        this.dom.btnDuelTabSplit.classList.add("active-mode");
+        if (this.dom.btnDuelTabWifi) this.dom.btnDuelTabWifi.classList.remove("active-mode");
+        if (this.dom.duelSplitSection) this.dom.duelSplitSection.classList.remove("hidden");
+        if (this.dom.duelWifiSection) this.dom.duelWifiSection.classList.add("hidden");
+        if (this.callbacks.onSelectDuelType) this.callbacks.onSelectDuelType("split");
+      };
+    }
+
+    if (this.dom.btnStartSplitMatch) {
+      this.dom.btnStartSplitMatch.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onStartSplitMatch) this.callbacks.onStartSplitMatch();
+      };
+    }
+
+    if (this.dom.btnCloseSplitLobby) {
+      this.dom.btnCloseSplitLobby.onclick = () => {
+        sound.playClick();
+        this.hideAllModals();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
       };
     }
 
@@ -379,7 +431,7 @@ export class UIController {
     }
   }
 
-  drawVisionOverlay(trackerStatus, faces, roi) {
+  drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null) {
     const cv = this.dom.overlayCanvas;
     if (!cv) return;
     const ctx = cv.getContext("2d");
@@ -392,6 +444,84 @@ export class UIController {
 
     ctx.clearRect(0, 0, W, H);
 
+    // ==========================================
+    // SPLIT-SCREEN 1-CAMERA MULTIPLAYER OVERLAY
+    // ==========================================
+    if (isSplitScreen && dualStatus) {
+      // 1. Center Divider Line
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5, 0); ctx.lineTo(W * 0.5, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 2. ROI Boxes for P1 (Left: 0.05 .. 0.48) and P2 (Right: 0.52 .. 0.95)
+      // P1 ROI
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(0.05 * W, H * 0.15, 0.43 * W, H * 0.7);
+
+      // P2 ROI
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.35)";
+      ctx.strokeRect(0.52 * W, H * 0.15, 0.43 * W, H * 0.7);
+
+      // 3. Draw P1 Status & Face Box
+      const p1 = dualStatus.p1;
+      if (p1 && p1.box) {
+        const bx = (1 - p1.box.x - p1.box.w) * W;
+        const by = p1.box.y * H;
+        const bw = p1.box.w * W;
+        const bh = p1.box.h * H;
+
+        ctx.strokeStyle = "#06b6d4";
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        ctx.fillStyle = "#06b6d4";
+        ctx.fillRect(bx, by - 18, 64, 18);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.fillText(p1.phase === "lock" ? "P1 LOCKED" : "P1 DÒ MẶT", bx + 4, by - 5);
+      }
+
+      // 4. Draw P2 Status & Face Box
+      const p2 = dualStatus.p2;
+      if (p2 && p2.box) {
+        const bx = (1 - p2.box.x - p2.box.w) * W;
+        const by = p2.box.y * H;
+        const bw = p2.box.w * W;
+        const bh = p2.box.h * H;
+
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillRect(bx, by - 18, 64, 18);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.fillText(p2.phase === "lock" ? "P2 LOCKED" : "P2 DÒ MẶT", bx + 4, by - 5);
+      }
+
+      // Update Lobby Badges if present
+      if (this.dom.splitP1Badge && p1) {
+        const isLocked = p1.phase === "lock";
+        this.dom.splitP1Badge.textContent = isLocked ? "P1: ĐÃ SẴN SÀNG" : "P1: ĐANG DÒ MẶT...";
+        this.dom.splitP1Badge.style.color = isLocked ? "#10b981" : "#f59e0b";
+      }
+      if (this.dom.splitP2Badge && p2) {
+        const isLocked = p2.phase === "lock";
+        this.dom.splitP2Badge.textContent = isLocked ? "P2: ĐÃ SẴN SÀNG" : "P2: ĐANG DÒ MẶT...";
+        this.dom.splitP2Badge.style.color = isLocked ? "#10b981" : "#f59e0b";
+      }
+      return;
+    }
+
+    // ==========================================
+    // SINGLE PLAYER OVERLAY
+    // ==========================================
     // 1. Draw Starting ROI Box when waiting
     if (trackerStatus.phase === "wait" || trackerStatus.phase === "cand") {
       ctx.lineWidth = 2;
@@ -471,8 +601,9 @@ export class UIController {
 
   updateGameModeUI(mode) {
     if (this.dom.tabModeClassic) this.dom.tabModeClassic.classList.toggle("active", mode === "classic");
+    if (this.dom.tabModeCatcher) this.dom.tabModeCatcher.classList.toggle("active", mode === "catcher");
     if (this.dom.tabModeHighway) this.dom.tabModeHighway.classList.toggle("active", mode === "highway");
-    if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel");
+    if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel" || mode === "splitscreen");
   }
 
   showStartScreen() {

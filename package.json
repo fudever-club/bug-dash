@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server/server.js",
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "test": "node test/test-catcher-dual.js && node test/test-e2e-duel.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
