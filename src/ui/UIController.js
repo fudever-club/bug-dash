@@ -391,9 +391,9 @@ export class UIController {
       if (el) el.classList.toggle("active", lane === i);
     });
 
-    const names = ["LÀN TRÁI (L0)", "LÀN GIỮA (L1)", "LÀN PHẢI (L2)"];
+    const names = ["LÀN TRÁI", "LÀN GIỮA", "LÀN PHẢI"];
     if (this.dom.currentLaneText) {
-      this.dom.currentLaneText.textContent = names[lane] || "LÀN GIỮA (L1)";
+      this.dom.currentLaneText.textContent = names[lane] || "LÀN GIỮA";
     }
   }
 
@@ -403,10 +403,10 @@ export class UIController {
     if (this.dom.pipLed) this.dom.pipLed.classList.toggle("on", isLocked);
 
     const msgs = {
-      wait: "ĐỨNG VÀO KHUNG VÀNG",
-      cand: "GIỮ YÊN 1S...",
-      lock: "ĐÃ KHÓA NGƯỜI CHƠI",
-      lost: "TÌM LẠI MẶT..."
+      wait: "NHÌN VÀO GƯƠNG ĐỂ BẮT ĐẦU",
+      cand: "GIỮ YÊN 1 GIÂY...",
+      lock: "SẴN SÀNG CHIẾN ĐẤU!",
+      lost: "ĐANG TÌM LẠI BẠN..."
     };
     if (this.dom.pipStatusText) {
       this.dom.pipStatusText.textContent = msgs[phase] || "CHỜ CAMERA";
@@ -420,7 +420,7 @@ export class UIController {
   updateSteeringModeUI(mode) {
     const isAnalog = mode === "analog";
     if (this.dom.steeringModeBadge) {
-      this.dom.steeringModeBadge.textContent = isAnalog ? "LẮC ĐẦU TỰ DO" : "3 LÀN (SNAP)";
+      this.dom.steeringModeBadge.textContent = isAnalog ? "LẮC TỰ DO" : "3 LÀN NHẠY";
       this.dom.steeringModeBadge.style.color = isAnalog ? "#06b6d4" : "var(--fpt-orange)";
     }
     if (this.dom.btnModeSnap3) {
@@ -529,9 +529,16 @@ export class UIController {
       ctx.setLineDash([8, 6]);
       ctx.strokeRect(roi.x0 * W, H * 0.15, (roi.x1 - roi.x0) * W, H * 0.7);
       ctx.setLineDash([]);
+
+      if (trackerStatus.phase === "wait") {
+        ctx.fillStyle = "rgba(245, 158, 11, 0.85)";
+        ctx.font = "bold 10px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("KHUNG NHẬN DIỆN MẶT", W * 0.5, H * 0.15 - 6);
+      }
     }
 
-    // 2. Draw face bounding boxes
+    // 2. Draw face bounding boxes (Arcade Corner Reticle)
     faces.forEach(f => {
       const isLocked = trackerStatus.phase === "lock" && trackerStatus.box;
       if (isLocked) {
@@ -539,16 +546,37 @@ export class UIController {
         const by = f.y * H;
         const bw = f.w * W;
         const bh = f.h * H;
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = "#10b981";
+
+        // Subtle glowing border
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.35)";
+        ctx.lineWidth = 1;
         ctx.strokeRect(bx, by, bw, bh);
 
-        // Lock icon badge
+        // Arcade Gamer Corner Brackets
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 3;
+        const cornerLen = Math.min(18, bw * 0.28);
+
+        // Top-left
+        ctx.beginPath();
+        ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by);
+        // Top-right
+        ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen);
+        // Bottom-left
+        ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh);
+        // Bottom-right
+        ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cornerLen);
+        ctx.stroke();
+
+        // Pilot Badge
         ctx.fillStyle = "#10b981";
-        ctx.fillRect(bx, by - 18, 54, 18);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 10px 'JetBrains Mono', monospace";
-        ctx.fillText("LOCKED", bx + 6, by - 5);
+        ctx.beginPath();
+        ctx.roundRect(bx, by - 20, 72, 18, 4);
+        ctx.fill();
+        ctx.fillStyle = "#060911";
+        ctx.font = "800 10px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText("SẴN SÀNG", bx + 6, by - 7);
       } else if (trackerStatus.phase === "cand") {
         const bx = (1 - f.x - f.w) * W;
         const by = f.y * H;
@@ -571,31 +599,40 @@ export class UIController {
       }
     });
 
-    // 3. Head Tilt Horizon Indicator
+    // 3. Head Tilt Horizon / Curved Steering Arc
     if (trackerStatus.phase === "lock") {
       const roll = trackerStatus.rollAngle || 0;
       const deg = Math.round(roll * 180 / Math.PI);
       const centerX = W / 2;
-      const centerY = H - 24;
+      const centerY = H - 18;
 
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(roll);
-
-      // Horizon line
-      ctx.strokeStyle = Math.abs(deg) > 8 ? "#f59e0b" : "rgba(255, 255, 255, 0.7)";
+      // Arc base track
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
       ctx.lineWidth = 3;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(-35, 0); ctx.lineTo(35, 0);
+      ctx.arc(centerX, centerY - 6, 42, Math.PI * 0.2, Math.PI * 0.8, false);
       ctx.stroke();
 
-      ctx.restore();
+      // Steering Marker dot
+      const markerAngle = Math.PI * 0.5 + Math.max(-0.6, Math.min(0.6, roll * 1.4));
+      const mx = centerX + Math.cos(markerAngle) * 42;
+      const my = centerY - 6 + Math.sin(markerAngle) * 42;
+
+      ctx.fillStyle = Math.abs(deg) > 7 ? "#f59e0b" : "#10b981";
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(mx, my, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
 
       // Degree readout
-      ctx.fillStyle = Math.abs(deg) > 8 ? "#f59e0b" : "#ffffff";
-      ctx.font = "bold 11px 'JetBrains Mono', monospace";
+      ctx.fillStyle = Math.abs(deg) > 7 ? "#f59e0b" : "#ffffff";
+      ctx.font = "bold 10px 'JetBrains Mono', monospace";
       ctx.textAlign = "center";
-      ctx.fillText(`TILT ${deg > 0 ? '+' : ''}${deg}°`, centerX, H - 8);
+      const steerText = deg < -7 ? "NGHIÊNG TRÁI" : (deg > 7 ? "NGHIÊNG PHẢI" : "TÂM THẲNG");
+      ctx.fillText(`${steerText} (${deg > 0 ? '+' : ''}${deg}°)`, centerX, H - 4);
     }
   }
 

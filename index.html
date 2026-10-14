@@ -57,12 +57,12 @@
 
   <!-- Cockpit Grid Layout -->
   <main class="cockpit-grid">
-    <!-- Cột Trái: Webcam Controller & Calibrator -->
+    <!-- Cột Trái: Webcam Controller & Calibrator (Gương Thần Buggy) -->
     <aside class="col-telemetry">
-      <div class="panel-card">
+      <div class="panel-card game-cam-card">
         <div class="card-header">
-          <h2><span class="status-led" id="statusLed"></span> Camera AI (Dịch Đầu)</h2>
-          <span id="fpsBadge" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted)">-- FPS</span>
+          <h2><span class="status-led" id="statusLed"></span> Gương Thần Buggy</h2>
+          <span class="cam-role-badge">Góc Nhìn Người Chơi</span>
         </div>
 
         <!-- PIP Video Preview -->
@@ -71,31 +71,31 @@
           <canvas id="overlay"></canvas>
           <div class="pip-badge">
             <span class="status-led on" id="pipLed"></span>
-            <span id="pipStatusText">ĐỨNG VÀO KHUNG VÀNG</span>
+            <span id="pipStatusText">BẬT CAMERA ĐỂ BẮT ĐẦU</span>
           </div>
         </div>
 
         <!-- Steering Mode Selector -->
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--text-secondary); font-weight:700;">CHẾ ĐỘ ĐIỀU KHIỂN</span>
-            <span id="steeringModeBadge" style="font-family:'JetBrains Mono'; font-size:10px; font-weight:800; color:var(--fpt-orange); background:rgba(242,111,33,0.15); padding:2px 6px; border-radius:4px;">3 LÀN (SNAP)</span>
+        <div class="steering-selector-box">
+          <div class="steering-selector-header">
+            <span>KIỂU ĐIỀU KHIỂN</span>
+            <span id="steeringModeBadge">3 LÀN NHẠY</span>
           </div>
-          <div style="display:flex; gap:6px;">
-            <button class="btn-outline active-mode" id="btnModeSnap3" style="flex:1; font-size:11px; padding:6px 8px;">
-              3 Làn Snap
+          <div class="steering-buttons-row">
+            <button class="btn-outline active-mode" id="btnModeSnap3">
+              3 Làn Nhạy
             </button>
-            <button class="btn-outline" id="btnModeAnalog" style="flex:1; font-size:11px; padding:6px 8px;">
+            <button class="btn-outline" id="btnModeAnalog">
               Lắc Đầu Tự Do (T)
             </button>
           </div>
         </div>
 
-        <!-- Lane Sensor Gauge -->
+        <!-- Visual Steering Runway -->
         <div class="lane-telemetry-box">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--text-secondary); font-weight:700;">LÀN CHẠY HIỆN TẠI</span>
-            <span id="currentLaneText" style="font-family:'JetBrains Mono'; font-size:11px; font-weight:800; color:var(--dever-amber);">LÀN GIỮA (L1)</span>
+          <div class="lane-telemetry-header">
+            <span>HƯỚNG LẮC ĐẦU HIỆN TẠI</span>
+            <span id="currentLaneText">LÀN GIỮA</span>
           </div>
 
           <div class="lane-runway">
@@ -103,26 +103,38 @@
             <div class="lane-block active" id="l1">GIỮA</div>
             <div class="lane-block" id="l2">PHẢI</div>
           </div>
-        </div>
 
-        <!-- Sensitivity Calibrator -->
-        <div class="slider-group">
-          <div class="slider-meta">
-            <span>Độ Nhạy Lắc Đầu</span>
-            <span id="thrVal" style="font-family:'JetBrains Mono'; font-weight:700; color:var(--dever-amber);">9%</span>
+          <div class="lane-hint-bar">
+            <span>◀ Nghiêng Trái</span>
+            <span>Tâm Thẳng</span>
+            <span>Nghiêng Phải ▶</span>
           </div>
-          <input type="range" id="thr" min="4" max="18" value="9" step="1">
         </div>
 
-        <!-- Calibrate / Reset Center Button -->
-        <div style="display:flex; gap:8px;">
-          <button class="btn-outline" id="recal" style="flex:1;">
-            Calibrate Tâm Giữa (C)
-          </button>
-          <button class="btn-outline" id="btnToggleDebug" style="flex:1;">
-            <span id="debugToggleLabel">Bật Debug Grid (D)</span>
-          </button>
-        </div>
+        <!-- Collapsible Advanced Settings (Keeps all IDs intact for calibration & debugging) -->
+        <details class="advanced-settings-drawer">
+          <summary class="advanced-settings-toggle">
+            <span>Tùy Chỉnh Cảm Biến</span>
+            <span id="fpsBadge" class="fps-pill">-- FPS</span>
+          </summary>
+          <div class="advanced-settings-content">
+            <div class="slider-group">
+              <div class="slider-meta">
+                <span>Độ Nhạy Lắc Đầu</span>
+                <span id="thrVal">9%</span>
+              </div>
+              <input type="range" id="thr" min="4" max="18" value="9" step="1">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-outline" id="recal" style="flex:1;">
+                Cân Bằng Tâm Giữa (C)
+              </button>
+              <button class="btn-outline" id="btnToggleDebug" style="flex:1;">
+                <span id="debugToggleLabel">Bật Lưới Dò Mặt (D)</span>
+              </button>
+            </div>
+          </div>
+        </details>
       </div>
     </aside>
 
@@ -130,24 +142,36 @@
     <section class="col-stage">
       <!-- In-Game Stage HUD -->
       <div class="stage-hud">
-        <div class="hud-pill">
-          <span class="score-label">ĐIỂM SỐ</span>
-          <span class="score-display" id="canvasScore">0000</span>
-          <span class="score-label" id="canvasCombo" style="color:var(--fpt-orange);">1X</span>
+        <div class="hud-pill hud-score-card">
+          <span class="hud-icon-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </span>
+          <div class="hud-col">
+            <span class="score-label">ĐIỂM SỐ</span>
+            <span class="score-display" id="canvasScore">0000</span>
+          </div>
+          <span class="score-combo-badge" id="canvasCombo">1X</span>
         </div>
 
-        <div class="hud-pill">
-          <span class="score-label">MẠNG SỐNG</span>
-          <div class="hearts-row">
-            <svg class="heart-icon" id="heart1" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <svg class="heart-icon" id="heart2" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <svg class="heart-icon" id="heart3" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <div class="hud-pill hud-lives-card">
+          <div class="hud-col">
+            <span class="score-label">MẠNG SỐNG</span>
+            <div class="hearts-row">
+              <svg class="heart-icon" id="heart1" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg class="heart-icon" id="heart2" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg class="heart-icon" id="heart3" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
           </div>
         </div>
 
-        <div class="hud-pill">
-          <span class="score-label">DEADLINE</span>
-          <span class="timer-display" id="timerVal">01:00</span>
+        <div class="hud-pill hud-timer-card">
+          <span class="hud-icon-badge timer-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
+          <div class="hud-col">
+            <span class="score-label">DEADLINE</span>
+            <span class="timer-display" id="timerVal">01:00</span>
+          </div>
         </div>
       </div>
 
@@ -159,8 +183,28 @@
       <div class="game-state-modal" id="startScreenModal">
         <img src="assets/player_running.png" alt="Buggy Running" class="modal-mascot-img">
         <h2>NÉ BUG CHẠY DEADLINE</h2>
-        <p>Dịch đầu sang <strong>Trái / Phải</strong> hoặc <strong>Nghiêng Đầu</strong> trước camera để điều khiển bọ Buggy né bug Syntax Error, deadline 23:59 và nhặt Cà phê FPTU!</p>
-        <button class="btn-primary" id="btnStartGame" style="padding:12px 28px; font-size:15px; margin-top:8px;">
+        <p>Trải nghiệm né chướng ngại vật bằng chuyển động lắc đầu độc đáo tại Booth FU-DEVER!</p>
+
+        <!-- 3 Quick Rule Cards -->
+        <div class="start-rules-grid">
+          <div class="rule-card avoid">
+            <span class="rule-badge avoid-badge">CẦN NÉ</span>
+            <strong>Bug & Deadline</strong>
+            <span>Né Syntax Error & 23:59</span>
+          </div>
+          <div class="rule-card loot">
+            <span class="rule-badge loot-badge">CẦN NHẶT</span>
+            <strong>Cà Phê & Clean Code</strong>
+            <span>Ăn cà phê x2 & PR Merged</span>
+          </div>
+          <div class="rule-card steer">
+            <span class="rule-badge steer-badge">CÁCH LÁI</span>
+            <strong>Nghiêng Đầu Tự Nhiên</strong>
+            <span>Lắc trái / phải trước camera</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btnStartGame" style="padding:12px 32px; font-size:15px; margin-top:10px;">
           Bắt Đầu Chơi Ngay (SPACE)
         </button>
       </div>
