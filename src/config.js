@@ -209,6 +209,8 @@ export const ASSET_PATHS = {
   playerDead: "assets/player_dead.png",
   buggyChampion: "assets/buggy_champion.png",
   player3dRun: "assets/player_3d_run.png",
+  player3dRunF1: "assets/player_3d_run_f1.png",
+  player3dRunF2: "assets/player_3d_run_f2.png",
   player3dJump: "assets/player_3d_jump.png",
   player3dSlide: "assets/player_3d_slide.png",
   player3dBankLeft: "assets/player_3d_bank_left.png",

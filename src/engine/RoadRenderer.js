@@ -18,6 +18,7 @@ export class RoadRenderer {
 
     // Dynamic Tire Trails & Drift Slipstream
     this.tireTrails = [];
+    this.cameraRoll = 0;
 
     // Preload Mascot Sprites (safe in both Browser and Node.js headless test)
     const ImageCtor = (typeof Image !== "undefined") ? Image : class { constructor() { this.src = ""; this.complete = false; } };
@@ -26,6 +27,8 @@ export class RoadRenderer {
       dead: new ImageCtor(),
       champion: new ImageCtor(),
       player3dRun: new ImageCtor(),
+      player3dRunF1: new ImageCtor(),
+      player3dRunF2: new ImageCtor(),
       player3dJump: new ImageCtor(),
       player3dSlide: new ImageCtor(),
       player3dBankLeft: new ImageCtor(),
@@ -35,6 +38,8 @@ export class RoadRenderer {
     this.sprites.dead.src = ASSET_PATHS.playerDead;
     this.sprites.champion.src = ASSET_PATHS.buggyChampion;
     this.sprites.player3dRun.src = ASSET_PATHS.player3dRun;
+    this.sprites.player3dRunF1.src = ASSET_PATHS.player3dRunF1;
+    this.sprites.player3dRunF2.src = ASSET_PATHS.player3dRunF2;
     this.sprites.player3dJump.src = ASSET_PATHS.player3dJump;
     this.sprites.player3dSlide.src = ASSET_PATHS.player3dSlide;
     this.sprites.player3dBankLeft.src = ASSET_PATHS.player3dBankLeft;
@@ -146,6 +151,13 @@ export class RoadRenderer {
     const dynamicLean = (targetX - playerX) * 0.006;
     const targetCurve = Math.max(-1.0, Math.min(1.0, steerOffset * 0.65 + dynamicLean * 0.35));
     this.roadCurve += (targetCurve - this.roadCurve) * Math.min(1.0, dt * 7.5);
+
+    // Temple Run & Minion Rush: Dynamic Camera Lateral Roll when steering
+    const targetRoll = (targetX - playerX) * 0.00035;
+    this.cameraRoll += (targetRoll - this.cameraRoll) * Math.min(1.0, dt * 8.0);
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(this.cameraRoll);
+    ctx.translate(-W / 2, -H / 2);
 
     // 2. Parallax Cyberpunk FPTU Skyline & Retro Sun
     this.drawCyberpunkSkyline(ctx, W, this.HORIZON_Y, isFever);
@@ -361,8 +373,14 @@ export class RoadRenderer {
       ctx.stroke();
     }
 
-    // Select 3D Buggy Mascot Action Sprite
-    let currentImg = this.sprites.player3dRun;
+    // Select 3D Buggy Mascot Action Sprite with Frame-by-Frame Run Cycle & Wing Flapping
+    const runSpeedMult = isFever ? 14 : 9;
+    const stepPhase = Math.floor((this.totalTime * runSpeedMult) % 2);
+    const activeRunSprite = (stepPhase === 0)
+      ? (this.sprites.player3dRunF1.complete ? this.sprites.player3dRunF1 : this.sprites.player3dRun)
+      : (this.sprites.player3dRunF2.complete ? this.sprites.player3dRunF2 : this.sprites.player3dRun);
+
+    let currentImg = activeRunSprite;
     if (isGameOver) {
       currentImg = this.sprites.dead;
     } else if (jumpState && jumpState.isJumping && this.sprites.player3dJump.complete) {
@@ -1376,6 +1394,45 @@ export class RoadRenderer {
     const type = it.type;
 
     ctx.save();
+
+    const isCollectible = (type === "star" || type === "coffee" || type === "clean_code" || type === "pr_merged");
+
+    // 1. 3D Ground Light Ring & Projection Aura
+    ctx.save();
+    ctx.scale(1.0, 0.32);
+    ctx.beginPath();
+    ctx.arc(0, R * 1.6, R * (isCollectible ? 1.0 : 1.25), 0, Math.PI * 2);
+    if (type === "star") {
+      ctx.fillStyle = "rgba(250, 204, 21, 0.35)";
+    } else if (type === "coffee") {
+      ctx.fillStyle = "rgba(6, 182, 212, 0.40)";
+    } else if (type === "clean_code" || type === "pr_merged") {
+      ctx.fillStyle = "rgba(16, 185, 129, 0.38)";
+    } else {
+      ctx.fillStyle = "rgba(239, 68, 68, 0.32)";
+    }
+    ctx.fill();
+    ctx.restore();
+
+    // 2. 3D Floating Bobbing & Y-Axis Spin (Temple Run / Minion Rush Coin Mechanic)
+    if (isCollectible) {
+      const bobY = Math.sin(t * 6 + (it.x * 0.08)) * (5 * scale);
+      ctx.translate(0, bobY);
+
+      const spinAngle = t * 4.2 + (it.x * 0.05);
+      const spinScaleX = Math.cos(spinAngle);
+      // Continuous 3D spin on vertical axis
+      ctx.scale(Math.abs(spinScaleX) * 0.72 + 0.28, 1.0);
+
+      // 3D Rim / Bevel depth highlight when tilted
+      const edgeWidth = (1 - Math.abs(spinScaleX)) * (6 * scale);
+      if (edgeWidth > 1.2) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.beginPath();
+        ctx.roundRect(-edgeWidth / 2, -R * 0.85, edgeWidth, R * 1.7, 3);
+        ctx.fill();
+      }
+    }
 
     switch (type) {
       case "bug":

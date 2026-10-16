@@ -20,6 +20,16 @@ SPRITE_SPECS = [
         'target_h': 360
     },
     {
+        'src': os.path.join(BRAIN_DIR, 'buggy_3d_chroma_run_1792138391656.jpg'),
+        'out_name': 'player_3d_run_f1.png',
+        'target_h': 360
+    },
+    {
+        'src': os.path.join(BRAIN_DIR, 'buggy_3d_chroma_run_step2_1792140829965.jpg'),
+        'out_name': 'player_3d_run_f2.png',
+        'target_h': 360
+    },
+    {
         'src': os.path.join(BRAIN_DIR, 'buggy_3d_chroma_jump_1792138435261.jpg'),
         'out_name': 'player_3d_jump.png',
         'target_h': 380
