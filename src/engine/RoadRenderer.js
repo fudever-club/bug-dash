@@ -24,11 +24,21 @@ export class RoadRenderer {
     this.sprites = {
       running: new ImageCtor(),
       dead: new ImageCtor(),
-      champion: new ImageCtor()
+      champion: new ImageCtor(),
+      player3dRun: new ImageCtor(),
+      player3dJump: new ImageCtor(),
+      player3dSlide: new ImageCtor(),
+      player3dBankLeft: new ImageCtor(),
+      player3dBankRight: new ImageCtor()
     };
     this.sprites.running.src = ASSET_PATHS.playerRunning;
     this.sprites.dead.src = ASSET_PATHS.playerDead;
     this.sprites.champion.src = ASSET_PATHS.buggyChampion;
+    this.sprites.player3dRun.src = ASSET_PATHS.player3dRun;
+    this.sprites.player3dJump.src = ASSET_PATHS.player3dJump;
+    this.sprites.player3dSlide.src = ASSET_PATHS.player3dSlide;
+    this.sprites.player3dBankLeft.src = ASSET_PATHS.player3dBankLeft;
+    this.sprites.player3dBankRight.src = ASSET_PATHS.player3dBankRight;
 
     // Precompute Static Cyberpunk Starfield (60 stars, zero GC allocation)
     this.stars = [];
@@ -268,17 +278,35 @@ export class RoadRenderer {
       ctx.restore();
     }
 
-    // Draw Player Sprite with dynamic lean & squash-stretch
+    // Draw 3D Stylized Buggy Mascot with Minion Run Wobble & dynamic action states
     ctx.save();
-    ctx.translate(playerX, playerY + jumpOffsetY + slideOffsetY);
+    
+    // Minion-style run bob & wobble
+    const isAction = (jumpState && jumpState.isJumping) || (slideState && slideState.isSliding) || isGameOver;
+    const runBob = isAction ? 0 : Math.abs(Math.sin(this.totalTime * 14)) * 3.5;
+    const runWobble = isAction ? 0 : Math.sin(this.totalTime * 14) * 0.035;
+
+    ctx.translate(playerX, playerY + jumpOffsetY + slideOffsetY - runBob);
 
     const moveDiff = targetX - playerX;
     const tilt = Math.max(-0.25, Math.min(0.25, moveDiff * 0.003 - this.roadCurve * 0.08));
-    ctx.rotate(tilt);
+    ctx.rotate(tilt + runWobble);
 
     const squashX = (1 + Math.abs(tilt) * 0.30) * slideScaleX * jumpScale;
     const stretchY = (1 - Math.abs(tilt) * 0.15) * slideScaleY * jumpScale;
     ctx.scale(squashX, stretchY);
+
+    // 3D Soft Contact Drop Shadow (under feet)
+    if (!jumpState || !jumpState.isJumping) {
+      ctx.save();
+      ctx.translate(0, pSize * 0.44);
+      ctx.scale(1.0, 0.28);
+      ctx.beginPath();
+      ctx.arc(0, 0, pSize * 0.38, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+      ctx.fill();
+      ctx.restore();
+    }
 
     // Slide Skid Sparks & Jump Air Swoosh
     if (slideState && slideState.isSliding) {
@@ -333,10 +361,36 @@ export class RoadRenderer {
       ctx.stroke();
     }
 
-    // Draw Mascot Sprite
-    const currentImg = isGameOver ? this.sprites.dead : this.sprites.running;
+    // Select 3D Buggy Mascot Action Sprite
+    let currentImg = this.sprites.player3dRun;
+    if (isGameOver) {
+      currentImg = this.sprites.dead;
+    } else if (jumpState && jumpState.isJumping && this.sprites.player3dJump.complete) {
+      currentImg = this.sprites.player3dJump;
+    } else if (slideState && slideState.isSliding && this.sprites.player3dSlide.complete) {
+      currentImg = this.sprites.player3dSlide;
+    } else if (tilt < -0.07 && this.sprites.player3dBankLeft.complete) {
+      currentImg = this.sprites.player3dBankLeft;
+    } else if (tilt > 0.07 && this.sprites.player3dBankRight.complete) {
+      currentImg = this.sprites.player3dBankRight;
+    }
+
+    // Fallback to legacy 2D sprite if 3D sprite not yet loaded
+    if (!currentImg.complete || currentImg.naturalWidth === 0) {
+      currentImg = isGameOver ? this.sprites.dead : this.sprites.running;
+    }
+
     if (currentImg.complete && currentImg.naturalWidth > 0) {
-      ctx.drawImage(currentImg, -pSize / 2, -pSize / 2, pSize, pSize);
+      const imgAspect = currentImg.naturalWidth / currentImg.naturalHeight;
+      let drawW = pSize;
+      let drawH = pSize;
+      if (imgAspect > 1) {
+        drawW = pSize * imgAspect;
+      } else {
+        drawH = pSize / imgAspect;
+      }
+      const renderOffsetY = (slideState && slideState.isSliding) ? pSize * 0.12 : 0;
+      ctx.drawImage(currentImg, -drawW / 2, -drawH / 2 + renderOffsetY, drawW, drawH);
     } else {
       ctx.beginPath();
       ctx.arc(0, 0, 36, 0, Math.PI * 2);

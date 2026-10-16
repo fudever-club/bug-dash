@@ -207,5 +207,10 @@ export const ASSET_PATHS = {
   deverLogo: "assets/dever_logo_white.png",
   playerRunning: "assets/player_running.png",
   playerDead: "assets/player_dead.png",
-  buggyChampion: "assets/buggy_champion.png"
+  buggyChampion: "assets/buggy_champion.png",
+  player3dRun: "assets/player_3d_run.png",
+  player3dJump: "assets/player_3d_jump.png",
+  player3dSlide: "assets/player_3d_slide.png",
+  player3dBankLeft: "assets/player_3d_bank_left.png",
+  player3dBankRight: "assets/player_3d_bank_right.png"
 };
