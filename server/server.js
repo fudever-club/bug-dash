@@ -36,7 +36,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
-// Serve frontend static files
+// Serve frontend static files (prefer production dist if built, fallback to root)
+import fs from 'fs';
+const DIST_DIR = path.join(ROOT_DIR, 'dist');
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+}
 app.use(express.static(ROOT_DIR));
 
 // Setup Real-time 1v1 Duel WebSocket
