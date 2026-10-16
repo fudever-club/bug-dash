@@ -52,7 +52,7 @@ export const MODE_METADATA = {
     badge: "CHẾ ĐỘ NÉ BUG SOLO",
     badgeColor: "var(--fpt-orange)",
     title: "NÉ BUG CHẠY DEADLINE",
-    mascot: "assets/player_running.png",
+    mascot: "assets/player_3d_run.png",
     desc: "Đua với deadline 23:59 bằng camera lắc đầu hoặc cử chỉ bàn tay. Né Syntax Error, nhặt cà phê tăng tốc để giành điểm số cao nhất!",
     rules: [
       { badge: "CẦN NÉ", badgeClass: "avoid-badge", title: "Bug & Deadline", desc: "Né Syntax Error & 23:59 (-1 Mạng)" },
@@ -65,7 +65,7 @@ export const MODE_METADATA = {
     badge: "MINIGAME HỨNG CODE MERGED",
     badgeColor: "#10b981",
     title: "HỨNG PR & GIT CRYSTAL",
-    mascot: "assets/buggy_champion.png",
+    mascot: "assets/player_3d_run_f2.png",
     desc: "Trang bị giỏ hứng công nghệ PR Catcher! Lái Buggy di chuyển liên tục gom trọn Pull Request, Git Crystal và Sao Vàng, tránh xa Syntax Error!",
     rules: [
       { badge: "CẦN HỨNG", badgeClass: "loot-badge", title: "PR Merged & Sao Vàng", desc: "Hứng PR Merged +100đ, Sao Vàng +150đ" },
@@ -78,7 +78,7 @@ export const MODE_METADATA = {
     badge: "ĐUA XE CAO TỐC FPTU — TỐC ĐỘ X1.5",
     badgeColor: "#f59e0b",
     title: "FPT HIGHWAY RACER",
-    mascot: "assets/player_running.png",
+    mascot: "assets/player_3d_run.png",
     desc: "Lướt trên đại lộ FPT University Đà Nẵng với tốc độ cao! Lắc đầu hoặc quét tay drift tự do lách qua các chướng ngại vật xuất hiện liên tục.",
     rules: [
       { badge: "TỐC ĐỘ CAO", badgeClass: "avoid-badge", title: "Tốc Độ Gấp 1.5 Lần", desc: "Đường băng trôi nhanh, chướng ngại vật dồn dập" },
@@ -91,7 +91,7 @@ export const MODE_METADATA = {
     badge: "CHẾ ĐỘ CHÉM BUG NINJA",
     badgeColor: "#f43f5e",
     title: "CODE SLICER — CHÉM BUG BẰNG TAY",
-    mascot: "assets/buggy_champion.png",
+    mascot: "assets/player_3d_run_f2.png",
     desc: "Dùng ngón tay hoặc chuột vung kiếm Cyber Blade chém đứt các con bug bay tung lên! Gom PR Merged, né bom Deadline 23:59!",
     rules: [
       { badge: "CẦN CHÉM", badgeClass: "avoid-badge", title: "Bug & Syntax Error", desc: "Chém đứt đôi các con bug đỏ để nhận điểm combo" },
@@ -104,7 +104,7 @@ export const MODE_METADATA = {
     badge: "HỘI CHỨNG DEADLINE FPT",
     badgeColor: "#06b6d4",
     title: "FLAPPY BUGGY — CÁP QUANG FPTU",
-    mascot: "assets/player_running.png",
+    mascot: "assets/player_3d_run_f2.png",
     desc: "Nhún đầu hoặc ngẩng mặt lên để Buggy đập cánh bay lượn qua các cổng logic bitwise và tường lửa Firewall trong đường cáp quang FPT!",
     rules: [
       { badge: "ĐIỀU KHIỂN", badgeClass: "steer-badge", title: "Gật / Ngẩng Đầu", desc: "Ngẩng đầu lên hoặc bấm SPACE để Buggy đập cánh bay lên" },
@@ -117,7 +117,7 @@ export const MODE_METADATA = {
     badge: "ĐỐI KHÁNG ĐỒNG ĐỘI",
     badgeColor: "#ef4444",
     title: "SONG ĐẤU 1V1",
-    mascot: "assets/player_running.png",
+    mascot: "assets/player_3d_run.png",
     desc: "Thử tài so trình né deadline giữa 2 lập trình viên! Chọn đấu 2 máy qua Wi-Fi/LAN hoặc 2 người cùng chơi trên 1 webcam máy tính.",
     rules: [
       { badge: "1 MÁY CHUNG CAM", badgeClass: "steer-badge", title: "Split-Screen", desc: "2 bạn cùng đứng trước webcam chia đôi màn hình" },
@@ -130,7 +130,7 @@ export const MODE_METADATA = {
     badge: "ĐỐI KHÁNG 1 MÁY CHUNG CAM",
     badgeColor: "#06b6d4",
     title: "SPLIT-SCREEN ĐỐI KHÁNG",
-    mascot: "assets/player_running.png",
+    mascot: "assets/player_3d_run.png",
     desc: "Hai bạn cùng đứng kè vai trước webcam máy tính! Màn hình chia đôi thi tài né deadline song song.",
     rules: [
       { badge: "NỬA TRÁI (P1)", badgeClass: "steer-badge", title: "Người Chơi 1", desc: "Đứng bên trái webcam, lái xe làn Cyan" },
@@ -214,5 +214,10 @@ export const ASSET_PATHS = {
   player3dJump: "assets/player_3d_jump.png",
   player3dSlide: "assets/player_3d_slide.png",
   player3dBankLeft: "assets/player_3d_bank_left.png",
-  player3dBankRight: "assets/player_3d_bank_right.png"
+  player3dBankRight: "assets/player_3d_bank_right.png",
+  item3dStar: "assets/item_3d_star.png",
+  item3dCoffee: "assets/item_3d_coffee.png",
+  item3dGem: "assets/item_3d_gem.png",
+  item3dBug: "assets/item_3d_bug.png",
+  item3dDeadline: "assets/item_3d_deadline.png"
 };

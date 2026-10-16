@@ -32,7 +32,12 @@ export class RoadRenderer {
       player3dJump: new ImageCtor(),
       player3dSlide: new ImageCtor(),
       player3dBankLeft: new ImageCtor(),
-      player3dBankRight: new ImageCtor()
+      player3dBankRight: new ImageCtor(),
+      item3dStar: new ImageCtor(),
+      item3dCoffee: new ImageCtor(),
+      item3dGem: new ImageCtor(),
+      item3dBug: new ImageCtor(),
+      item3dDeadline: new ImageCtor()
     };
     this.sprites.running.src = ASSET_PATHS.playerRunning;
     this.sprites.dead.src = ASSET_PATHS.playerDead;
@@ -44,6 +49,11 @@ export class RoadRenderer {
     this.sprites.player3dSlide.src = ASSET_PATHS.player3dSlide;
     this.sprites.player3dBankLeft.src = ASSET_PATHS.player3dBankLeft;
     this.sprites.player3dBankRight.src = ASSET_PATHS.player3dBankRight;
+    this.sprites.item3dStar.src = ASSET_PATHS.item3dStar;
+    this.sprites.item3dCoffee.src = ASSET_PATHS.item3dCoffee;
+    this.sprites.item3dGem.src = ASSET_PATHS.item3dGem;
+    this.sprites.item3dBug.src = ASSET_PATHS.item3dBug;
+    this.sprites.item3dDeadline.src = ASSET_PATHS.item3dDeadline;
 
     // Precompute Static Cyberpunk Starfield (60 stars, zero GC allocation)
     this.stars = [];
@@ -373,8 +383,17 @@ export class RoadRenderer {
       ctx.stroke();
     }
 
-    // Select 3D Buggy Mascot Action Sprite with Frame-by-Frame Run Cycle & Wing Flapping
-    const runSpeedMult = isFever ? 14 : 9;
+    // High-Resolution Smooth Interpolation
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    // Dynamic 3D Insect Holographic Wings Flapping (Active behind body carapace)
+    if (!isGameOver) {
+      this.drawInsectWings(ctx, pSize, jumpState, slideState, isFever, isBuffed, tilt);
+    }
+
+    // Select 3D Buggy Mascot Action Sprite with Frame-by-Frame Run Cycle
+    const runSpeedMult = isFever ? 9 : 6.2;
     const stepPhase = Math.floor((this.totalTime * runSpeedMult) % 2);
     const activeRunSprite = (stepPhase === 0)
       ? (this.sprites.player3dRunF1.complete ? this.sprites.player3dRunF1 : this.sprites.player3dRun)
@@ -387,9 +406,9 @@ export class RoadRenderer {
       currentImg = this.sprites.player3dJump;
     } else if (slideState && slideState.isSliding && this.sprites.player3dSlide.complete) {
       currentImg = this.sprites.player3dSlide;
-    } else if (tilt < -0.07 && this.sprites.player3dBankLeft.complete) {
+    } else if (tilt < -0.13 && this.sprites.player3dBankLeft.complete) {
       currentImg = this.sprites.player3dBankLeft;
-    } else if (tilt > 0.07 && this.sprites.player3dBankRight.complete) {
+    } else if (tilt > 0.13 && this.sprites.player3dBankRight.complete) {
       currentImg = this.sprites.player3dBankRight;
     }
 
@@ -429,6 +448,111 @@ export class RoadRenderer {
     }
 
     ctx.restore(); // Restore shake
+  }
+
+  /**
+   * Render High-Performance Dynamic 3D Insect Fluttering Wings
+   * Creates a visible, satisfying Pixar/Cyberpunk wing flapping animation at 60 FPS
+   */
+  drawInsectWings(ctx, pSize, jumpState, slideState, isFever, isBuffed, tilt = 0) {
+    if (slideState && slideState.isSliding) {
+      // Wings tuck tightly against carapace during low sliding
+      return;
+    }
+
+    const isJumping = jumpState && jumpState.isJumping;
+    const flapFreq = isJumping ? 38 : (isFever ? 32 : 22);
+    const flapPhase = Math.sin(this.totalTime * flapFreq);
+
+    // Flap cycle angles
+    const baseAngle = isJumping ? 0.38 : 0.18;
+    const flapRange = isJumping ? 0.65 : 0.45;
+    const currentFlapAngle = flapPhase * flapRange;
+
+    // Wing Span and Dimensions (Large visible wings spanning beyond body sides)
+    const wingScale = isJumping ? 1.30 : 1.08;
+    const wingLen = pSize * 0.72 * wingScale;
+    const wingWidth = pSize * 0.40 * wingScale;
+
+    // Wing Anchor Pivot at upper back carapace
+    const pivotY = -pSize * 0.12;
+    const pivotSeparation = pSize * 0.16;
+
+    // Color Theme: Neon Iridescent Glass Cyan/Purple or Golden Sun during Fever
+    const strokeCol = isFever ? "rgba(254, 240, 138, 0.95)" : "rgba(186, 230, 253, 0.95)";
+    const fillInner = isFever ? "rgba(245, 158, 11, 0.60)" : "rgba(56, 189, 248, 0.48)";
+    const fillOuter = isFever ? "rgba(251, 191, 36, 0.22)" : "rgba(147, 197, 253, 0.18)";
+    const veinCol = isFever ? "rgba(254, 243, 199, 0.85)" : "rgba(255, 255, 255, 0.78)";
+
+    // Render Left Wing
+    ctx.save();
+    ctx.translate(-pivotSeparation, pivotY);
+    const yForeshorten = Math.cos(this.totalTime * flapFreq);
+    ctx.rotate(-baseAngle + currentFlapAngle + tilt * 0.35);
+    ctx.scale(1.0, 0.62 + yForeshorten * 0.38);
+    this.renderSingleWing(ctx, -1, wingLen, wingWidth, fillInner, fillOuter, strokeCol, veinCol);
+    ctx.restore();
+
+    // Render Right Wing
+    ctx.save();
+    ctx.translate(pivotSeparation, pivotY);
+    ctx.rotate(baseAngle - currentFlapAngle + tilt * 0.35);
+    ctx.scale(1.0, 0.62 + yForeshorten * 0.38);
+    this.renderSingleWing(ctx, 1, wingLen, wingWidth, fillInner, fillOuter, strokeCol, veinCol);
+    ctx.restore();
+
+    // Aerodynamic Wind Ripples behind fluttering wing tips
+    if (Math.abs(flapPhase) > 0.5) {
+      ctx.save();
+      ctx.strokeStyle = isFever ? "rgba(251, 191, 36, 0.55)" : "rgba(125, 211, 252, 0.50)";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(-pivotSeparation - wingLen * 0.82, pivotY - currentFlapAngle * 22, 14, Math.PI * 0.75, Math.PI * 1.45);
+      ctx.arc(pivotSeparation + wingLen * 0.82, pivotY + currentFlapAngle * 22, 14, -Math.PI * 0.45, Math.PI * 0.25);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /**
+   * Helper to draw an aerodynamic insect wing with micro-veins
+   */
+  renderSingleWing(ctx, dir, len, width, fillInner, fillOuter, strokeCol, veinCol) {
+    const tipX = dir * len;
+    const tipY = -len * 0.25;
+
+    const wingGrad = ctx.createRadialGradient(0, 0, len * 0.1, tipX * 0.6, tipY * 0.6, len * 0.95);
+    wingGrad.addColorStop(0.0, fillInner);
+    wingGrad.addColorStop(0.7, fillOuter);
+    wingGrad.addColorStop(1.0, "rgba(255, 255, 255, 0.08)");
+
+    ctx.fillStyle = wingGrad;
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = 2.0;
+    ctx.shadowColor = strokeCol;
+    ctx.shadowBlur = 10;
+
+    // Aerodynamic Wing Outer Contour
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(dir * len * 0.35, -width * 0.95, dir * len * 0.75, -width * 0.72, tipX, tipY);
+    ctx.bezierCurveTo(dir * len * 0.85, width * 0.48, dir * len * 0.35, width * 0.68, 0, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Micro Vein Structure
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = veinCol;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(dir * len * 0.5, -width * 0.32, tipX * 0.92, tipY * 0.92);
+    ctx.moveTo(dir * len * 0.28, -width * 0.16);
+    ctx.lineTo(dir * len * 0.52, width * 0.22);
+    ctx.moveTo(dir * len * 0.52, -width * 0.20);
+    ctx.lineTo(dir * len * 0.75, width * 0.16);
+    ctx.stroke();
   }
 
   /**
@@ -1340,8 +1464,8 @@ export class RoadRenderer {
       ctx.restore();
     });
 
-    // 3. Render Mascot Flying Buggy
-    const pSize = 78;
+    // 3. Render Mascot Flying Buggy with Dynamic Flapping Wings
+    const pSize = 92;
     const bX = 140; // Fixed horizontal position for Flappy Buggy
     const bY = Math.max(48, Math.min(H - 48, yPos));
 
@@ -1351,6 +1475,11 @@ export class RoadRenderer {
     // Tilt based on vertical velocity: climb vs dive
     const tilt = Math.max(-0.45, Math.min(0.55, vy * 0.0016));
     ctx.rotate(tilt);
+
+    // Dynamic 3D Insect Fluttering Wings during flight
+    if (!isGameOver) {
+      this.drawInsectWings(ctx, pSize, { isJumping: true, progress: 0.5 }, null, false, false, tilt);
+    }
 
     // Jet Propulsion Exhaust Particles
     const exhaustPulse = (Math.sin(this.totalTime * 30) + 1) * 8;
@@ -1367,13 +1496,24 @@ export class RoadRenderer {
       ctx.globalAlpha = Math.sin(performance.now() * 0.035) > 0 ? 0.35 : 0.95;
     }
 
-    // Buggy Sprite
-    const currentImg = isGameOver ? this.sprites.dead : this.sprites.champion;
+    // Buggy Sprite (3D Jump / 3D Run / Fallback)
+    let currentImg = this.sprites.player3dJump.complete ? this.sprites.player3dJump : (this.sprites.player3dRun.complete ? this.sprites.player3dRun : this.sprites.champion);
+    if (isGameOver) {
+      currentImg = this.sprites.dead;
+    }
     if (currentImg.complete && currentImg.naturalWidth > 0) {
-      ctx.drawImage(currentImg, -pSize / 2, -pSize / 2, pSize, pSize);
+      const imgAspect = currentImg.naturalWidth / currentImg.naturalHeight;
+      let drawW = pSize;
+      let drawH = pSize;
+      if (imgAspect > 1) {
+        drawW = pSize * imgAspect;
+      } else {
+        drawH = pSize / imgAspect;
+      }
+      ctx.drawImage(currentImg, -drawW / 2, -drawH / 2, drawW, drawH);
     } else {
       ctx.beginPath();
-      ctx.arc(0, 0, 32, 0, Math.PI * 2);
+      ctx.arc(0, 0, 36, 0, Math.PI * 2);
       ctx.fillStyle = "#06b6d4";
       ctx.fill();
     }
@@ -1437,7 +1577,30 @@ export class RoadRenderer {
     switch (type) {
       case "bug":
       case "bug_crash": {
-        // --- ARCADE BEETLE / BUG ---
+        if (this.sprites.item3dBug && this.sprites.item3dBug.complete && this.sprites.item3dBug.naturalWidth > 0) {
+          const isCrash = type === "bug_crash";
+          const s = R * 2.3;
+          ctx.save();
+          if (isCrash) {
+            ctx.shadowColor = "#ef4444";
+            ctx.shadowBlur = 18;
+          }
+          ctx.drawImage(this.sprites.item3dBug, -s / 2, -s / 2, s, s);
+          if (isCrash) {
+            ctx.strokeStyle = "#fef08a";
+            ctx.lineWidth = 2.5 * scale;
+            ctx.beginPath();
+            ctx.moveTo(-s * 0.25, -s * 0.1);
+            ctx.lineTo(s * 0.05, s * 0.05);
+            ctx.lineTo(-s * 0.05, s * 0.2);
+            ctx.lineTo(s * 0.25, s * 0.35);
+            ctx.stroke();
+          }
+          ctx.restore();
+          break;
+        }
+
+        // --- ARCADE BEETLE / BUG FALLBACK ---
         const isCrash = type === "bug_crash";
         const primaryColor = isCrash ? "#dc2626" : "#ef4444";
         const shadowCol = isCrash ? "#ef4444" : "#f87171";
@@ -1550,7 +1713,19 @@ export class RoadRenderer {
       }
 
       case "deadline": {
-        // --- RETRO ALARM CLOCK (23:59) ---
+        if (this.sprites.item3dDeadline && this.sprites.item3dDeadline.complete && this.sprites.item3dDeadline.naturalWidth > 0) {
+          const ringShake = Math.sin(t * 26) * 1.5;
+          ctx.translate(ringShake, 0);
+          const s = R * 2.3;
+          ctx.save();
+          ctx.shadowColor = "#f97316";
+          ctx.shadowBlur = isFever ? 18 : 8;
+          ctx.drawImage(this.sprites.item3dDeadline, -s / 2, -s / 2, s, s);
+          ctx.restore();
+          break;
+        }
+
+        // --- RETRO ALARM CLOCK (23:59) FALLBACK ---
         const clockColor = "#ea580c";
         const ringShake = Math.sin(t * 26) * 1.5;
 
@@ -1683,7 +1858,17 @@ export class RoadRenderer {
       }
 
       case "coffee": {
-        // --- TAKEAWAY COFFEE CUP (FPTU BOOST) ---
+        if (this.sprites.item3dCoffee && this.sprites.item3dCoffee.complete && this.sprites.item3dCoffee.naturalWidth > 0) {
+          const s = R * 2.3;
+          ctx.save();
+          ctx.shadowColor = "#06b6d4";
+          ctx.shadowBlur = isFever ? 18 : 8;
+          ctx.drawImage(this.sprites.item3dCoffee, -s / 2, -s / 2, s, s);
+          ctx.restore();
+          break;
+        }
+
+        // --- TAKEAWAY COFFEE CUP (FPTU BOOST) FALLBACK ---
         // 1. Steam Wisps rising above lid
         ctx.strokeStyle = "rgba(6, 182, 212, 0.75)";
         ctx.lineWidth = 2 * scale;
@@ -1770,7 +1955,17 @@ export class RoadRenderer {
 
       case "clean_code":
       case "pr_merged": {
-        // --- SPARKLING EMERALD GIT CRYSTAL / GEM ---
+        if (this.sprites.item3dGem && this.sprites.item3dGem.complete && this.sprites.item3dGem.naturalWidth > 0) {
+          const s = R * 2.3;
+          ctx.save();
+          ctx.shadowColor = "#10b981";
+          ctx.shadowBlur = isFever ? 20 : 12;
+          ctx.drawImage(this.sprites.item3dGem, -s / 2, -s / 2, s, s);
+          ctx.restore();
+          break;
+        }
+
+        // --- SPARKLING EMERALD GIT CRYSTAL / GEM FALLBACK ---
         ctx.shadowColor = "#10b981";
         ctx.shadowBlur = isFever ? 20 : 12;
 
@@ -1848,7 +2043,17 @@ export class RoadRenderer {
       }
 
       case "star": {
-        // --- 5-POINTED GOLDEN ARCADE STAR ---
+        if (this.sprites.item3dStar && this.sprites.item3dStar.complete && this.sprites.item3dStar.naturalWidth > 0) {
+          const s = R * 2.4;
+          ctx.save();
+          ctx.shadowColor = "#f59e0b";
+          ctx.shadowBlur = isFever ? 22 : 12;
+          ctx.drawImage(this.sprites.item3dStar, -s / 2, -s / 2, s, s);
+          ctx.restore();
+          break;
+        }
+
+        // --- 5-POINTED GOLDEN ARCADE STAR FALLBACK ---
         ctx.shadowColor = "#f59e0b";
         ctx.shadowBlur = isFever ? 22 : 14;
 

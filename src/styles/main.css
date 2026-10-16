@@ -657,7 +657,7 @@ input[type=range] {
   height: 100%;
   min-height: 540px;
   display: block;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 
 /* Top HUD over Canvas */
