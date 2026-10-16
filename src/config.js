@@ -41,6 +41,8 @@ export const GAME_MODES = {
   CLASSIC: "classic",              // Né Bug Chạy Deadline (Solo Arcade)
   CATCHER: "catcher",              // Hứng PR Merged (Analog Basket Catcher)
   HIGHWAY: "highway",              // FPT Highway Racer (Đua Xe Cao Tốc FPTU)
+  SLICER: "slicer",                // Code Slicer (Chém Bug Bằng Tay - Fruit Ninja style)
+  FLAPPY: "flappy",                // Flappy Buggy (Bay Cáp Quang FPT & Cổng Logic)
   DUEL: "duel",                    // Song Đấu 1v1 (2 Laptops qua Wi-Fi/LAN)
   SPLIT_SCREEN: "splitscreen"      // Song Đấu 1 Máy (Chung 1 Camera Chia Đôi Màn Hình)
 };
@@ -85,6 +87,32 @@ export const MODE_METADATA = {
     ],
     ctaText: "Vào Đua FPT Highway Ngay (SPACE)"
   },
+  [GAME_MODES.SLICER]: {
+    badge: "CHẾ ĐỘ CHÉM BUG NINJA",
+    badgeColor: "#f43f5e",
+    title: "CODE SLICER — CHÉM BUG BẰNG TAY",
+    mascot: "assets/buggy_champion.png",
+    desc: "Dùng ngón tay hoặc chuột vung kiếm Cyber Blade chém đứt các con bug bay tung lên! Gom PR Merged, né bom Deadline 23:59!",
+    rules: [
+      { badge: "CẦN CHÉM", badgeClass: "avoid-badge", title: "Bug & Syntax Error", desc: "Chém đứt đôi các con bug đỏ để nhận điểm combo" },
+      { badge: "CẦN ĂN", badgeClass: "loot-badge", title: "PR Merged & Cà Phê", desc: "Chém gom Code sạch +100đ, Cà Phê x2" },
+      { badge: "TRÁNH CHÉM", badgeClass: "steer-badge", title: "Bom Deadline 23:59", desc: "Chém trúng bom Deadline sẽ nổ trừ 1 mạng!" }
+    ],
+    ctaText: "Vào Chém Bug Ninja (SPACE)"
+  },
+  [GAME_MODES.FLAPPY]: {
+    badge: "HỘI CHỨNG DEADLINE FPT",
+    badgeColor: "#06b6d4",
+    title: "FLAPPY BUGGY — CÁP QUANG FPTU",
+    mascot: "assets/player_running.png",
+    desc: "Nhún đầu hoặc ngẩng mặt lên để Buggy đập cánh bay lượn qua các cổng logic bitwise và tường lửa Firewall trong đường cáp quang FPT!",
+    rules: [
+      { badge: "ĐIỀU KHIỂN", badgeClass: "steer-badge", title: "Gật / Ngẩng Đầu", desc: "Ngẩng đầu lên hoặc bấm SPACE để Buggy đập cánh bay lên" },
+      { badge: "CẦN VƯỢT", badgeClass: "avoid-badge", title: "Cổng Logic & Firewall", desc: "Luồn lách qua khe hở giữa 2 cột tường lửa" },
+      { badge: "ĐIỂM THƯỞNG", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic vượt qua thành công nhận +10 điểm" }
+    ],
+    ctaText: "Bay Cáp Quang Flappy (SPACE)"
+  },
   [GAME_MODES.DUEL]: {
     badge: "ĐỐI KHÁNG ĐỒNG ĐỘI",
     badgeColor: "#ef4444",
@@ -97,6 +125,19 @@ export const MODE_METADATA = {
       { badge: "PHẢN CÔNG", badgeClass: "avoid-badge", title: "Tấn Công Đối Thủ", desc: "Ăn chuỗi combo để bắn deadline sang máy đối thủ" }
     ],
     ctaText: "Mở Sảnh Chờ Song Đấu"
+  },
+  [GAME_MODES.SPLIT_SCREEN]: {
+    badge: "ĐỐI KHÁNG 1 MÁY CHUNG CAM",
+    badgeColor: "#06b6d4",
+    title: "SPLIT-SCREEN ĐỐI KHÁNG",
+    mascot: "assets/player_running.png",
+    desc: "Hai bạn cùng đứng kè vai trước webcam máy tính! Màn hình chia đôi thi tài né deadline song song.",
+    rules: [
+      { badge: "NỬA TRÁI (P1)", badgeClass: "steer-badge", title: "Người Chơi 1", desc: "Đứng bên trái webcam, lái xe làn Cyan" },
+      { badge: "NỬA PHẢI (P2)", badgeClass: "loot-badge", title: "Người Chơi 2", desc: "Đứng bên phải webcam, lái xe làn Amber" },
+      { badge: "MỤC TIÊU", badgeClass: "avoid-badge", title: "Ai Sống Dai Hơn", desc: "Người sống sót sau cùng hoặc điểm cao hơn sẽ thắng" }
+    ],
+    ctaText: "Bắt Đầu Đấu Split-Screen Ngay"
   }
 };
 
@@ -144,6 +185,22 @@ export const CATCHER_DEFINITIONS = [
   { type: "conflict", label: "CONFLICT", color: "#f97316", radius: 26, isObstacle: true, damage: 1, textDesc: "Merge Conflict" },
   { type: "drop_db", label: "DROP DB", color: "#dc2626", radius: 24, isObstacle: true, damage: 0, scoreDeduct: 40, textDesc: "Drop Database" },
 ];
+
+export const SLICER_CONFIG = {
+  gravity: 680,            // Trọng lực px/s^2 kéo vật thể rơi xuống
+  bladeTrailMaxPoints: 12, // Số điểm lưu vết kiếm neon
+  minSliceVelocity: 260,   // Vận tốc vung tay tối thiểu để kích hoạt nhát chém (px/s)
+  sliceHitboxBonus: 18,    // Biên độ nhận diện nhát chém rộng hơn
+};
+
+export const FLAPPY_CONFIG = {
+  gravity: 720,            // Trọng lực rơi của Buggy
+  flapVelocity: -290,      // Lực nhảy khi nhún đầu hoặc bấm Space
+  pipeSpeed: 210,          // Tốc độ trôi của cột Firewall từ phải sang trái
+  pipeSpawnInterval: 1.85, // Khoảng thời gian sinh cột mới (giây)
+  pipeGap: 175,            // Khe hở an toàn để bay qua (px)
+  pipeWidth: 68,           // Độ rộng cột Firewall (px)
+};
 
 export const ASSET_PATHS = {
   fptuLogo: "assets/fptu_logo_white.png",

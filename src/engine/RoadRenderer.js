@@ -101,17 +101,11 @@ export class RoadRenderer {
   /**
    * Main Neo-Arcade 60 FPS Render Pipeline
    */
-  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic", jumpState = null, slideState = null) {
+  render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic", jumpState = null, slideState = null, extraData = null) {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
     this.totalTime += dt;
-
-    // Smooth Dynamic Road Curvature & Banking
-    const steerOffset = (playerX - this.VANISHING_X) / 190;
-    const dynamicLean = (targetX - playerX) * 0.006;
-    const targetCurve = Math.max(-1.0, Math.min(1.0, steerOffset * 0.65 + dynamicLean * 0.35));
-    this.roadCurve += (targetCurve - this.roadCurve) * Math.min(1.0, dt * 7.5);
 
     ctx.save();
 
@@ -122,6 +116,26 @@ export class RoadRenderer {
       ctx.translate(sx, sy);
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
+
+    // Special Dispatch: Slicer Mode
+    if (gameMode === "slicer") {
+      this.renderSlicer(ctx, W, H, dt, items, particleSystem, extraData && extraData.bladeTrail, isFever, isGameOver);
+      ctx.restore();
+      return;
+    }
+
+    // Special Dispatch: Flappy Buggy Mode
+    if (gameMode === "flappy") {
+      this.renderFlappy(ctx, W, H, dt, playerX, extraData && extraData.flappyY, extraData && extraData.flappyVy, items, particleSystem, isGameOver, isInvulnerable);
+      ctx.restore();
+      return;
+    }
+
+    // Smooth Dynamic Road Curvature & Banking (Classic / Highway / Catcher / Duel)
+    const steerOffset = (playerX - this.VANISHING_X) / 190;
+    const dynamicLean = (targetX - playerX) * 0.006;
+    const targetCurve = Math.max(-1.0, Math.min(1.0, steerOffset * 0.65 + dynamicLean * 0.35));
+    this.roadCurve += (targetCurve - this.roadCurve) * Math.min(1.0, dt * 7.5);
 
     // 2. Parallax Cyberpunk FPTU Skyline & Retro Sun
     this.drawCyberpunkSkyline(ctx, W, this.HORIZON_Y, isFever);
@@ -1013,6 +1027,290 @@ export class RoadRenderer {
     ctx.restore();
 
     ctx.restore(); // Restore shake
+  }
+
+  /**
+   * Code Slicer (Fruit Ninja Style) 60 FPS Canvas Renderer
+   */
+  renderSlicer(ctx, W, H, dt, items, particleSystem, bladeTrail, isFever, isGameOver) {
+    // 1. Matrix Hologram Space Arena Background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0.0, "#030612");
+    bgGrad.addColorStop(0.5, "#0b061d");
+    bgGrad.addColorStop(1.0, "#19082b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Laser Matrix Floor Grid
+    ctx.strokeStyle = isFever ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.12)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= W; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0); ctx.lineTo(x, H);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= H; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y); ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+
+    // Top Slicer Arena Banner
+    ctx.save();
+    ctx.fillStyle = "rgba(244, 63, 94, 0.15)";
+    ctx.strokeStyle = isFever ? "#f59e0b" : "#f43f5e";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(W / 2 - 130, 14, 260, 32, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px 'JetBrains Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(isFever ? "🔥 FEVER RUSH — TẤN CÔNG X2 ĐIỂM!" : "⚡ CODE SLICER — CHÉM BUG BẰNG TAY", W / 2, 34);
+    ctx.restore();
+
+    // 2. Render Tossed Items with Rotation and Sliced Halves
+    items.forEach(it => {
+      ctx.save();
+      if (it.isSliced && it.pieces) {
+        // Draw both sliced halves separating
+        it.pieces.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          ctx.beginPath();
+          if (p.isLeft) {
+            ctx.rect(-it.radius * 1.5, -it.radius * 1.5, it.radius * 1.5, it.radius * 3);
+          } else {
+            ctx.rect(0, -it.radius * 1.5, it.radius * 1.5, it.radius * 3);
+          }
+          ctx.clip();
+          this.drawArcadeItem(ctx, it, isFever, (it.scale || 1.15));
+          ctx.restore();
+        });
+      } else {
+        // Normal item flying in air
+        ctx.translate(it.x, it.y);
+        ctx.rotate(it.angle || 0);
+
+        // Warning Glow for Bomb Deadline
+        if (it.type === "deadline") {
+          const pulse = (Math.sin(performance.now() * 0.015) + 1) * 8;
+          ctx.beginPath();
+          ctx.arc(0, 0, (it.radius || 30) + pulse, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(239, 68, 68, 0.65)";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+
+        this.drawArcadeItem(ctx, it, isFever, it.scale || 1.15);
+      }
+      ctx.restore();
+    });
+
+    // 3. Render Cyber Blade Trail
+    if (bladeTrail && bladeTrail.length >= 2) {
+      ctx.save();
+      // Outer Neon Aura
+      ctx.strokeStyle = isFever ? "#f59e0b" : "#06b6d4";
+      ctx.lineWidth = 14;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 22;
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.moveTo(bladeTrail[0].x, bladeTrail[0].y);
+      for (let i = 1; i < bladeTrail.length; i++) {
+        ctx.lineTo(bladeTrail[i].x, bladeTrail[i].y);
+      }
+      ctx.stroke();
+
+      // Sharp Core Blade
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#a5f3fc";
+      ctx.globalAlpha = 0.85;
+      ctx.stroke();
+
+      // Razor Center
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+
+      // Blade Tip Flare
+      const tip = bladeTrail[bladeTrail.length - 1];
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 4. Render Particle FX
+    if (particleSystem) {
+      particleSystem.render(ctx);
+    }
+  }
+
+  /**
+   * Flappy Buggy (Logic Gates & Firewall Pipes) 60 FPS Canvas Renderer
+   */
+  renderFlappy(ctx, W, H, dt, playerX, flappyY, flappyVy, items, particleSystem, isGameOver, isInvulnerable) {
+    const yPos = (flappyY !== undefined && flappyY !== null) ? flappyY : 360;
+    const vy = (flappyVy !== undefined && flappyVy !== null) ? flappyVy : 0;
+
+    // 1. Fiber Optic Tunnel Background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0.0, "#020713");
+    bgGrad.addColorStop(0.5, "#06152b");
+    bgGrad.addColorStop(1.0, "#030c1b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Speed Lines traveling leftward
+    const tunnelOffset = (this.totalTime * 280) % 80;
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.15)";
+    ctx.lineWidth = 1.5;
+    for (let y = 50; y < H - 50; y += 70) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+    for (let x = -tunnelOffset; x < W + 80; x += 80) {
+      ctx.beginPath();
+      ctx.moveTo(x, 30);
+      ctx.lineTo(x - 40, H - 30);
+      ctx.stroke();
+    }
+
+    // Ceiling & Floor Electromagnetic Hazard Rails
+    ctx.fillStyle = "#0a1324";
+    ctx.fillRect(0, 0, W, 32);
+    ctx.fillRect(0, H - 32, W, 32);
+
+    ctx.strokeStyle = "#06b6d4";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = "#06b6d4";
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(0, 32); ctx.lineTo(W, 32);
+    ctx.moveTo(0, H - 32); ctx.lineTo(W, H - 32);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 2. Render Firewall Logic Gate Pipes
+    items.forEach(it => {
+      if (it.type !== "firewall_pipe") return;
+      const px = it.x;
+      const pw = it.width || 68;
+      const topH = it.topHeight;
+      const botY = it.bottomY;
+
+      // Top Pipe Column
+      const topGrad = ctx.createLinearGradient(px, 0, px + pw, 0);
+      topGrad.addColorStop(0, "#1e293b");
+      topGrad.addColorStop(0.5, "#334155");
+      topGrad.addColorStop(1, "#0f172a");
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(px, 32, pw, topH - 32);
+
+      // Top Pipe Rim
+      ctx.fillStyle = "#ef4444";
+      ctx.strokeStyle = "#fca5a5";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(px - 4, topH - 24, pw + 8, 24, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      // Bottom Pipe Column
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(px, botY, pw, H - 32 - botY);
+
+      // Bottom Pipe Rim
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.roundRect(px - 4, botY, pw + 8, 24, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      // Logic Gate Hologram Badge in Gap
+      ctx.save();
+      const midY = (topH + botY) / 2;
+      ctx.fillStyle = "rgba(6, 182, 212, 0.15)";
+      ctx.strokeStyle = "#06b6d4";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(px - 14, midY - 14, pw + 28, 28, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#67e8f9";
+      ctx.font = "bold 10px 'JetBrains Mono', monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(it.gateLabel || "GATE", px + pw / 2, midY);
+
+      // Electric Arc Spark between terminals
+      const arcSpark = Math.sin(this.totalTime * 18 + px) > 0.4;
+      if (arcSpark) {
+        ctx.strokeStyle = "#fef08a";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px + pw / 2, topH);
+        ctx.lineTo(px + pw / 2 + (Math.random() - 0.5) * 16, midY);
+        ctx.lineTo(px + pw / 2, botY);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // 3. Render Mascot Flying Buggy
+    const pSize = 78;
+    const bX = 140; // Fixed horizontal position for Flappy Buggy
+    const bY = Math.max(48, Math.min(H - 48, yPos));
+
+    ctx.save();
+    ctx.translate(bX, bY);
+
+    // Tilt based on vertical velocity: climb vs dive
+    const tilt = Math.max(-0.45, Math.min(0.55, vy * 0.0016));
+    ctx.rotate(tilt);
+
+    // Jet Propulsion Exhaust Particles
+    const exhaustPulse = (Math.sin(this.totalTime * 30) + 1) * 8;
+    ctx.fillStyle = "#f59e0b";
+    ctx.shadowColor = "#f59e0b";
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.ellipse(-pSize * 0.42, 0, 10 + exhaustPulse, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Invulnerability Blink
+    if (isInvulnerable) {
+      ctx.globalAlpha = Math.sin(performance.now() * 0.035) > 0 ? 0.35 : 0.95;
+    }
+
+    // Buggy Sprite
+    const currentImg = isGameOver ? this.sprites.dead : this.sprites.champion;
+    if (currentImg.complete && currentImg.naturalWidth > 0) {
+      ctx.drawImage(currentImg, -pSize / 2, -pSize / 2, pSize, pSize);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, 32, 0, Math.PI * 2);
+      ctx.fillStyle = "#06b6d4";
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 4. Particle FX
+    if (particleSystem) {
+      particleSystem.render(ctx);
+    }
   }
 
   /**

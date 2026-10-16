@@ -74,6 +74,8 @@ export class UIController {
       tabModeClassic: $("tabModeClassic"),
       tabModeCatcher: $("tabModeCatcher"),
       tabModeHighway: $("tabModeHighway"),
+      tabModeSlicer: $("tabModeSlicer"),
+      tabModeFlappy: $("tabModeFlappy"),
       tabModeDuel: $("tabModeDuel"),
       duelLobbyModal: $("duelLobbyModal"),
       duelPlayerName: $("duelPlayerName"),
@@ -138,6 +140,18 @@ export class UIController {
       this.dom.tabModeHighway.onclick = () => {
         sound.playClick();
         if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("highway");
+      };
+    }
+    if (this.dom.tabModeSlicer) {
+      this.dom.tabModeSlicer.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("slicer");
+      };
+    }
+    if (this.dom.tabModeFlappy) {
+      this.dom.tabModeFlappy.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("flappy");
       };
     }
     if (this.dom.tabModeDuel) {
@@ -835,6 +849,8 @@ export class UIController {
     if (this.dom.tabModeClassic) this.dom.tabModeClassic.classList.toggle("active", mode === "classic");
     if (this.dom.tabModeCatcher) this.dom.tabModeCatcher.classList.toggle("active", mode === "catcher");
     if (this.dom.tabModeHighway) this.dom.tabModeHighway.classList.toggle("active", mode === "highway");
+    if (this.dom.tabModeSlicer) this.dom.tabModeSlicer.classList.toggle("active", mode === "slicer");
+    if (this.dom.tabModeFlappy) this.dom.tabModeFlappy.classList.toggle("active", mode === "flappy");
     if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel" || mode === "splitscreen");
   }
 

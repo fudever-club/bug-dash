@@ -1,7 +1,7 @@
 // FU-DEVER BUG DASH — Main Application Entry Point
 // Connects Computer Vision, Audio Synthesizer, 2D Game Engine, UI, and Backend API.
 
-import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG, CONTROL_INPUTS } from "./config.js";
+import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG, CONTROL_INPUTS, SLICER_CONFIG, FLAPPY_CONFIG } from "./config.js";
 import { sound } from "./audio/SoundEngine.js";
 import { CameraController } from "./vision/camera.js";
 import { FaceDetectorWrapper } from "./vision/detector.js";
@@ -17,6 +17,15 @@ import { RoadRenderer } from "./engine/RoadRenderer.js";
 import { UIController } from "./ui/UIController.js";
 import { DuelClient } from "./multiplayer/DuelClient.js";
 
+// Helper: Distance from point to line segment
+function distPointToSegment(px, py, x1, y1, x2, y2) {
+  const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+  if (l2 === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+}
+
 class BugDashApp {
   constructor() {
     this.videoElement = document.getElementById("video");
@@ -26,6 +35,11 @@ class BugDashApp {
     this.inputSource = CONTROL_INPUTS.FACE;
     this.opponentData = null;
     this.lastNetSync = 0;
+
+    // Slicer Blade Trail & Flappy Buggy Flight Physics
+    this.bladeTrail = [];
+    this.flappyY = 360;
+    this.flappyVy = 0;
 
     // Jump & Slide State
     this.jumpState = { isJumping: false, progress: 0, duration: 0.65, elapsed: 0 };
@@ -171,7 +185,96 @@ class BugDashApp {
     this.lastFpsTime = performance.now();
 
     this.initKeyboardControls();
+    this.initPointerControls();
     this.startRenderLoop();
+  }
+
+  initPointerControls() {
+    const canvas = this.gameCanvas;
+    if (!canvas) return;
+
+    let isPointerDown = false;
+    canvas.addEventListener("pointerdown", (e) => {
+      isPointerDown = true;
+      const rect = canvas.getBoundingClientRect();
+      const px = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      const py = ((e.clientY - rect.top) / rect.height) * canvas.height;
+      this.addBladePoint(px, py);
+      if (this.gameMode === GAME_MODES.FLAPPY) {
+        this.flappyFlap();
+      }
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!isPointerDown && this.gameMode !== GAME_MODES.SLICER) return;
+      const rect = canvas.getBoundingClientRect();
+      const px = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      const py = ((e.clientY - rect.top) / rect.height) * canvas.height;
+      this.addBladePoint(px, py);
+    });
+
+    window.addEventListener("pointerup", () => {
+      isPointerDown = false;
+    });
+  }
+
+  flappyFlap() {
+    if (this.gameState.state !== GameStates.PLAYING) return;
+    this.flappyVy = FLAPPY_CONFIG.flapVelocity;
+    sound.playJump();
+    this.particles.addCollectBurst(140, this.flappyY + 15, "#06b6d4", 6);
+  }
+
+  addBladePoint(x, y) {
+    const now = performance.now();
+    const pt = { x, y, t: now };
+    if (this.bladeTrail.length > 0) {
+      const prev = this.bladeTrail[this.bladeTrail.length - 1];
+      if (this.gameMode === GAME_MODES.SLICER && this.gameState.state === GameStates.PLAYING) {
+        this.checkSlicerHits(prev, pt);
+      }
+    }
+    this.bladeTrail.push(pt);
+    if (this.bladeTrail.length > SLICER_CONFIG.bladeTrailMaxPoints) {
+      this.bladeTrail.shift();
+    }
+  }
+
+  checkSlicerHits(p1, p2) {
+    for (let i = 0; i < this.spawner.items.length; i++) {
+      const it = this.spawner.items[i];
+      if (it.isSliced) continue;
+      const bonus = SLICER_CONFIG.sliceHitboxBonus;
+      const dist = distPointToSegment(it.x, it.y, p1.x, p1.y, p2.x, p2.y);
+      if (dist <= (it.radius || 24) + bonus) {
+        it.isSliced = true;
+        if (it.type === "deadline") {
+          // Bomb deadline hit
+          this.gameState.takeDamage(1);
+          sound.playHit();
+          this.renderer.triggerShake(1.5);
+          this.particles.addSparks(it.x, it.y, "#ef4444", 32);
+          this.particles.addFloatingText(it.x, it.y, "BOM DEADLINE NỔ TUNG! (-1 HP)", "#ef4444");
+        } else if (it.isObstacle) {
+          // Sliced Bug / Error
+          it.pieces = [
+            { x: it.x - 14, y: it.y, vx: (it.vx || 0) - 130, vy: (it.vy || -200) - 60, angle: it.angle || 0, vRot: -6, isLeft: true },
+            { x: it.x + 14, y: it.y, vx: (it.vx || 0) + 130, vy: (it.vy || -200) - 60, angle: it.angle || 0, vRot: 6, isLeft: false }
+          ];
+          this.gameState.addReward(50);
+          sound.playItemCollect();
+          this.renderer.triggerShake(0.35);
+          this.particles.addSparks(it.x, it.y, "#f43f5e", 18);
+          this.particles.addFloatingText(it.x, it.y, "+50 BUG SLICED!", "#f43f5e");
+        } else {
+          // Sliced Clean Code / PR / Star / Coffee
+          this.gameState.addReward(it.points || 100);
+          sound.playBuffActive();
+          this.particles.addSparks(it.x, it.y, it.color || "#10b981", 20);
+          this.particles.addFloatingText(it.x, it.y, `+${it.points || 100} (${it.label})!`, "#10b981");
+        }
+      }
+    }
   }
 
   initKeyboardControls() {
@@ -181,6 +284,9 @@ class BugDashApp {
         if (this.gameState.state !== GameStates.PLAYING) {
           e.preventDefault();
           this.startGame();
+        } else if (this.gameMode === GAME_MODES.FLAPPY) {
+          e.preventDefault();
+          this.flappyFlap();
         } else {
           e.preventDefault();
           this.jump();
@@ -305,6 +411,18 @@ class BugDashApp {
       this.ui.updateSteeringModeUI("analog");
       this.ui.showStartScreenForMode(GAME_MODES.CATCHER);
       sound.playBuffActive();
+    } else if (mode === GAME_MODES.SLICER) {
+      this.ui.showStartScreenForMode(GAME_MODES.SLICER);
+      sound.playBuffActive();
+      // Auto-init hand detector if user switches to Slicer
+      if (!this.handDetector.isReady && !this.handDetector.isLoading) {
+        this.handDetector.init().catch(() => {});
+      }
+    } else if (mode === GAME_MODES.FLAPPY) {
+      this.flappyY = 360;
+      this.flappyVy = 0;
+      this.ui.showStartScreenForMode(GAME_MODES.FLAPPY);
+      sound.playBuffActive();
     } else if (mode === GAME_MODES.DUEL) {
       this.ui.showDuelLobby();
       if (this.ui.dom.btnDuelTabWifi) this.ui.dom.btnDuelTabWifi.click();
@@ -410,23 +528,30 @@ class BugDashApp {
       this.ui.updateCameraStatus("lock", currentFps);
     }
 
-    // 1. Hand Tracking Mode
-    if (this.inputSource === CONTROL_INPUTS.HAND) {
+    // 1. Hand Tracking Mode or Slicer Mode
+    if (this.inputSource === CONTROL_INPUTS.HAND || this.gameMode === GAME_MODES.SLICER) {
       let handStatus = null;
       if (this.handDetector.isReady) {
         handStatus = this.handDetector.detectForVideo(video, now);
         if (handStatus) {
+          if (handStatus.indexTip) {
+            const hx = handStatus.indexTip.x * 640;
+            const hy = handStatus.indexTip.y * 720;
+            this.addBladePoint(hx, hy);
+          }
           this.laneController.updateFromHand(handStatus);
           // High Hand -> Jump; Low Hand -> Slide
           if (handStatus.isHighHand && !this.jumpState.isJumping) {
-            this.jump();
+            if (this.gameMode === GAME_MODES.FLAPPY) this.flappyFlap();
+            else this.jump();
           } else if (handStatus.isLowHand && !this.slideState.isSliding) {
             this.slide();
           }
         }
       }
       this.ui.drawVisionOverlay(null, null, null, false, null, handStatus, this.inputSource);
-      return;
+      if (this.gameMode === GAME_MODES.SLICER) return;
+      if (this.inputSource === CONTROL_INPUTS.HAND) return;
     }
 
     // 2. Face Tracking Mode (BlazeFace)
@@ -442,8 +567,12 @@ class BugDashApp {
       this.laneController.updateFromTracker(trackerStatus);
 
       // Physical Jump & Duck gestures via Face Box Velocity (dY/dt)
-      if (trackerStatus.isJump && !this.jumpState.isJumping && !this.slideState.isSliding) {
-        this.jump();
+      if (trackerStatus.isJump) {
+        if (this.gameMode === GAME_MODES.FLAPPY) {
+          this.flappyFlap();
+        } else if (!this.jumpState.isJumping && !this.slideState.isSliding) {
+          this.jump();
+        }
       } else if (trackerStatus.isDuck && !this.slideState.isSliding && !this.jumpState.isJumping) {
         this.slide();
       }
@@ -628,82 +757,134 @@ class BugDashApp {
           }
         }
 
-        // Check obstacle evasion rewards for jump and slide
-        if (this.jumpState.isJumping || this.slideState.isSliding) {
-          const checkRad = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
+        // Fade out old blade trail points
+        this.bladeTrail = this.bladeTrail.filter(pt => (now - pt.t) < 140);
+
+        if (this.gameMode === GAME_MODES.FLAPPY) {
+          // Flappy Buggy Flight Physics
+          this.flappyVy += FLAPPY_CONFIG.gravity * dt;
+          this.flappyY += this.flappyVy * dt;
+
+          if (this.flappyY < 48) {
+            this.flappyY = 48;
+            this.flappyVy = 0;
+          }
+          if (this.flappyY > 672) {
+            this.flappyY = 672;
+            this.flappyVy = 0;
+          }
+
+          // Check Flappy collisions with Firewall Pipe pairs
+          const bRadius = 26;
+          const bX = 140;
           for (let i = 0; i < this.spawner.items.length; i++) {
             const it = this.spawner.items[i];
-            if (it.isObstacle && !it.evaded && Math.hypot(it.x - this.playerX, it.y - GAME_CONFIG.playerY) < (checkRad + it.radius)) {
-              if (this.jumpState.isJumping && (it.type === "bug" || it.type === "bug_crash" || it.type === "drop_db" || it.type === "grade_f")) {
-                it.evaded = true;
-                this.gameState.addReward(50);
-                this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 80, "⚡ NHẢY NÉ CÚ PHÁP! (+50)", "#38bdf8");
-                sound.playBuffActive();
-              } else if (this.slideState.isSliding && (it.type === "deadline" || it.type === "conflict")) {
-                it.evaded = true;
-                this.gameState.addReward(50);
-                this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 20, "⚡ TRƯỢT NÉ DEADLINE! (+50)", "#f59e0b");
-                sound.playBuffActive();
-              }
-            }
-          }
-        }
+            if (it.type !== "firewall_pipe") continue;
 
-        // Check Collisions (Catcher mode has slightly wider collector basket hitbox)
-        const radius = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
-        const collidingIdx = CollisionSystem.findFirstCollision(
-          this.playerX,
-          this.spawner.items,
-          GAME_CONFIG.playerY,
-          radius,
-          this.jumpState.isJumping,
-          this.slideState.isSliding
-        );
-        if (collidingIdx !== -1) {
-          const item = this.spawner.items[collidingIdx];
-
-          if (item.isObstacle) {
-            if (this.gameState.isFever) {
-              sound.playBuffActive();
-              this.renderer.triggerShake(0.6);
-              this.particles.addSparks(item.x, item.y, "#f59e0b", 22);
-              this.gameState.addReward(60);
-              this.particles.addFloatingText(item.x, item.y - 15, "+60 PTS (BUG SMASHED)!", "#f59e0b");
-            } else {
-              const isDamaged = item.damage ? this.gameState.takeDamage(item.damage) : false;
-              if (isDamaged) {
-                sound.playHit();
-                this.renderer.triggerShake(1.0);
-                this.particles.addSparks(item.x, item.y, "#ef4444", 16);
-                const desc = this.gameMode === GAME_MODES.CATCHER ? "-1 HP (DÍNH BUG)!" : "-1 HP (DEADLINE DÍ)!";
-                this.particles.addFloatingText(item.x, item.y - 15, desc, "#ef4444");
-              }
-              if (item.scoreDeduct && !this.gameState.isInvulnerable) {
-                this.gameState.deductScore(item.scoreDeduct);
-                this.particles.addFloatingText(item.x, item.y - 15, `-${item.scoreDeduct} PTS!`, "#dc2626");
-              }
-            }
-          } else {
-            // Collect Reward
-            this.particles.addSparks(item.x, item.y, item.color || "#10b981", 14);
-
-            if (item.buff === "fever") {
-              sound.playVictory();
-              this.gameState.addReward(item.points, "fever");
-              this.particles.addFloatingText(item.x, item.y - 15, "NITRO FEVER RUSH (X3 PTS)!", "#f59e0b");
-            } else if (item.buff === "x2") {
-              sound.playBuffActive();
-              this.gameState.addReward(item.points, "x2");
-              this.particles.addFloatingText(item.x, item.y - 15, "+20 PTS (CÀ PHÊ GÁNH TEAM)!", "#06b6d4");
-            } else {
+            // Passed pipe reward (+10 pts)
+            if (it.x + it.width < bX && !it.passed) {
+              it.passed = true;
+              this.gameState.addReward(10);
               sound.playItemCollect();
-              this.gameState.addReward(item.points, null);
-              const earned = item.points * this.gameState.combo;
-              this.particles.addFloatingText(item.x, item.y - 15, `+${earned} PTS (${item.label})!`, item.color || "#10b981");
+              this.particles.addFloatingText(bX, this.flappyY - 25, `PASS ${it.gateLabel} (+10)!`, "#10b981");
+            }
+
+            // Pipe Collision Check
+            if (bX + bRadius > it.x && bX - bRadius < it.x + it.width) {
+              if (this.flappyY - bRadius < it.topHeight || this.flappyY + bRadius > it.bottomY) {
+                if (!this.gameState.isInvulnerable) {
+                  const isDamaged = this.gameState.takeDamage(1);
+                  if (isDamaged) {
+                    sound.playHit();
+                    this.renderer.triggerShake(1.2);
+                    this.particles.addSparks(bX, this.flappyY, "#ef4444", 24);
+                    this.particles.addFloatingText(bX, this.flappyY, "ĐÂM FIREWALL (-1 HP)!", "#ef4444");
+                  }
+                }
+              }
+            }
+          }
+        } else if (this.gameMode === GAME_MODES.SLICER) {
+          // Slicer mode: Hitboxes are checked interactively in real-time via addBladePoint / checkSlicerHits
+        } else {
+          // Standard / Highway / Catcher / Duel Collision Checks
+          // Check obstacle evasion rewards for jump and slide
+          if (this.jumpState.isJumping || this.slideState.isSliding) {
+            const checkRad = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
+            for (let i = 0; i < this.spawner.items.length; i++) {
+              const it = this.spawner.items[i];
+              if (it.isObstacle && !it.evaded && Math.hypot(it.x - this.playerX, it.y - GAME_CONFIG.playerY) < (checkRad + it.radius)) {
+                if (this.jumpState.isJumping && (it.type === "bug" || it.type === "bug_crash" || it.type === "drop_db" || it.type === "grade_f")) {
+                  it.evaded = true;
+                  this.gameState.addReward(50);
+                  this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 80, "⚡ NHẢY NÉ CÚ PHÁP! (+50)", "#38bdf8");
+                  sound.playBuffActive();
+                } else if (this.slideState.isSliding && (it.type === "deadline" || it.type === "conflict")) {
+                  it.evaded = true;
+                  this.gameState.addReward(50);
+                  this.particles.addFloatingText(this.playerX, GAME_CONFIG.playerY - 20, "⚡ TRƯỢT NÉ DEADLINE! (+50)", "#f59e0b");
+                  sound.playBuffActive();
+                }
+              }
             }
           }
 
-          this.spawner.removeItem(collidingIdx);
+          // Check Collisions (Catcher mode has slightly wider collector basket hitbox)
+          const radius = (this.gameMode === GAME_MODES.CATCHER) ? 52 : GAME_CONFIG.playerRadius;
+          const collidingIdx = CollisionSystem.findFirstCollision(
+            this.playerX,
+            this.spawner.items,
+            GAME_CONFIG.playerY,
+            radius,
+            this.jumpState.isJumping,
+            this.slideState.isSliding
+          );
+          if (collidingIdx !== -1) {
+            const item = this.spawner.items[collidingIdx];
+
+            if (item.isObstacle) {
+              if (this.gameState.isFever) {
+                sound.playBuffActive();
+                this.renderer.triggerShake(0.6);
+                this.particles.addSparks(item.x, item.y, "#f59e0b", 22);
+                this.gameState.addReward(60);
+                this.particles.addFloatingText(item.x, item.y - 15, "+60 PTS (BUG SMASHED)!", "#f59e0b");
+              } else {
+                const isDamaged = item.damage ? this.gameState.takeDamage(item.damage) : false;
+                if (isDamaged) {
+                  sound.playHit();
+                  this.renderer.triggerShake(1.0);
+                  this.particles.addSparks(item.x, item.y, "#ef4444", 16);
+                  const desc = this.gameMode === GAME_MODES.CATCHER ? "-1 HP (DÍNH BUG)!" : "-1 HP (DEADLINE DÍ)!";
+                  this.particles.addFloatingText(item.x, item.y - 15, desc, "#ef4444");
+                }
+                if (item.scoreDeduct && !this.gameState.isInvulnerable) {
+                  this.gameState.deductScore(item.scoreDeduct);
+                  this.particles.addFloatingText(item.x, item.y - 15, `-${item.scoreDeduct} PTS!`, "#dc2626");
+                }
+              }
+            } else {
+              // Collect Reward
+              this.particles.addSparks(item.x, item.y, item.color || "#10b981", 14);
+
+              if (item.buff === "fever") {
+                sound.playVictory();
+                this.gameState.addReward(item.points, "fever");
+                this.particles.addFloatingText(item.x, item.y - 15, "NITRO FEVER RUSH (X3 PTS)!", "#f59e0b");
+              } else if (item.buff === "x2") {
+                sound.playBuffActive();
+                this.gameState.addReward(item.points, "x2");
+                this.particles.addFloatingText(item.x, item.y - 15, "+20 PTS (CÀ PHÊ GÁNH TEAM)!", "#06b6d4");
+              } else {
+                sound.playItemCollect();
+                this.gameState.addReward(item.points, null);
+                const earned = item.points * this.gameState.combo;
+                this.particles.addFloatingText(item.x, item.y - 15, `+${earned} PTS (${item.label})!`, item.color || "#10b981");
+              }
+            }
+
+            this.spawner.removeItem(collidingIdx);
+          }
         }
       }
 
@@ -728,7 +909,12 @@ class BugDashApp {
         (this.gameMode === GAME_MODES.DUEL) ? this.opponentData : null,
         this.gameMode,
         this.jumpState,
-        this.slideState
+        this.slideState,
+        {
+          bladeTrail: this.bladeTrail,
+          flappyY: this.flappyY,
+          flappyVy: this.flappyVy
+        }
       );
 
       requestAnimationFrame(loop);
