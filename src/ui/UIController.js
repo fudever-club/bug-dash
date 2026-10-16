@@ -26,6 +26,9 @@ export class UIController {
     };
 
     this.showDebug = false;
+    this.currentActiveInputSource = "face";
+    this.currentActiveStartMode = "classic";
+    this.currentHelpTabMode = "classic";
     this.initElements();
     this.bindEvents();
     this.refreshLeaderboard();
@@ -46,7 +49,10 @@ export class UIController {
       iconSoundOff: $("iconSoundOff"),
       btnHelp: $("btnHelp"),
       btnCloseHelp: $("btnCloseHelp"),
+      btnCloseHelpX: $("btnCloseHelpX"),
       helpModal: $("helpModal"),
+      helpModeTabs: $("helpModeTabs"),
+      helpContentContainer: $("helpContentContainer"),
       startCamera: $("startCamera"),
       btnCameraText: $("btnCameraText"),
       startScreenModal: $("startScreenModal"),
@@ -54,6 +60,9 @@ export class UIController {
       startModalTitle: $("startModalTitle"),
       startModalDesc: $("startModalDesc"),
       startRulesGrid: $("startRulesGrid"),
+      btnStartSwitchFace: $("btnStartSwitchFace"),
+      btnStartSwitchHand: $("btnStartSwitchHand"),
+      startModalTipsText: $("startModalTipsText"),
       startModalMascot: $("startModalMascot"),
       btnStartGameText: $("btnStartGameText"),
       gameOverModal: $("gameOverModal"),
@@ -301,15 +310,37 @@ export class UIController {
       };
     }
 
+    // Start Modal Switcher: Face vs Hand
+    if (this.dom.btnStartSwitchFace) {
+      this.dom.btnStartSwitchFace.onclick = () => {
+        sound.playClick();
+        this.setInputSourceMode("face");
+        if (this.callbacks.onSelectInputSource) this.callbacks.onSelectInputSource("face");
+      };
+    }
+    if (this.dom.btnStartSwitchHand) {
+      this.dom.btnStartSwitchHand.onclick = () => {
+        sound.playClick();
+        this.setInputSourceMode("hand");
+        if (this.callbacks.onSelectInputSource) this.callbacks.onSelectInputSource("hand");
+      };
+    }
+
     // Help Modal
     if (this.dom.btnHelp) {
       this.dom.btnHelp.onclick = () => {
-        this.dom.helpModal.classList.add("open");
         sound.playClick();
+        this.openHelpModal(this.currentActiveStartMode || "classic");
       };
     }
     if (this.dom.btnCloseHelp) {
       this.dom.btnCloseHelp.onclick = () => {
+        this.dom.helpModal.classList.remove("open");
+        sound.playClick();
+      };
+    }
+    if (this.dom.btnCloseHelpX) {
+      this.dom.btnCloseHelpX.onclick = () => {
         this.dom.helpModal.classList.remove("open");
         sound.playClick();
       };
@@ -320,6 +351,20 @@ export class UIController {
           this.dom.helpModal.classList.remove("open");
         }
       };
+    }
+
+    // Help Modal Mode Tabs
+    if (this.dom.helpModeTabs) {
+      const tabBtns = this.dom.helpModeTabs.querySelectorAll(".help-tab-btn");
+      tabBtns.forEach(btn => {
+        btn.onclick = () => {
+          sound.playClick();
+          tabBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.helpMode || "classic";
+          this.renderHelpContent(mode);
+        };
+      });
     }
 
     // Start Camera Button
@@ -476,6 +521,7 @@ export class UIController {
   }
 
   updateInputSourceUI(source) {
+    this.currentActiveInputSource = source;
     const isHand = source === "hand";
     if (this.dom.controlInputBadge) {
       this.dom.controlInputBadge.textContent = isHand ? "BÀN TAY" : "LẮC ĐẦU";
@@ -487,9 +533,16 @@ export class UIController {
     if (this.dom.btnInputHand) {
       this.dom.btnInputHand.classList.toggle("active-mode", isHand);
     }
+    if (this.dom.btnStartSwitchFace) {
+      this.dom.btnStartSwitchFace.classList.toggle("active", !isHand);
+    }
+    if (this.dom.btnStartSwitchHand) {
+      this.dom.btnStartSwitchHand.classList.toggle("active", isHand);
+    }
     if (this.dom.pipStatusText) {
       this.dom.pipStatusText.textContent = isHand ? "GIƠ TAY ĐỂ ĐIỀU KHIỂN" : "NHÌN VÀO GƯƠNG ĐỂ BẮT ĐẦU";
     }
+    this.renderStartModalRules();
   }
 
   drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null, handStatus = null, inputSource = "face") {
@@ -856,6 +909,7 @@ export class UIController {
 
   showStartScreenForMode(mode = "classic") {
     this.hideAllModals();
+    this.currentActiveStartMode = mode;
     const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
     if (this.dom.startModalBadge) {
       this.dom.startModalBadge.textContent = meta.badge;
@@ -873,8 +927,27 @@ export class UIController {
     if (this.dom.btnStartGameText) {
       this.dom.btnStartGameText.textContent = meta.ctaText;
     }
-    if (this.dom.startRulesGrid && meta.rules) {
-      this.dom.startRulesGrid.innerHTML = meta.rules.map(r => `
+    if (this.dom.startModalTipsText && meta.tips) {
+      this.dom.startModalTipsText.textContent = meta.tips;
+    }
+
+    // Render rules based on current active sensor
+    this.renderStartModalRules();
+
+    if (this.dom.startScreenModal) this.dom.startScreenModal.classList.remove("hidden");
+  }
+
+  renderStartModalRules() {
+    const mode = this.currentActiveStartMode || "classic";
+    const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
+    const isHand = this.currentActiveInputSource === "hand";
+    const rules = isHand ? (meta.handRules || meta.rules) : (meta.faceRules || meta.rules);
+
+    if (this.dom.btnStartSwitchFace) this.dom.btnStartSwitchFace.classList.toggle("active", !isHand);
+    if (this.dom.btnStartSwitchHand) this.dom.btnStartSwitchHand.classList.toggle("active", isHand);
+
+    if (this.dom.startRulesGrid && rules) {
+      this.dom.startRulesGrid.innerHTML = rules.map(r => `
         <div class="rule-card">
           <span class="rule-badge ${r.badgeClass}">${r.badge}</span>
           <strong>${r.title}</strong>
@@ -882,7 +955,95 @@ export class UIController {
         </div>
       `).join("");
     }
-    if (this.dom.startScreenModal) this.dom.startScreenModal.classList.remove("hidden");
+  }
+
+  setInputSourceMode(src) {
+    this.currentActiveInputSource = src;
+    this.updateInputSourceUI(src);
+    this.renderStartModalRules();
+  }
+
+  openHelpModal(mode = "classic") {
+    this.currentHelpTabMode = mode;
+    if (this.dom.helpModeTabs) {
+      const tabBtns = this.dom.helpModeTabs.querySelectorAll(".help-tab-btn");
+      tabBtns.forEach(b => {
+        b.classList.toggle("active", (b.dataset.helpMode === mode) || (mode === "splitscreen" && b.dataset.helpMode === "duel"));
+      });
+    }
+    this.renderHelpContent(mode === "splitscreen" ? "duel" : mode);
+    if (this.dom.helpModal) {
+      this.dom.helpModal.classList.add("open");
+    }
+  }
+
+  renderHelpContent(mode = "classic") {
+    if (!this.dom.helpContentContainer) return;
+    const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
+    const faceRules = meta.faceRules || [];
+    const handRules = meta.handRules || [];
+
+    this.dom.helpContentContainer.innerHTML = `
+      <div class="help-mode-banner">
+        <div>
+          <h4>${meta.title}</h4>
+          <p>${meta.desc}</p>
+        </div>
+        <span class="modal-mode-badge" style="color:${meta.badgeColor || 'var(--fpt-orange)'}; border-color:${meta.badgeColor || 'var(--fpt-orange)'};">
+          ${meta.badge}
+        </span>
+      </div>
+
+      <div class="help-columns-grid">
+        <!-- Cột Trái: Cảm Biến Khuôn Mặt -->
+        <div class="help-sensor-card card-face">
+          <div class="help-sensor-card-title">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              ĐIỀU KHIỂN BẰNG KHUÔN MẶT
+            </span>
+            <span style="font-size:10px; color:#38bdf8; background:rgba(56,189,248,0.15); padding:2px 8px; border-radius:12px;">FACE TRACK</span>
+          </div>
+
+          ${faceRules.map((r, i) => `
+            <div class="help-step-item">
+              <span class="step-num-badge">${i + 1}</span>
+              <div class="step-content">
+                <strong>${r.title} <span class="rule-badge ${r.badgeClass}" style="margin-left:4px; font-size:8.5px; padding:1px 5px;">${r.badge}</span></strong>
+                <span>${r.desc}</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <!-- Cột Phải: Cảm Biến Bàn Tay -->
+        <div class="help-sensor-card card-hand">
+          <div class="help-sensor-card-title">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v3"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v7"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+              ĐIỀU KHIỂN BẰNG BÀN TAY
+            </span>
+            <span style="font-size:10px; color:#34d399; background:rgba(52,211,153,0.15); padding:2px 8px; border-radius:12px;">HAND GESTURE</span>
+          </div>
+
+          ${handRules.map((r, i) => `
+            <div class="help-step-item">
+              <span class="step-num-badge">${i + 1}</span>
+              <div class="step-content">
+                <strong>${r.title} <span class="rule-badge ${r.badgeClass}" style="margin-left:4px; font-size:8.5px; padding:1px 5px;">${r.badge}</span></strong>
+                <span>${r.desc}</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- Mẹo Chơi Đạt Điểm Cao -->
+      <div class="start-tips-box" style="max-width:100%;">
+        <span class="tips-pill">CHIẾN THUẬT BOOTH</span>
+        <span>${meta.tips || "Giữ khoảng cách với camera khoảng 1 mét và căn giữa khung hình để đạt độ nhạy phản xạ cao nhất!"}</span>
+      </div>
+    `;
   }
 
   showStartScreen(mode = "classic") {

@@ -53,12 +53,23 @@ export const MODE_METADATA = {
     badgeColor: "var(--fpt-orange)",
     title: "NÉ BUG CHẠY DEADLINE",
     mascot: "assets/player_3d_run.png",
-    desc: "Đua với deadline 23:59 bằng camera lắc đầu hoặc cử chỉ bàn tay. Né Syntax Error, nhặt cà phê tăng tốc để giành điểm số cao nhất!",
+    desc: "Đua với deadline 23:59 bằng camera khuôn mặt hoặc cử chỉ bàn tay. Né Syntax Error, nhặt cà phê tăng tốc để giành điểm số cao nhất!",
     rules: [
-      { badge: "CẦN NÉ", badgeClass: "avoid-badge", title: "Bug & Deadline", desc: "Né Syntax Error & 23:59 (-1 Mạng)" },
-      { badge: "CẦN ĂN", badgeClass: "loot-badge", title: "Cà Phê & Clean Code", desc: "Ăn Cà Phê x2 Combo, nhặt PR Merged" },
-      { badge: "ĐIỀU KHIỂN", badgeClass: "steer-badge", title: "Lắc Đầu / Bàn Tay", desc: "Nghiêng đầu hoặc quét tay trái/phải, W/S nhảy trượt" }
+      { badge: "CHUYỂN 3 LÀN", badgeClass: "steer-badge", title: "Lắc / Nghiêng Đầu", desc: "Lắc đầu nhẹ hoặc nghiêng đầu (Tilt) để Buggy lướt chuyển giữa 3 làn Trái - Giữa - Phải" },
+      { badge: "HẤT CẰM NHẢY", badgeClass: "loot-badge", title: "Hất Đầu (JUMP)", desc: "Hất cằm hoặc giật đầu lên nhanh để Buggy bung cánh nhảy bổng qua con bug dưới đất" },
+      { badge: "CÚI ĐẦU TRƯỢT", badgeClass: "avoid-badge", title: "Cúi Đầu (SLIDE)", desc: "Cúi cằm hoặc nhún đầu xuống nhanh để Buggy trượt rạp người né đồng hồ deadline 23:59" }
     ],
+    faceRules: [
+      { badge: "CHUYỂN 3 LÀN", badgeClass: "steer-badge", title: "Lắc / Nghiêng Đầu", desc: "Lắc đầu nhẹ hoặc nghiêng đầu (Tilt) để Buggy lướt chuyển giữa 3 làn Trái - Giữa - Phải" },
+      { badge: "HẤT CẰM NHẢY", badgeClass: "loot-badge", title: "Hất Đầu (JUMP)", desc: "Hất cằm hoặc giật đầu lên nhanh để Buggy bung cánh nhảy bổng qua con bug dưới đất" },
+      { badge: "CÚI ĐẦU TRƯỢT", badgeClass: "avoid-badge", title: "Cúi Đầu (SLIDE)", desc: "Cúi cằm hoặc nhún đầu xuống nhanh để Buggy trượt rạp người né đồng hồ deadline 23:59" }
+    ],
+    handRules: [
+      { badge: "QUÉT TAY ĐỔI LÀN", badgeClass: "steer-badge", title: "Di Chuyển Lòng Bàn Tay", desc: "Đưa bàn tay sang Trái / Giữa / Phải trước webcam để Buggy bám theo làn tay tức thì" },
+      { badge: "VUỐT TAY LÊN", badgeClass: "loot-badge", title: "Swipe Up (JUMP)", desc: "Quét vung bàn tay lên cao để kích hoạt Buggy tung cánh nhảy cao né chướng ngại vật" },
+      { badge: "VUỐT TAY XUỐNG", badgeClass: "avoid-badge", title: "Swipe Down (SLIDE)", desc: "Quét hạ bàn tay xuống thấp để Buggy trượt sát mặt đường lách qua gầm deadline" }
+    ],
+    tips: "Ăn Cà Phê để nhận x2 Combo & tăng tốc; nhặt Sao Vàng (+150đ) và Git Gem (+50đ) để leo top 1!",
     ctaText: "Bắt Đầu Né Bug Solo (SPACE)"
   },
   [GAME_MODES.CATCHER]: {
@@ -66,12 +77,23 @@ export const MODE_METADATA = {
     badgeColor: "#10b981",
     title: "HỨNG PR & GIT CRYSTAL",
     mascot: "assets/player_3d_run_f2.png",
-    desc: "Trang bị giỏ hứng công nghệ PR Catcher! Lái Buggy di chuyển liên tục gom trọn Pull Request, Git Crystal và Sao Vàng, tránh xa Syntax Error!",
+    desc: "Trang bị giỏ hứng công nghệ PR Catcher! Di chuyển liên tục gom trọn Pull Request, Git Crystal và Sao Vàng, tránh xa Syntax Error!",
     rules: [
-      { badge: "CẦN HỨNG", badgeClass: "loot-badge", title: "PR Merged & Sao Vàng", desc: "Hứng PR Merged +100đ, Sao Vàng +150đ" },
-      { badge: "CẦN TRÁNH", badgeClass: "avoid-badge", title: "Server Crash & Drop DB", desc: "Tránh né bug 500 đỏ và thùng sập database" },
-      { badge: "CƠ CHẾ LÁI", badgeClass: "steer-badge", title: "Lái Tự Do (Analog)", desc: "Di chuyển tự do mượt mà không giới hạn 3 làn" }
+      { badge: "LÁI ANALOG TỰ DO", badgeClass: "steer-badge", title: "Lắc Đầu Mượt Mà", desc: "Lắc đầu tự do trái/phải — giỏ PR Catcher bám theo đầu mượt mà không bị giới hạn 3 làn" },
+      { badge: "GOM CHÙM QUÀ", badgeClass: "loot-badge", title: "Hứng PR & Git Gem", desc: "Đón trọn Pull Request (+100đ), Git Gem (+60đ) và Sao Vàng (+150đ) rơi xuống" },
+      { badge: "NÉ THÙNG SẬP DB", badgeClass: "avoid-badge", title: "Tránh Bug 500", desc: "Lắc đầu né xa các thùng sập Database đỏ và Bug Server 500 để không bị trừ điểm" }
     ],
+    faceRules: [
+      { badge: "LÁI ANALOG TỰ DO", badgeClass: "steer-badge", title: "Lắc Đầu Mượt Mà", desc: "Lắc đầu tự do trái/phải — giỏ PR Catcher bám theo đầu mượt mà không bị giới hạn 3 làn" },
+      { badge: "GOM CHÙM QUÀ", badgeClass: "loot-badge", title: "Hứng PR & Git Gem", desc: "Đón trọn Pull Request (+100đ), Git Gem (+60đ) và Sao Vàng (+150đ) rơi xuống" },
+      { badge: "NÉ THÙNG SẬP DB", badgeClass: "avoid-badge", title: "Tránh Bug 500", desc: "Lắc đầu né xa các thùng sập Database đỏ và Bug Server 500 để không bị trừ điểm" }
+    ],
+    handRules: [
+      { badge: "BÀN TAY ĐIỀU HƯỚNG", badgeClass: "steer-badge", title: "Bàn Tay 1:1 Siêu Nhạy", desc: "Di chuyển bàn tay ngang qua lại trước webcam — giỏ hứng bám sát theo vị trí lòng bàn tay 1:1" },
+      { badge: "QUÉT TAY HỨNG QUÀ", badgeClass: "loot-badge", title: "Đón Mọi Pull Request", desc: "Bàn tay di chuyển linh hoạt gom trọn vẹn mọi dòng code sạch và sao vàng GitHub" },
+      { badge: "RÚT TAY NÉ BUG", badgeClass: "avoid-badge", title: "Né Thùng Sập DB", desc: "Né bàn tay khỏi vùng rơi của các con bug đỏ để bảo toàn điểm số kỷ lục" }
+    ],
+    tips: "Tập trung di chuyển liên tục ở khu vực giữa sân để đón được các chùm sao rơi hai bên sườn!",
     ctaText: "Bắt Đầu Hứng PR Merged (SPACE)"
   },
   [GAME_MODES.HIGHWAY]: {
@@ -79,12 +101,23 @@ export const MODE_METADATA = {
     badgeColor: "#f59e0b",
     title: "FPT HIGHWAY RACER",
     mascot: "assets/player_3d_run.png",
-    desc: "Lướt trên đại lộ FPT University Đà Nẵng với tốc độ cao! Lắc đầu hoặc quét tay drift tự do lách qua các chướng ngại vật xuất hiện liên tục.",
+    desc: "Lướt trên đại lộ FPT University Đà Nẵng với tốc độ cao! Drift tự do lách qua các chướng ngại vật xuất hiện dồn dập.",
     rules: [
-      { badge: "TỐC ĐỘ CAO", badgeClass: "avoid-badge", title: "Tốc Độ Gấp 1.5 Lần", desc: "Đường băng trôi nhanh, chướng ngại vật dồn dập" },
-      { badge: "DRIFT TỰ DO", badgeClass: "steer-badge", title: "Lái Tự Do Không Làn", desc: "Nghiêng đầu hoặc quét tay drift mượt mà" },
-      { badge: "NITRO BOOST", badgeClass: "loot-badge", title: "Bình Nitro NOS", desc: "Ăn bình Nitro để kích hoạt Fever Mode 5s" }
+      { badge: "NGHIÊNG ĐẦU ÔM CUA", badgeClass: "steer-badge", title: "Head Tilt Ôm Cua", desc: "Nghiêng đầu (Tilt) sang trái/phải như ôm cua xe máy — Buggy nghiêng bánh drift cực gắt" },
+      { badge: "PHẢN XẠ NHANH", badgeClass: "avoid-badge", title: "Tốc Độ Cao x1.5", desc: "Chướng ngại vật lao tới nhanh gấp 1.5 lần, đòi hỏi bạn lắc đầu dứt khoát né chướng ngại" },
+      { badge: "NITRO RUSH", badgeClass: "loot-badge", title: "Bình Nitro NOS", desc: "Ăn bình Nitro để kích hoạt Fever Mode 5s đâm xuyên mọi thứ và nhân đôi điểm số" }
     ],
+    faceRules: [
+      { badge: "NGHIÊNG ĐẦU ÔM CUA", badgeClass: "steer-badge", title: "Head Tilt Ôm Cua", desc: "Nghiêng đầu (Tilt) sang trái/phải như ôm cua xe máy — Buggy nghiêng bánh drift cực gắt" },
+      { badge: "PHẢN XẠ NHANH", badgeClass: "avoid-badge", title: "Tốc Độ Cao x1.5", desc: "Chướng ngại vật lao tới nhanh gấp 1.5 lần, đòi hỏi bạn lắc đầu dứt khoát né chướng ngại" },
+      { badge: "NITRO RUSH", badgeClass: "loot-badge", title: "Bình Nitro NOS", desc: "Ăn bình Nitro để kích hoạt Fever Mode 5s đâm xuyên mọi thứ và nhân đôi điểm số" }
+    ],
+    handRules: [
+      { badge: "VÔ LĂNG ẢO", badgeClass: "steer-badge", title: "Quét Tay Drift Xe", desc: "Quét tay nhanh sang trái/phải như đang vần vô lăng ảo để drift lướt xe tốc độ cao" },
+      { badge: "LÁCH KHE HẸP", badgeClass: "avoid-badge", title: "Phản Xạ Bàn Tay", desc: "Di chuyển tay nhịp nhàng luồn lách qua các khe hẹp giữa 2 chướng ngại vật sát nhau" },
+      { badge: "GOM BÌNH NITRO", badgeClass: "loot-badge", title: "Bứt Tốc 200 km/h", desc: "Đưa tay đón bình Nitro để kích hoạt bứt tốc cực hạn và bất tử đâm xuyên bug" }
+    ],
+    tips: "Tận dụng góc nghiêng đầu hoặc vung tay nhẹ ở giữa làn để giữ độ cân bằng tối đa khi tốc độ tăng cao!",
     ctaText: "Vào Đua FPT Highway Ngay (SPACE)"
   },
   [GAME_MODES.SLICER]: {
@@ -92,12 +125,23 @@ export const MODE_METADATA = {
     badgeColor: "#f43f5e",
     title: "CODE SLICER — CHÉM BUG BẰNG TAY",
     mascot: "assets/player_3d_run_f2.png",
-    desc: "Dùng ngón tay hoặc chuột vung kiếm Cyber Blade chém đứt các con bug bay tung lên! Gom PR Merged, né bom Deadline 23:59!",
+    desc: "Vung kiếm Cyber Blade chém đứt các con bug bay tung lên! Gom PR Merged, né bom Deadline 23:59!",
     rules: [
-      { badge: "CẦN CHÉM", badgeClass: "avoid-badge", title: "Bug & Syntax Error", desc: "Chém đứt đôi các con bug đỏ để nhận điểm combo" },
-      { badge: "CẦN ĂN", badgeClass: "loot-badge", title: "PR Merged & Cà Phê", desc: "Chém gom Code sạch +100đ, Cà Phê x2" },
-      { badge: "TRÁNH CHÉM", badgeClass: "steer-badge", title: "Bom Deadline 23:59", desc: "Chém trúng bom Deadline sẽ nổ trừ 1 mạng!" }
+      { badge: "VUNG KIẾM LASER", badgeClass: "steer-badge", title: "Vung Tay Nhanh (>260px/s)", desc: "Vung ngón tay hoặc bàn tay chém ngang/dọc dứt khoát để phóng đường kiếm Laser Neon rực sáng" },
+      { badge: "CHÉM ĐÔI BUG ĐỎ", badgeClass: "loot-badge", title: "Combo Chém Đứt Bug", desc: "Chém đứt các con bug bay tung lên để nhận chuỗi Combo x2, x3 (+100đ/nhát) và quà Code" },
+      { badge: "CẤM CHÉM BOM", badgeClass: "avoid-badge", title: "Né Bom Deadline 23:59", desc: "TUYỆT ĐỐI KHÔNG chém vào quả bom Deadline 23:59 — chém trúng bom sẽ nổ tung trừ 1 mạng!" }
     ],
+    handRules: [
+      { badge: "VUNG KIẾM LASER", badgeClass: "steer-badge", title: "Vung Tay Nhanh (>260px/s)", desc: "Vung ngón tay hoặc bàn tay chém ngang/dọc dứt khoát để phóng đường kiếm Laser Neon rực sáng" },
+      { badge: "CHÉM ĐÔI BUG ĐỎ", badgeClass: "loot-badge", title: "Combo Chém Đứt Bug", desc: "Chém đứt các con bug bay tung lên để nhận chuỗi Combo x2, x3 (+100đ/nhát) và quà Code" },
+      { badge: "CẤM CHÉM BOM", badgeClass: "avoid-badge", title: "Né Bom Deadline 23:59", desc: "TUYỆT ĐỐI KHÔNG chém vào quả bom Deadline 23:59 — chém trúng bom sẽ nổ tung trừ 1 mạng!" }
+    ],
+    faceRules: [
+      { badge: "ĐẦU CHÉM LASER", badgeClass: "steer-badge", title: "Lắc Đầu Phóng Kiếm", desc: "Lắc đầu hoặc giật đầu nhanh theo hướng bug đang bay để phóng luồng kiếm Laser Blade" },
+      { badge: "GẬT ĐẦU CHÉM BUG", badgeClass: "loot-badge", title: "Cắt Đôi Syntax Error", desc: "Gật đầu dứt khoát khi các con bug đỏ bay vào tầm ngắm để chém đứt nhận điểm" },
+      { badge: "NÉ TẦM BOM", badgeClass: "avoid-badge", title: "Tránh Xa Bom Deadline", desc: "Giữ yên đầu tránh xa quả bom deadline đang bay lơ lửng trên không" }
+    ],
+    tips: "Chờ từ 2-3 con bug bay lên cùng lúc rồi vung 1 nhát chém quét ngang để nhận thưởng Combo Slash!",
     ctaText: "Vào Chém Bug Ninja (SPACE)"
   },
   [GAME_MODES.FLAPPY]: {
@@ -105,12 +149,23 @@ export const MODE_METADATA = {
     badgeColor: "#06b6d4",
     title: "FLAPPY BUGGY — CÁP QUANG FPTU",
     mascot: "assets/player_3d_run_f2.png",
-    desc: "Nhún đầu hoặc ngẩng mặt lên để Buggy đập cánh bay lượn qua các cổng logic bitwise và tường lửa Firewall trong đường cáp quang FPT!",
+    desc: "Buggy đập cánh bay lượn qua các cổng logic bitwise và tường lửa Firewall trong đường cáp quang FPT!",
     rules: [
-      { badge: "ĐIỀU KHIỂN", badgeClass: "steer-badge", title: "Gật / Ngẩng Đầu", desc: "Ngẩng đầu lên hoặc bấm SPACE để Buggy đập cánh bay lên" },
-      { badge: "CẦN VƯỢT", badgeClass: "avoid-badge", title: "Cổng Logic & Firewall", desc: "Luồn lách qua khe hở giữa 2 cột tường lửa" },
-      { badge: "ĐIỂM THƯỞNG", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic vượt qua thành công nhận +10 điểm" }
+      { badge: "NGẨNG ĐẦU ĐẬP CÁNH", badgeClass: "steer-badge", title: "Hất Cằm / Ngẩng Đầu", desc: "Ngẩng cằm hoặc nhún đầu dứt khoát để Buggy đập cánh bay bổng lên trên; thả lỏng để hạ cánh" },
+      { badge: "CÂN BẰNG ĐỘ CAO", badgeClass: "avoid-badge", title: "Luồn Lách Cột Firewall", desc: "Giữ nhịp gật đầu đều đặn để Buggy lướt êm ái qua khe hở giữa 2 cột tường lửa điện từ" },
+      { badge: "PASS CỔNG LOGIC", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic (AND, OR, XOR, NAND) bay qua thành công nhận ngay +10 điểm" }
     ],
+    faceRules: [
+      { badge: "NGẨNG ĐẦU ĐẬP CÁNH", badgeClass: "steer-badge", title: "Hất Cằm / Ngẩng Đầu", desc: "Ngẩng cằm hoặc nhún đầu dứt khoát để Buggy đập cánh bay bổng lên trên; thả lỏng để hạ cánh" },
+      { badge: "CÂN BẰNG ĐỘ CAO", badgeClass: "avoid-badge", title: "Luồn Lách Cột Firewall", desc: "Giữ nhịp gật đầu đều đặn để Buggy lướt êm ái qua khe hở giữa 2 cột tường lửa điện từ" },
+      { badge: "PASS CỔNG LOGIC", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic (AND, OR, XOR, NAND) bay qua thành công nhận ngay +10 điểm" }
+    ],
+    handRules: [
+      { badge: "VẪY TAY ĐẬP CÁNH", badgeClass: "steer-badge", title: "Vẫy Bàn Tay (Flap)", desc: "Vẫy nhẹ bàn tay hoặc nhấc tay lên trước camera để Buggy đập cánh bay lên (hoặc bấm SPACE)" },
+      { badge: "ĐIỀU TIẾT NHỊP BAY", badgeClass: "avoid-badge", title: "Giữ Độ Cao Cân Bằng", desc: "Vẫy tay theo nhịp đều đặn để giữ thân bọ bay lơ lửng chính xác vào tâm khe hở an toàn" },
+      { badge: "VƯỢT TƯỜNG LỬA", badgeClass: "loot-badge", title: "Ghi Điểm Cổng Logic", desc: "Căn thời điểm vẫy tay khi sắp chạm cột Firewall để bay vọt qua an toàn" }
+    ],
+    tips: "Đừng nhún đầu/vẫy tay quá liên tục — hãy để Buggy rơi tự do một nhịp rồi mới đập cánh nhấp nhả!",
     ctaText: "Bay Cáp Quang Flappy (SPACE)"
   },
   [GAME_MODES.DUEL]: {
@@ -120,10 +175,21 @@ export const MODE_METADATA = {
     mascot: "assets/player_3d_run.png",
     desc: "Thử tài so trình né deadline giữa 2 lập trình viên! Chọn đấu 2 máy qua Wi-Fi/LAN hoặc 2 người cùng chơi trên 1 webcam máy tính.",
     rules: [
-      { badge: "1 MÁY CHUNG CAM", badgeClass: "steer-badge", title: "Split-Screen", desc: "2 bạn cùng đứng trước webcam chia đôi màn hình" },
-      { badge: "2 MÁY WI-FI", badgeClass: "loot-badge", title: "Mạng LAN / Wi-Fi", desc: "Tạo phòng 4 số, mỗi máy dùng 1 webcam riêng" },
-      { badge: "PHẢN CÔNG", badgeClass: "avoid-badge", title: "Tấn Công Đối Thủ", desc: "Ăn chuỗi combo để bắn deadline sang máy đối thủ" }
+      { badge: "ĐẤU 2 MÁY WI-FI", badgeClass: "steer-badge", title: "Mỗi Máy 1 Webcam", desc: "Mỗi người ngồi trước 1 laptop, lắc đầu né bug và gom combo sao vàng trên màn hình riêng" },
+      { badge: "BẮN DEADLINE", badgeClass: "avoid-badge", title: "Tấn Công Đối Thủ", desc: "Khi bạn ăn chuỗi combo sao vàng, hệ thống tự động bắn bom deadline sang máy đối thủ!" },
+      { badge: "SINH TỒN THẮNG CUỘC", badgeClass: "loot-badge", title: "Ai Sống Dai Hơn", desc: "Người sống sót sau cùng hoặc đạt điểm cao hơn khi hết 60s sẽ giành cúp chiến thắng" }
     ],
+    faceRules: [
+      { badge: "ĐẤU 2 MÁY WI-FI", badgeClass: "steer-badge", title: "Mỗi Máy 1 Webcam", desc: "Mỗi người ngồi trước 1 laptop, lắc đầu né bug và gom combo sao vàng trên màn hình riêng" },
+      { badge: "BẮN DEADLINE", badgeClass: "avoid-badge", title: "Tấn Công Đối Thủ", desc: "Khi bạn ăn chuỗi combo sao vàng, hệ thống tự động bắn bom deadline sang máy đối thủ!" },
+      { badge: "SINH TỒN THẮNG CUỘC", badgeClass: "loot-badge", title: "Ai Sống Dai Hơn", desc: "Người sống sót sau cùng hoặc đạt điểm cao hơn khi hết 60s sẽ giành cúp chiến thắng" }
+    ],
+    handRules: [
+      { badge: "VUNG TAY ĐỐI KHÁNG", badgeClass: "steer-badge", title: "Cử Chỉ Tay Độc Lập", desc: "Dùng cử chỉ quét tay né chướng ngại vật trên đường đua của mình bằng cảm biến tay" },
+      { badge: "PHẢN CÔNG NHANH", badgeClass: "avoid-badge", title: "Dồn Ép Bạn Chơi", desc: "Quét tay gom nhanh quà tặng để kích hoạt đòn phản công dồn dập sang máy bạn" },
+      { badge: "KNOCKOUT ĐỐI THỦ", badgeClass: "loot-badge", title: "Chiến Thắng Tuyệt Đối", desc: "Ép đối thủ dính đòn mất hết 3 mạng để giành chiến thắng Knockout!" }
+    ],
+    tips: "Tập trung giữ mạng trước khi mải mê nhặt quà — chỉ cần đối thủ dính đòn trước là bạn thắng ngay!",
     ctaText: "Mở Sảnh Chờ Song Đấu"
   },
   [GAME_MODES.SPLIT_SCREEN]: {
@@ -133,10 +199,21 @@ export const MODE_METADATA = {
     mascot: "assets/player_3d_run.png",
     desc: "Hai bạn cùng đứng kè vai trước webcam máy tính! Màn hình chia đôi thi tài né deadline song song.",
     rules: [
-      { badge: "NỬA TRÁI (P1)", badgeClass: "steer-badge", title: "Người Chơi 1", desc: "Đứng bên trái webcam, lái xe làn Cyan" },
-      { badge: "NỬA PHẢI (P2)", badgeClass: "loot-badge", title: "Người Chơi 2", desc: "Đứng bên phải webcam, lái xe làn Amber" },
-      { badge: "MỤC TIÊU", badgeClass: "avoid-badge", title: "Ai Sống Dai Hơn", desc: "Người sống sót sau cùng hoặc điểm cao hơn sẽ thắng" }
+      { badge: "ĐỨNG KÈ VAI (P1 & P2)", badgeClass: "steer-badge", title: "P1 Bên Trái • P2 Bên Phải", desc: "P1 đứng nửa trái camera (Làn Cyan), P2 đứng nửa phải camera (Làn Amber)" },
+      { badge: "LẮC ĐẦU ĐỘC LẬP", badgeClass: "loot-badge", title: "Điều Khiển Riêng Biệt", desc: "Mỗi bạn tự do lắc đầu điều khiển Buggy của mình trên nửa màn hình tương ứng" },
+      { badge: "SO KÈ TRỰC DIỆN", badgeClass: "avoid-badge", title: "Xem Ai Bị Đè Bẹp Trước", desc: "Ai né bug dai hơn và nhặt nhiều sao vàng hơn trên cùng 1 webcam sẽ thắng cuộc" }
     ],
+    faceRules: [
+      { badge: "ĐỨNG KÈ VAI (P1 & P2)", badgeClass: "steer-badge", title: "P1 Bên Trái • P2 Bên Phải", desc: "P1 đứng nửa trái camera (Làn Cyan), P2 đứng nửa phải camera (Làn Amber)" },
+      { badge: "LẮC ĐẦU ĐỘC LẬP", badgeClass: "loot-badge", title: "Điều Khiển Riêng Biệt", desc: "Mỗi bạn tự do lắc đầu điều khiển Buggy của mình trên nửa màn hình tương ứng" },
+      { badge: "SO KÈ TRỰC DIỆN", badgeClass: "avoid-badge", title: "Xem Ai Bị Đè Bẹp Trước", desc: "Ai né bug dai hơn và nhặt nhiều sao vàng hơn trên cùng 1 webcam sẽ thắng cuộc" }
+    ],
+    handRules: [
+      { badge: "TAY TRÁI & TAY PHẢI", badgeClass: "steer-badge", title: "Phân Vùng Bàn Tay", desc: "P1 dùng tay ở nửa trái khung hình, P2 dùng tay ở nửa phải khung hình camera" },
+      { badge: "QUÉT TAY SONG SONG", badgeClass: "loot-badge", title: "Đua Cử Chỉ Tay 1 Máy", desc: "Cả 2 cùng so tài cử chỉ tay trên 1 máy tính không cần chạm vào bàn phím!" },
+      { badge: "SINH TỒN ĐỐI ĐẦU", badgeClass: "avoid-badge", title: "Loại Trực Tiếp", desc: "Bên nào mất hết 3 mạng trước sẽ thua cuộc ngay lập tức!" }
+    ],
+    tips: "Đứng cách camera khoảng 0.8m - 1.2m và giữ khoảng cách vai thoải mái để camera nhận diện cả 2 người rõ nhất!",
     ctaText: "Bắt Đầu Đấu Split-Screen Ngay"
   }
 };

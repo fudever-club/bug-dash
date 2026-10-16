@@ -204,26 +204,30 @@
         <h2 id="startModalTitle">NÉ BUG CHẠY DEADLINE</h2>
         <p id="startModalDesc">Trải nghiệm né chướng ngại vật bằng chuyển động lắc đầu hoặc cử chỉ bàn tay tại Booth FU-DEVER!</p>
 
-        <!-- 3 Quick Rule Cards -->
-        <div class="start-rules-grid" id="startRulesGrid">
-          <div class="rule-card">
-            <span class="rule-badge avoid-badge">CẦN NÉ</span>
-            <strong>Bug & Deadline</strong>
-            <span>Né Syntax Error & 23:59 (-1 Mạng)</span>
-          </div>
-          <div class="rule-card">
-            <span class="rule-badge loot-badge">CẦN ĂN</span>
-            <strong>Cà Phê & Clean Code</strong>
-            <span>Ăn Cà Phê x2 Combo, nhặt PR Merged</span>
-          </div>
-          <div class="rule-card">
-            <span class="rule-badge steer-badge">ĐIỀU KHIỂN</span>
-            <strong>Lắc Đầu / Bàn Tay</strong>
-            <span>Nghiêng đầu hoặc quét tay trái/phải, W/S nhảy trượt</span>
-          </div>
+        <!-- Switcher: Chọn hướng dẫn theo Khuôn Mặt vs Bàn Tay -->
+        <div class="start-input-switcher" id="startInputSwitcher">
+          <button class="btn-input-switch active" id="btnStartSwitchFace" title="Điều khiển bằng cử động đầu / mặt (Phím I)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            <span>Dùng Khuôn Mặt (Head Track)</span>
+          </button>
+          <button class="btn-input-switch" id="btnStartSwitchHand" title="Điều khiển bằng cử chỉ bàn tay (Phím I)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v3"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v7"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            <span>Dùng Bàn Tay (Hand Gesture)</span>
+          </button>
         </div>
 
-        <button class="btn-primary" id="btnStartGame" style="padding:14px 36px; font-size:15px; margin-top:8px;">
+        <!-- 3 Quick Rule Cards (Dynamically Populated by Selected Sensor) -->
+        <div class="start-rules-grid" id="startRulesGrid">
+          <!-- Dynamically populated from MODE_METADATA.faceRules / handRules -->
+        </div>
+
+        <!-- Dynamic Pro Tip Box -->
+        <div class="start-tips-box" id="startModalTips">
+          <span class="tips-pill">MẸO PRO</span>
+          <span id="startModalTipsText">Ăn Cà Phê để nhận x2 Combo & tăng tốc; nhặt Sao Vàng (+150đ) để leo top 1!</span>
+        </div>
+
+        <button class="btn-primary" id="btnStartGame" style="padding:14px 36px; font-size:15px; margin-top:6px;">
           <span id="btnStartGameText">Bắt Đầu Né Bug Solo (SPACE)</span>
         </button>
       </div>
@@ -399,6 +403,8 @@
       <div><kbd>↑ / W</kbd> Nhảy qua bug</div>
       <div><kbd>↓ / S</kbd> Trượt lách deadline</div>
       <div><kbd>←</kbd> <kbd>→</kbd> Chuyển làn</div>
+      <div><kbd>I</kbd> Đổi Mặt/Tay</div>
+      <div><kbd>H</kbd> Hướng dẫn</div>
       <div><kbd>C</kbd> Calibrate tâm</div>
       <div><kbd>T</kbd> Đổi kiểu lái</div>
       <div><kbd>M</kbd> Âm thanh</div>
@@ -408,18 +414,46 @@
 </div>
 
 <!-- Modal Hướng Dẫn -->
+<!-- Modal Cẩm Nang Hướng Dẫn Toàn Diện Đa Chế Độ -->
 <div class="modal-overlay" id="helpModal">
-  <div class="modal-card">
-    <h3>Hướng Dẫn Né Bug Chạy Deadline</h3>
-    <p>Chào mừng bạn đến với gian hàng trải nghiệm công nghệ của <strong>CLB Lập Trình FU-DEVER (Đại học FPT Đà Nẵng)</strong>!</p>
-    <ul>
-      <li><strong>1. Camera:</strong> Bấm <em>"Bật Camera Điều Khiển"</em>. Có thể chọn cảm biến <strong>Lắc Đầu</strong> hoặc <strong>Cử Chỉ Bàn Tay</strong>.</li>
-      <li><strong>2. Đổi làn:</strong> Nghiêng đầu hoặc quét bàn tay sang <strong>Trái / Giữa / Phải</strong> để Buggy lướt theo bạn.</li>
-      <li><strong>3. Nhảy & Trượt:</strong> Giơ tay cao / bấm <strong>W / ↑</strong> để <em>Nhảy</em> qua bug mặt đất; hạ tay thấp / bấm <strong>S / ↓</strong> để <em>Trượt</em> cúi người qua đồng hồ deadline!</li>
-      <li><strong>4. Nhặt thưởng:</strong> Cà phê FPTU (+Tốc độ & x2 Điểm), Clean Code (+50đ) và Sao Vàng (+150đ).</li>
-      <li><strong>5. Đa chế độ chơi:</strong> Trải nghiệm trọn bộ 6 chế độ: <strong>Né Bug Solo</strong>, <strong>Hứng PR Merged</strong>, <strong>FPT Highway Racer</strong>, <strong>Chém Bug Ninja (Hand Slicer)</strong>, <strong>Flappy Buggy (Bay Cáp Quang)</strong>, và <strong>Song Đấu 1v1</strong>!</li>
-    </ul>
-    <button class="btn-outline" id="btnCloseHelp" style="align-self:flex-end; margin-top:8px;">Đã Hiểu</button>
+  <div class="modal-card help-modal-large">
+    <div class="help-modal-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="hud-icon-badge" style="background:rgba(242,111,33,0.2); color:var(--fpt-orange); width:32px; height:32px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <div>
+          <h3>CẨM NANG HƯỚNG DẪN ĐIỀU KHIỂN BOOTH 2026</h3>
+          <p style="margin:0; font-size:12px; color:var(--text-muted);">Chọn từng chế độ để xem chi tiết cách dùng <strong>Khuôn Mặt</strong> hoặc <strong>Bàn Tay</strong></p>
+        </div>
+      </div>
+      <button class="btn-icon" id="btnCloseHelpX" style="border:none; background:transparent; font-size:20px; color:var(--text-muted); cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Tabs chọn chế độ game trong Hướng Dẫn -->
+    <div class="help-mode-tabs" id="helpModeTabs">
+      <button class="help-tab-btn active" data-help-mode="classic">1. Né Bug Solo</button>
+      <button class="help-tab-btn" data-help-mode="catcher">2. Hứng PR Merged</button>
+      <button class="help-tab-btn" data-help-mode="highway">3. FPT Highway</button>
+      <button class="help-tab-btn" data-help-mode="slicer">4. Code Slicer Ninja</button>
+      <button class="help-tab-btn" data-help-mode="flappy">5. Flappy Buggy</button>
+      <button class="help-tab-btn" data-help-mode="duel">6. Song Đấu 1v1</button>
+    </div>
+
+    <!-- Khung nội dung 2 cột: Khuôn Mặt vs Bàn Tay -->
+    <div class="help-content-container" id="helpContentContainer">
+      <!-- Dynamically rendered by UIController -->
+    </div>
+
+    <!-- Khối phím tắt bàn phím & nút đóng -->
+    <div class="help-footer-row">
+      <div class="help-shortcuts-hint">
+        <span>Phím tắt nhanh: <kbd>I</kbd> Đổi Cảm Biến Mặt/Tay • <kbd>SPACE</kbd> Bắt Đầu/Nhảy • <kbd>W / S</kbd> Nhảy/Trượt • <kbd>A / D</kbd> Đổi Làn • <kbd>C</kbd> Calibrate Tâm • <kbd>T</kbd> Đổi Lái 3 Làn/Analog • <kbd>M</kbd> Bật/Tắt Âm Thanh</span>
+      </div>
+      <button class="btn-primary" id="btnCloseHelp" style="padding:10px 24px; font-size:13.5px; white-space:nowrap;">
+        Đã Hiểu & Vào Chơi
+      </button>
+    </div>
   </div>
 </div>
 

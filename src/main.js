@@ -314,6 +314,17 @@ class BugDashApp {
       if (e.key === "d" || e.key === "D") {
         if (this.ui.dom.btnToggleDebug) this.ui.dom.btnToggleDebug.click();
       }
+      // Input source toggle (Face Tracking vs Hand Gestures)
+      if (e.key === "i" || e.key === "I") {
+        const nextSrc = this.inputSource === "face" ? "hand" : "face";
+        this.setInputSource(nextSrc);
+        sound.playClick();
+        this.particles.addFloatingText(320, 300, nextSrc === "hand" ? "ĐỔI SANG BÀN TAY (HAND)" : "ĐỔI SANG KHUÔN MẶT (FACE)", nextSrc === "hand" ? "#10b981" : "#f59e0b");
+      }
+      // Help modal shortcut
+      if (e.key === "h" || e.key === "H") {
+        if (this.ui.dom.btnHelp) this.ui.dom.btnHelp.click();
+      }
       // Steering mode toggle (3-Lane vs Free Analog Racer)
       if (e.key === "t" || e.key === "T") {
         const mode = this.laneController.toggleSteeringMode();
