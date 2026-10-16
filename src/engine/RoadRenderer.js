@@ -1,5 +1,5 @@
-// FU-DEVER BUG DASH - Canvas 2D Road & Arcade Renderer
-// High-performance, neo-arcade visual craftsmanship with zero external bloat.
+// FU-DEVER BUG DASH - Canvas 2D Pseudo-3D Perspective & Arcade Renderer
+// High-performance neo-arcade visual craftsmanship with FPTU Cyberpunk Skyline and dynamic road banking.
 
 import { GAME_CONFIG, ASSET_PATHS } from "../config.js";
 
@@ -10,25 +10,108 @@ export class RoadRenderer {
     this.roadOffset = 0;
     this.shake = 0;
 
-    // Preload Mascot Sprites
+    // Horizon & Perspective Constants
+    this.HORIZON_Y = 160;
+    this.VANISHING_X = 320;
+    this.roadCurve = 0;
+    this.totalTime = 0;
+
+    // Dynamic Tire Trails & Drift Slipstream
+    this.tireTrails = [];
+
+    // Preload Mascot Sprites (safe in both Browser and Node.js headless test)
+    const ImageCtor = (typeof Image !== "undefined") ? Image : class { constructor() { this.src = ""; this.complete = false; } };
     this.sprites = {
-      running: new Image(),
-      dead: new Image(),
-      champion: new Image()
+      running: new ImageCtor(),
+      dead: new ImageCtor(),
+      champion: new ImageCtor()
     };
     this.sprites.running.src = ASSET_PATHS.playerRunning;
     this.sprites.dead.src = ASSET_PATHS.playerDead;
     this.sprites.champion.src = ASSET_PATHS.buggyChampion;
+
+    // Precompute Static Cyberpunk Starfield (60 stars, zero GC allocation)
+    this.stars = [];
+    let seed = 42;
+    const pseudoRand = () => {
+      seed = (seed * 16807) % 2147483647;
+      return (seed - 1) / 2147483646;
+    };
+    const colors = ["#ffffff", "#67e8f9", "#fde047", "#a5f3fc", "#fef08a"];
+    for (let i = 0; i < 60; i++) {
+      this.stars.push({
+        x: Math.round(pseudoRand() * 640),
+        y: Math.round(pseudoRand() * (this.HORIZON_Y - 18) + 4),
+        r: pseudoRand() * 1.5 + 0.6,
+        baseAlpha: pseudoRand() * 0.5 + 0.45,
+        twinkleSpeed: pseudoRand() * 2.8 + 1.2,
+        phase: pseudoRand() * Math.PI * 2,
+        color: colors[Math.floor(pseudoRand() * colors.length)]
+      });
+    }
+
+    // Precompute Static Silhouette Geometry of FPTU Campus & Da Nang City
+    this.buildings = [
+      // FPT Complex Building (Oval high-tech curves on the left)
+      { type: "complex", x: 20, w: 90, h: 58, ledColor: "#06b6d4" },
+      { type: "tower", x: 120, w: 28, h: 88, ledColor: "#10b981", antennaH: 26 },
+      // Icon: FPT University Da Nang - Tòa Alpha (Origami Chevron Geometry)
+      { type: "alpha", x: 165, w: 145, h: 102, ledColor: "#f26f21" },
+      // Central Tech Telecom Tower with blinking beacon
+      { type: "telecom", x: 316, w: 8, h: 115, beaconColor: "#ef4444" },
+      // Da Nang Dragon Bridge Synthwave Arch on the right
+      { type: "dragon_bridge", x: 345, w: 160, h: 52, ledColor: "#f59e0b" },
+      // Coastal Cyber Towers
+      { type: "tower", x: 520, w: 34, h: 74, ledColor: "#06b6d4", antennaH: 18 },
+      { type: "tower", x: 570, w: 52, h: 62, ledColor: "#f26f21", antennaH: 12 }
+    ];
   }
 
   triggerShake(intensity = 1.0) {
     this.shake = intensity;
   }
 
+  /**
+   * Non-linear Perspective Scale from Horizon (y=160, s=0.32) to Player (y=600, s=1.0)
+   */
+  getPerspectiveScale(y) {
+    if (y <= this.HORIZON_Y) return 0.32;
+    const u = (y - this.HORIZON_Y) / 440; // u=1.0 exactly at y=600 (player baseline)
+    return 0.32 + 0.68 * Math.pow(Math.max(0, u), 1.25);
+  }
+
+  /**
+   * Parabolic Road Curvature Offset: Max deflection at horizon, strictly 0 at player baseline
+   */
+  getCurveOffset(y, scale) {
+    const inv = Math.max(0, 1.0 - scale);
+    return this.roadCurve * (inv * inv) * 92;
+  }
+
+  /**
+   * Map logical game coordinates (X: 130..510) to 3D perspective screen coordinates
+   */
+  getScreenPos(logicX, logicY) {
+    const scale = this.getPerspectiveScale(logicY);
+    const curve = this.getCurveOffset(logicY, scale);
+    const screenX = this.VANISHING_X + (logicX - this.VANISHING_X) * scale + curve;
+    return { x: screenX, y: logicY, scale };
+  }
+
+  /**
+   * Main Neo-Arcade 60 FPS Render Pipeline
+   */
   render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic", jumpState = null, slideState = null) {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
+    this.totalTime += dt;
+
+    // Smooth Dynamic Road Curvature & Banking
+    const steerOffset = (playerX - this.VANISHING_X) / 190;
+    const dynamicLean = (targetX - playerX) * 0.006;
+    const targetCurve = Math.max(-1.0, Math.min(1.0, steerOffset * 0.65 + dynamicLean * 0.35));
+    this.roadCurve += (targetCurve - this.roadCurve) * Math.min(1.0, dt * 7.5);
 
     ctx.save();
 
@@ -40,82 +123,41 @@ export class RoadRenderer {
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
 
-    // 2. Base Road Background
-    ctx.fillStyle = "#070c18";
-    ctx.fillRect(0, 0, W, H);
+    // 2. Parallax Cyberpunk FPTU Skyline & Retro Sun
+    this.drawCyberpunkSkyline(ctx, W, this.HORIZON_Y, isFever);
 
-    // Dark asphalt core
-    ctx.fillStyle = "#0a1122";
-    ctx.fillRect(40, 0, W - 80, H);
+    // 3. Pseudo-3D Perspective Road & Rumble Strips
+    const roadSpeed = (steeringMode === "highway") ? 620 : (isFever ? 540 : 420);
+    this.roadOffset = (this.roadOffset + roadSpeed * dt) % 64;
+    this.drawPerspectiveRoad(ctx, W, H, isFever, steeringMode, currentLane, playerX);
 
-    // Curbside Hazard Racing Stripes (Left & Right Shoulders)
-    const stripeH = 32;
-    const stripeOffset = this.roadOffset % (stripeH * 2);
-    for (let y = -stripeH * 2; y < H + stripeH; y += stripeH * 2) {
-      const sy = y + stripeOffset;
-      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.45)" : "rgba(242, 111, 33, 0.32)";
-      ctx.fillRect(8, sy, 24, stripeH);
-      ctx.fillRect(W - 32, sy, 24, stripeH);
-    }
+    // 4. Render Falling Items (Perspective Scaled)
+    // Sort items by Y so farther items are drawn behind closer items
+    const sortedItems = items.slice().sort((a, b) => a.y - b.y);
+    sortedItems.forEach(it => {
+      const sp = this.getScreenPos(it.x, it.y);
+      const effectiveScale = sp.scale * (it.scale || 1.0);
 
-    // Highway Dash Lines (speed scales in highway mode)
-    const roadSpeed = (steeringMode === "highway") ? 620 : 420;
-    this.roadOffset = (this.roadOffset + roadSpeed * dt) % 60;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([25, 35]);
-
-    const divX1 = (GAME_CONFIG.laneX[0] + GAME_CONFIG.laneX[1]) / 2;
-    const divX2 = (GAME_CONFIG.laneX[1] + GAME_CONFIG.laneX[2]) / 2;
-
-    ctx.lineDashOffset = -this.roadOffset;
-    ctx.beginPath();
-    ctx.moveTo(divX1, 0); ctx.lineTo(divX1, H);
-    ctx.moveTo(divX2, 0); ctx.lineTo(divX2, H);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Glowing Neon Road Curbs (FPT Orange & DEVER Amber)
-    ctx.strokeStyle = isFever ? "rgba(245, 158, 11, 0.95)" : "rgba(242, 111, 33, 0.65)";
-    ctx.lineWidth = isFever ? 6 : 4;
-    ctx.beginPath();
-    ctx.moveTo(40, 0); ctx.lineTo(40, H);
-    ctx.moveTo(W - 40, 0); ctx.lineTo(W - 40, H);
-    ctx.stroke();
-
-    // Active Floor Accent Glow
-    if (steeringMode === "analog") {
-      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.18)" : "rgba(245, 158, 11, 0.08)";
-      ctx.fillRect(playerX - 60, 0, 120, H);
-    } else {
-      const activeLaneX = GAME_CONFIG.laneX[currentLane];
-      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.18)" : "rgba(245, 158, 11, 0.08)";
-      ctx.fillRect(activeLaneX - 85, 0, 170, H);
-    }
-
-    // Speed stream lines in Fever or Highway mode
-    if (isFever || steeringMode === "highway") {
-      ctx.strokeStyle = isFever ? "rgba(245, 158, 11, 0.22)" : "rgba(6, 182, 212, 0.18)";
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 5; i++) {
-        const lx = 90 + i * 110;
-        const ly = ((this.roadOffset * 5 + i * 145) % H);
-        ctx.beginPath();
-        ctx.moveTo(lx, ly);
-        ctx.lineTo(lx, ly + 45);
-        ctx.stroke();
-      }
-    }
-
-    // 3. Render Falling Items (High-Fidelity Procedural Vector Sprites)
-    items.forEach(it => {
       ctx.save();
-      ctx.translate(it.x, it.y);
-      this.drawArcadeItem(ctx, it, isFever, 1.0);
+      ctx.translate(sp.x, sp.y);
+
+      // Perspective Ground Shadow for falling item
+      const itemR = (it.radius || 24) * effectiveScale;
+      ctx.beginPath();
+      ctx.ellipse(0, itemR * 0.85, itemR * 0.75, itemR * 0.28, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+      ctx.fill();
+
+      // Atmospheric Depth Haze (fades in as item approaches)
+      if (it.y < this.HORIZON_Y + 120) {
+        ctx.globalAlpha = Math.min(1.0, Math.max(0.4, (it.y - this.HORIZON_Y + 30) / 120));
+      }
+
+      this.drawArcadeItem(ctx, it, isFever, effectiveScale);
       ctx.restore();
     });
 
-    // 4. Render Mascot Buggy (Real FU-DEVER Mascot)
+    // 5. Render Mascot Buggy (Player)
     const playerY = GAME_CONFIG.playerY;
     const pSize = GAME_CONFIG.playerSize;
 
@@ -125,9 +167,9 @@ export class RoadRenderer {
     let shadowScale = 1.0;
     if (jumpState && jumpState.isJumping) {
       const p = jumpState.progress || 0;
-      jumpOffsetY = -Math.sin(p * Math.PI) * 75; // Peak 75px vertical jump
+      jumpOffsetY = -Math.sin(p * Math.PI) * 75; // Peak 75px vertical leap
       jumpScale = 1 + Math.sin(p * Math.PI) * 0.16;
-      shadowScale = Math.max(0.40, 1 - Math.sin(p * Math.PI) * 0.55);
+      shadowScale = Math.max(0.35, 1 - Math.sin(p * Math.PI) * 0.58);
     }
 
     let slideScaleX = 1.0;
@@ -145,9 +187,41 @@ export class RoadRenderer {
     ctx.save();
     ctx.translate(playerX, playerY + pSize * 0.38);
     ctx.beginPath();
-    ctx.ellipse(0, 0, (pSize * 0.35) * shadowScale, (pSize * 0.12) * shadowScale, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.40)";
+    ctx.ellipse(0, 0, (pSize * 0.40) * shadowScale, (pSize * 0.14) * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fill();
+
+    // High-Tech Neon Underglow (Reflective Ground Lighting)
+    const underglowCol = isFever ? "#f59e0b" : (isBuffed ? "#06b6d4" : "#f26f21");
+    const ugRadius = (pSize * 0.48) * shadowScale;
+    const underglowGrad = ctx.createRadialGradient(0, 0, ugRadius * 0.2, 0, 0, ugRadius);
+    underglowGrad.addColorStop(0, underglowCol);
+    underglowGrad.addColorStop(1, "transparent");
+    ctx.fillStyle = underglowGrad;
+    ctx.globalAlpha = isFever ? 0.65 : 0.35;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, ugRadius, ugRadius * 0.35, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Tire Drift Slipstream History
+    if (this.tireTrails.length > 10) this.tireTrails.shift();
+    this.tireTrails.push({ x: playerX, y: playerY + slideOffsetY, isFever, isBuffed, alpha: 1.0 });
+
+    ctx.save();
+    for (let i = 0; i < this.tireTrails.length - 1; i++) {
+      const t1 = this.tireTrails[i];
+      const t2 = this.tireTrails[i + 1];
+      const fade = (i / this.tireTrails.length) * 0.45;
+      ctx.strokeStyle = isFever ? `rgba(245, 158, 11, ${fade})` : `rgba(6, 182, 212, ${fade})`;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(t1.x - 22, t1.y + 36);
+      ctx.lineTo(t2.x - 22, t2.y + 36);
+      ctx.moveTo(t1.x + 22, t1.y + 36);
+      ctx.lineTo(t2.x + 22, t2.y + 36);
+      ctx.stroke();
+    }
     ctx.restore();
 
     // Catcher Minigame: Render High-Tech PR Collector Basket
@@ -157,13 +231,13 @@ export class RoadRenderer {
       ctx.strokeStyle = "#10b981";
       ctx.lineWidth = 3;
       ctx.shadowColor = "#10b981";
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.arc(0, 0, 52, Math.PI * 0.15, Math.PI * 0.85, false);
       ctx.stroke();
 
       // Collector Tray Neon Base
-      ctx.fillStyle = "rgba(16, 185, 129, 0.22)";
+      ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
       ctx.fill();
 
       // Side Antennae / Sensor Pins
@@ -180,12 +254,12 @@ export class RoadRenderer {
       ctx.restore();
     }
 
+    // Draw Player Sprite with dynamic lean & squash-stretch
     ctx.save();
     ctx.translate(playerX, playerY + jumpOffsetY + slideOffsetY);
 
-    // Dynamic tilt & squash-stretch feel
     const moveDiff = targetX - playerX;
-    const tilt = Math.max(-0.25, Math.min(0.25, moveDiff * 0.003));
+    const tilt = Math.max(-0.25, Math.min(0.25, moveDiff * 0.003 - this.roadCurve * 0.08));
     ctx.rotate(tilt);
 
     const squashX = (1 + Math.abs(tilt) * 0.30) * slideScaleX * jumpScale;
@@ -194,20 +268,20 @@ export class RoadRenderer {
 
     // Slide Skid Sparks & Jump Air Swoosh
     if (slideState && slideState.isSliding) {
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.75)";
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.85)";
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(-pSize * 0.35, pSize * 0.35);
-      ctx.lineTo(-pSize * 0.55, pSize * 0.42);
+      ctx.lineTo(-pSize * 0.60, pSize * 0.45);
       ctx.moveTo(pSize * 0.35, pSize * 0.35);
-      ctx.lineTo(pSize * 0.55, pSize * 0.42);
+      ctx.lineTo(pSize * 0.60, pSize * 0.45);
       ctx.stroke();
     }
     if (jumpState && jumpState.isJumping) {
-      ctx.strokeStyle = "rgba(6, 182, 212, 0.65)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.75)";
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(0, pSize * 0.45, pSize * 0.35, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.arc(0, pSize * 0.45, pSize * 0.36, Math.PI * 0.2, Math.PI * 0.8);
       ctx.stroke();
     }
 
@@ -225,14 +299,14 @@ export class RoadRenderer {
       ctx.strokeStyle = "#f59e0b";
       ctx.lineWidth = 5;
       ctx.shadowColor = "#f59e0b";
-      ctx.shadowBlur = 24;
+      ctx.shadowBlur = 26;
       ctx.stroke();
 
       // Outer Pulse Ring
       const pulse = (Math.sin(performance.now() * 0.01) + 1) * 6;
       ctx.beginPath();
       ctx.arc(0, 0, pSize * 0.62 + pulse, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.45)";
       ctx.lineWidth = 2;
       ctx.stroke();
     } else if (isBuffed) {
@@ -245,7 +319,7 @@ export class RoadRenderer {
       ctx.stroke();
     }
 
-    // Draw sprite
+    // Draw Mascot Sprite
     const currentImg = isGameOver ? this.sprites.dead : this.sprites.running;
     if (currentImg.complete && currentImg.naturalWidth > 0) {
       ctx.drawImage(currentImg, -pSize / 2, -pSize / 2, pSize, pSize);
@@ -258,56 +332,471 @@ export class RoadRenderer {
 
     ctx.restore();
 
-    // 5. Render Particle FX & Floating Texts
+    // 6. Render Particle FX & Floating Texts
     if (particleSystem) {
       particleSystem.render(ctx);
     }
 
-    // 6. Duel Opponent Telemetry HUD
+    // 7. Duel Opponent Telemetry HUD
     if (opponentData) {
-      ctx.save();
-      const barW = 270;
-      const barH = 34;
-      const barX = W / 2 - barW / 2;
-      const barY = 12;
-
-      ctx.fillStyle = "rgba(10, 17, 34, 0.88)";
-      ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(barX, barY, barW, barH, 6);
-      ctx.fill();
-      ctx.stroke();
-
-      // Opponent Info
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "700 11px 'Be Vietnam Pro', sans-serif";
-      ctx.textAlign = "left";
-      ctx.fillText(`${opponentData.name || 'ĐỐI THỦ'}: ${opponentData.score || 0}`, barX + 12, barY + 21);
-
-      // Opponent Lives
-      const oppLives = opponentData.lives !== undefined ? opponentData.lives : 3;
-      let heartsText = "";
-      for (let i = 0; i < 3; i++) {
-        heartsText += i < oppLives ? "● " : "○ ";
-      }
-      ctx.textAlign = "right";
-      ctx.fillStyle = oppLives > 0 ? "#ef4444" : "#64748b";
-      ctx.fillText(heartsText.trim(), barX + barW - 12, barY + 21);
-
-      ctx.restore();
+      this.drawDuelTelemetryHUD(ctx, W, opponentData);
     }
 
     ctx.restore(); // Restore shake
   }
 
   /**
-   * Split-Screen 2-Player Renderer on a Single 640x720 Canvas
+   * Render Parallax Cyberpunk FPTU Skyline with Retro Synthwave Sun
+   */
+  drawCyberpunkSkyline(ctx, W, horizonY, isFever) {
+    ctx.save();
+
+    // 1. Sky Gradient (Obsidian space -> Deep Cyber Navy -> Synthwave Horizon Violet)
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+    skyGrad.addColorStop(0.0, "#02040a");
+    skyGrad.addColorStop(0.35, "#080e22");
+    skyGrad.addColorStop(0.75, "#160e2e");
+    skyGrad.addColorStop(1.0, isFever ? "#2d1204" : "#240b3b");
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, horizonY);
+
+    // 2. Twinkling Cyber Starfield
+    this.stars.forEach(s => {
+      const alpha = s.baseAlpha + Math.sin(this.totalTime * s.twinkleSpeed + s.phase) * 0.28;
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = Math.max(0.15, Math.min(1.0, alpha));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    // 3. Synthwave Digital Sun / Cyber Moon
+    const sunX = this.VANISHING_X - this.roadCurve * 18;
+    const sunY = 92;
+    const sunR = 48;
+
+    const sunGrad = ctx.createRadialGradient(sunX, sunY - 10, sunR * 0.15, sunX, sunY, sunR);
+    if (isFever) {
+      sunGrad.addColorStop(0.0, "#fffbeb");
+      sunGrad.addColorStop(0.3, "#fef08a");
+      sunGrad.addColorStop(0.7, "#f59e0b");
+      sunGrad.addColorStop(1.0, "#b45309");
+    } else {
+      sunGrad.addColorStop(0.0, "#fef08a");
+      sunGrad.addColorStop(0.35, "#f59e0b");
+      sunGrad.addColorStop(0.75, "#f43f5e");
+      sunGrad.addColorStop(1.0, "#831843");
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+    ctx.fillStyle = sunGrad;
+    ctx.shadowColor = isFever ? "#f59e0b" : "#f43f5e";
+    ctx.shadowBlur = 24;
+    ctx.fill();
+
+    // Synthwave Scanline Bars slicing lower half of sun
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = skyGrad;
+    const scanlineCount = 5;
+    for (let i = 0; i < scanlineCount; i++) {
+      const lineH = 1.5 + i * 0.85;
+      const lineY = sunY + 6 + i * 7.5;
+      ctx.fillRect(sunX - sunR - 4, lineY, (sunR + 4) * 2, lineH);
+    }
+    ctx.restore();
+
+    // 4. Parallax Silhouette Layer (FPTU Alpha, Complex, Dragon Bridge)
+    const parallaxShift = -this.roadCurve * 15;
+    ctx.save();
+    ctx.translate(parallaxShift, 0);
+
+    // Render Buildings
+    this.buildings.forEach(b => {
+      const bx = b.x;
+      const by = horizonY - b.h;
+
+      // Dark obsidian structure
+      ctx.fillStyle = "#070c18";
+      ctx.fillRect(bx, by, b.w, b.h);
+
+      if (b.type === "alpha") {
+        // Tòa Alpha FPT University Da Nang (Origami Chevron Geometry)
+        ctx.strokeStyle = isFever ? "#f59e0b" : "#f26f21";
+        ctx.lineWidth = 1.8;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        // Chevron sloped roof facets
+        ctx.moveTo(bx, horizonY);
+        ctx.lineTo(bx + 18, by);
+        ctx.lineTo(bx + b.w / 2, by + 16);
+        ctx.lineTo(bx + b.w - 18, by);
+        ctx.lineTo(bx + b.w, horizonY);
+        ctx.stroke();
+
+        // Architectural Windows (illuminated FPTU labs)
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(254, 240, 138, 0.85)";
+        for (let row = 0; row < 5; row++) {
+          for (let col = 0; col < 6; col++) {
+            if ((row + col) % 2 === 0) {
+              ctx.fillRect(bx + 16 + col * 19, by + 28 + row * 13, 9, 5);
+            }
+          }
+        }
+
+        // Roof Hologram Badge: FU-DEVER LABS
+        ctx.fillStyle = isFever ? "#fef08a" : "#06b6d4";
+        ctx.font = "bold 8px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("FU-DEVER LABS", bx + b.w / 2, by - 6);
+      } else if (b.type === "complex") {
+        // FPT Complex Curved Ring Building
+        ctx.strokeStyle = "rgba(6, 182, 212, 0.75)";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(bx, by, b.w, b.h);
+
+        ctx.fillStyle = "rgba(6, 182, 212, 0.65)";
+        for (let row = 0; row < 3; row++) {
+          ctx.fillRect(bx + 8, by + 12 + row * 14, b.w - 16, 3);
+        }
+      } else if (b.type === "dragon_bridge") {
+        // Da Nang Dragon Bridge Synthwave Arch
+        ctx.strokeStyle = isFever ? "#f59e0b" : "#f97316";
+        ctx.lineWidth = 2.2;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(bx, horizonY);
+        ctx.quadraticCurveTo(bx + b.w * 0.35, by - 12, bx + b.w * 0.7, by + 18);
+        ctx.quadraticCurveTo(bx + b.w * 0.88, by + 4, bx + b.w, horizonY);
+        ctx.stroke();
+
+        // Arch Suspender Cables
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+        ctx.lineWidth = 1;
+        for (let c = 0; c < 7; c++) {
+          const cx = bx + 18 + c * 16;
+          ctx.beginPath();
+          ctx.moveTo(cx, horizonY);
+          ctx.lineTo(cx, by + 8);
+          ctx.stroke();
+        }
+      } else if (b.type === "telecom") {
+        // High Beacon Telecom Antenna
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(bx + b.w / 2, horizonY);
+        ctx.lineTo(bx + b.w / 2, by);
+        ctx.stroke();
+
+        // Pulsing Red Beacon Light on top
+        const beaconPulse = Math.sin(this.totalTime * 6) > 0;
+        ctx.fillStyle = beaconPulse ? "#ef4444" : "#7f1d1d";
+        ctx.shadowColor = "#ef4444";
+        ctx.shadowBlur = beaconPulse ? 12 : 2;
+        ctx.beginPath();
+        ctx.arc(bx + b.w / 2, by, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Standard Modern High-Rise
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, b.w, b.h);
+
+        // Antenna
+        if (b.antennaH) {
+          ctx.strokeStyle = "#64748b";
+          ctx.beginPath();
+          ctx.moveTo(bx + b.w / 2, by);
+          ctx.lineTo(bx + b.w / 2, by - b.antennaH);
+          ctx.stroke();
+        }
+
+        // Window matrix
+        ctx.fillStyle = "rgba(6, 182, 212, 0.4)";
+        for (let r = 0; r < 3; r++) {
+          ctx.fillRect(bx + 6, by + 12 + r * 16, b.w - 12, 4);
+        }
+      }
+    });
+
+    ctx.restore();
+
+    // 5. Horizon Depth Fog & Atmospheric Light Bloom
+    const fogGrad = ctx.createLinearGradient(0, horizonY - 26, 0, horizonY + 2);
+    fogGrad.addColorStop(0.0, "transparent");
+    fogGrad.addColorStop(0.65, isFever ? "rgba(245, 158, 11, 0.28)" : "rgba(6, 182, 212, 0.22)");
+    fogGrad.addColorStop(1.0, isFever ? "rgba(242, 111, 33, 0.45)" : "rgba(14, 165, 233, 0.35)");
+    ctx.fillStyle = fogGrad;
+    ctx.fillRect(0, horizonY - 26, W, 28);
+
+    ctx.restore();
+  }
+
+  /**
+   * Render Pseudo-3D Perspective Road Runway with Dynamic Rumble Strips & Curvature
+   */
+  drawPerspectiveRoad(ctx, W, H, isFever, steeringMode, currentLane, playerX) {
+    const horizonY = this.HORIZON_Y;
+    const roadHalfWidthBottom = 275; // Road half-width at bottom baseline (y=600..720)
+    const segments = 26;
+
+    // 1. Off-Road Synthwave Floor Grids (Left & Right Terrains)
+    ctx.fillStyle = "#040711";
+    ctx.fillRect(0, horizonY, W, H - horizonY);
+
+    // Off-road perspective radial grid lines
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.08)";
+    ctx.lineWidth = 1;
+    for (let gx = -240; gx <= W + 240; gx += 80) {
+      const topX = this.VANISHING_X + (gx - this.VANISHING_X) * 0.28 + this.getCurveOffset(horizonY, 0.32);
+      ctx.beginPath();
+      ctx.moveTo(topX, horizonY);
+      ctx.lineTo(gx, H);
+      ctx.stroke();
+    }
+
+    // 2. Main Asphalt Road Surface (Perspective Polygon)
+    ctx.save();
+    ctx.beginPath();
+
+    // Trace left curb from horizon down to bottom
+    for (let i = 0; i <= segments; i++) {
+      const y = horizonY + (i / segments) * (H - horizonY);
+      const scale = this.getPerspectiveScale(y);
+      const curve = this.getCurveOffset(y, scale);
+      const xLeft = this.VANISHING_X - roadHalfWidthBottom * scale + curve;
+      if (i === 0) ctx.moveTo(xLeft, y);
+      else ctx.lineTo(xLeft, y);
+    }
+
+    // Trace right curb from bottom up to horizon
+    for (let i = segments; i >= 0; i--) {
+      const y = horizonY + (i / segments) * (H - horizonY);
+      const scale = this.getPerspectiveScale(y);
+      const curve = this.getCurveOffset(y, scale);
+      const xRight = this.VANISHING_X + roadHalfWidthBottom * scale + curve;
+      ctx.lineTo(xRight, y);
+    }
+    ctx.closePath();
+
+    // Dark asphalt gradient with cyber sheen
+    const asphaltGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+    asphaltGrad.addColorStop(0.0, "#080e1c");
+    asphaltGrad.addColorStop(0.5, "#0a1226");
+    asphaltGrad.addColorStop(1.0, "#060b17");
+    ctx.fillStyle = asphaltGrad;
+    ctx.fill();
+
+    // 3. Active Lane Floor Accent Glow
+    if (steeringMode === "analog") {
+      const scale = 1.0;
+      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.18)" : "rgba(6, 182, 212, 0.10)";
+      ctx.fillRect(playerX - 65, horizonY, 130, H - horizonY);
+    } else {
+      const activeLaneX = GAME_CONFIG.laneX[currentLane];
+      const laneDelta = activeLaneX - this.VANISHING_X;
+
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const y = horizonY + (i / segments) * (H - horizonY);
+        const scale = this.getPerspectiveScale(y);
+        const curve = this.getCurveOffset(y, scale);
+        const cx = this.VANISHING_X + laneDelta * scale + curve;
+        const hw = 85 * scale;
+        if (i === 0) ctx.moveTo(cx - hw, y);
+        else ctx.lineTo(cx - hw, y);
+      }
+      for (let i = segments; i >= 0; i--) {
+        const y = horizonY + (i / segments) * (H - horizonY);
+        const scale = this.getPerspectiveScale(y);
+        const curve = this.getCurveOffset(y, scale);
+        const cx = this.VANISHING_X + laneDelta * scale + curve;
+        const hw = 85 * scale;
+        ctx.lineTo(cx + hw, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = isFever ? "rgba(245, 158, 11, 0.16)" : "rgba(242, 111, 33, 0.09)";
+      ctx.fill();
+    }
+
+    // 4. Perspective Rumble Strips / Racing Curbstones
+    const curbWBottom = 26;
+    for (let i = 0; i < segments; i++) {
+      const y1 = horizonY + Math.pow(i / segments, 1.45) * (H - horizonY);
+      const y2 = horizonY + Math.pow((i + 1) / segments, 1.45) * (H - horizonY);
+
+      const s1 = this.getPerspectiveScale(y1);
+      const s2 = this.getPerspectiveScale(y2);
+      const c1 = this.getCurveOffset(y1, s1);
+      const c2 = this.getCurveOffset(y2, s2);
+
+      const rw1 = roadHalfWidthBottom * s1;
+      const rw2 = roadHalfWidthBottom * s2;
+      const cw1 = curbWBottom * s1;
+      const cw2 = curbWBottom * s2;
+
+      // Color alternating pattern moving with speed offset
+      const patternIdx = Math.floor((i + this.roadOffset / 14) % 2);
+      let curbFill;
+      if (isFever) {
+        curbFill = (patternIdx === 0) ? "#f59e0b" : "#ef4444";
+      } else {
+        curbFill = (patternIdx === 0) ? "#f26f21" : "#0f172a";
+      }
+
+      // Left Curb Quad
+      ctx.fillStyle = curbFill;
+      ctx.beginPath();
+      ctx.moveTo(this.VANISHING_X - rw1 - cw1 + c1, y1);
+      ctx.lineTo(this.VANISHING_X - rw1 + c1, y1);
+      ctx.lineTo(this.VANISHING_X - rw2 + c2, y2);
+      ctx.lineTo(this.VANISHING_X - rw2 - cw2 + c2, y2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Right Curb Quad
+      ctx.beginPath();
+      ctx.moveTo(this.VANISHING_X + rw1 + c1, y1);
+      ctx.lineTo(this.VANISHING_X + rw1 + cw1 + c1, y1);
+      ctx.lineTo(this.VANISHING_X + rw2 + cw2 + c2, y2);
+      ctx.lineTo(this.VANISHING_X + rw2 + c2, y2);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // 5. Glowing Neon Road Rails (Guiding Curbs)
+    ctx.strokeStyle = isFever ? "#f59e0b" : "#06b6d4";
+    ctx.lineWidth = isFever ? 4.5 : 3.0;
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = isFever ? 18 : 12;
+
+    // Left Neon Rail
+    ctx.beginPath();
+    for (let i = 0; i <= segments; i++) {
+      const y = horizonY + (i / segments) * (H - horizonY);
+      const scale = this.getPerspectiveScale(y);
+      const curve = this.getCurveOffset(y, scale);
+      const x = this.VANISHING_X - roadHalfWidthBottom * scale + curve;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Right Neon Rail
+    ctx.beginPath();
+    for (let i = 0; i <= segments; i++) {
+      const y = horizonY + (i / segments) * (H - horizonY);
+      const scale = this.getPerspectiveScale(y);
+      const curve = this.getCurveOffset(y, scale);
+      const x = this.VANISHING_X + roadHalfWidthBottom * scale + curve;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 6. Perspective Lane Dividers (Dashed High-Speed Lines)
+    const laneDivL = (GAME_CONFIG.laneX[0] + GAME_CONFIG.laneX[1]) / 2 - this.VANISHING_X;
+    const laneDivR = (GAME_CONFIG.laneX[1] + GAME_CONFIG.laneX[2]) / 2 - this.VANISHING_X;
+
+    for (let i = 0; i < segments; i++) {
+      // Perspective line dashing: only draw even segment intervals
+      const dashProgress = (i + this.roadOffset / 16) % 3;
+      if (dashProgress > 1.4) continue;
+
+      const y1 = horizonY + Math.pow(i / segments, 1.35) * (H - horizonY);
+      const y2 = horizonY + Math.pow((i + 0.8) / segments, 1.35) * (H - horizonY);
+
+      const s1 = this.getPerspectiveScale(y1);
+      const s2 = this.getPerspectiveScale(y2);
+      const c1 = this.getCurveOffset(y1, s1);
+      const c2 = this.getCurveOffset(y2, s2);
+
+      const xL1 = this.VANISHING_X + laneDivL * s1 + c1;
+      const xL2 = this.VANISHING_X + laneDivL * s2 + c2;
+      const xR1 = this.VANISHING_X + laneDivR * s1 + c1;
+      const xR2 = this.VANISHING_X + laneDivR * s2 + c2;
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.42)";
+      ctx.lineWidth = 2.5 * s2;
+      ctx.beginPath();
+      ctx.moveTo(xL1, y1); ctx.lineTo(xL2, y2);
+      ctx.moveTo(xR1, y1); ctx.lineTo(xR2, y2);
+      ctx.stroke();
+    }
+
+    // 7. Cyberpunk Speed Streaks in Fever or Highway mode
+    if (isFever || steeringMode === "highway") {
+      ctx.strokeStyle = isFever ? "rgba(245, 158, 11, 0.45)" : "rgba(6, 182, 212, 0.35)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 7; i++) {
+        const laneX = GAME_CONFIG.laneX[i % 3] + ((i * 47) % 60 - 30);
+        const yTop = horizonY + ((this.roadOffset * 6 + i * 110) % (H - horizonY));
+        const yBot = Math.min(H, yTop + 65);
+        const sTop = this.getPerspectiveScale(yTop);
+        const sBot = this.getPerspectiveScale(yBot);
+        const cTop = this.getCurveOffset(yTop, sTop);
+        const cBot = this.getCurveOffset(yBot, sBot);
+
+        ctx.beginPath();
+        ctx.moveTo(this.VANISHING_X + (laneX - this.VANISHING_X) * sTop + cTop, yTop);
+        ctx.lineTo(this.VANISHING_X + (laneX - this.VANISHING_X) * sBot + cBot, yBot);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Top Telemetry HUD for 1v1 LAN / Wi-Fi Duel
+   */
+  drawDuelTelemetryHUD(ctx, W, opponentData) {
+    ctx.save();
+    const barW = 270;
+    const barH = 34;
+    const barX = W / 2 - barW / 2;
+    const barY = 12;
+
+    ctx.fillStyle = "rgba(10, 17, 34, 0.88)";
+    ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW, barH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 11px 'Be Vietnam Pro', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${opponentData.name || 'ĐỐI THỦ'}: ${opponentData.score || 0}`, barX + 12, barY + 21);
+
+    const oppLives = opponentData.lives !== undefined ? opponentData.lives : 3;
+    let heartsText = "";
+    for (let i = 0; i < 3; i++) {
+      heartsText += i < oppLives ? "● " : "○ ";
+    }
+    ctx.textAlign = "right";
+    ctx.fillStyle = oppLives > 0 ? "#ef4444" : "#64748b";
+    ctx.fillText(heartsText.trim(), barX + barW - 12, barY + 21);
+    ctx.restore();
+  }
+
+  /**
+   * Split-Screen 2-Player Renderer on a Single 640x720 Canvas (Enhanced Cyberpunk Duel Tracks)
    */
   renderSplitScreen(dt, p1, p2, particleSystem, timeLeft = 60) {
     const W = this.canvas.width;
     const H = this.canvas.height;
     const ctx = this.ctx;
+    this.totalTime += dt;
 
     ctx.save();
 
@@ -320,18 +809,26 @@ export class RoadRenderer {
     }
 
     // Base Background
-    ctx.fillStyle = "#070c18";
+    ctx.fillStyle = "#040711";
     ctx.fillRect(0, 0, W, H);
 
     // Dynamic Road Lines offset
-    this.roadOffset = (this.roadOffset + 420 * dt) % 60;
+    this.roadOffset = (this.roadOffset + 420 * dt) % 64;
 
-    // --- LEFT HALF: P1 Track (Cyan) ---
-    ctx.fillStyle = "#0a1324";
+    // --- LEFT HALF: P1 Track (Cyber Cyan) ---
+    const p1Grad = ctx.createLinearGradient(0, 0, 0, H);
+    p1Grad.addColorStop(0, "#081324");
+    p1Grad.addColorStop(1, "#040a16");
+    ctx.fillStyle = p1Grad;
     ctx.fillRect(16, 0, 296, H);
 
+    // P1 Neon Border
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.45)";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(16, 0, 296, H);
+
     // P1 Dash Dividers
-    ctx.strokeStyle = "rgba(6, 182, 212, 0.20)";
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.25)";
     ctx.lineWidth = 2;
     ctx.setLineDash([20, 30]);
     ctx.lineDashOffset = -this.roadOffset;
@@ -340,12 +837,20 @@ export class RoadRenderer {
     ctx.moveTo(210, 0); ctx.lineTo(210, H);
     ctx.stroke();
 
-    // --- RIGHT HALF: P2 Track (Amber) ---
-    ctx.fillStyle = "#160e1f";
+    // --- RIGHT HALF: P2 Track (Electric Amber) ---
+    const p2Grad = ctx.createLinearGradient(0, 0, 0, H);
+    p2Grad.addColorStop(0, "#1c1008");
+    p2Grad.addColorStop(1, "#0e0804");
+    ctx.fillStyle = p2Grad;
     ctx.fillRect(328, 0, 296, H);
 
+    // P2 Neon Border
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.45)";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(328, 0, 296, H);
+
     // P2 Dash Dividers
-    ctx.strokeStyle = "rgba(245, 158, 11, 0.20)";
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.25)";
     ctx.beginPath();
     ctx.moveTo(430, 0); ctx.lineTo(430, H);
     ctx.moveTo(530, 0); ctx.lineTo(530, H);
@@ -353,10 +858,10 @@ export class RoadRenderer {
     ctx.setLineDash([]);
 
     // --- CENTER DIVIDER (VS Neon Beam) ---
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(316, 0, 8, H);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-    ctx.lineWidth = 1;
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(314, 0, 12, H);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(320, 0); ctx.lineTo(320, H);
     ctx.stroke();
@@ -365,11 +870,14 @@ export class RoadRenderer {
     ctx.save();
     ctx.fillStyle = "#0f172a";
     ctx.strokeStyle = "#f59e0b";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = "#f59e0b";
+    ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.arc(320, 72, 18, 0, Math.PI * 2);
+    ctx.arc(320, 72, 19, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 11px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
@@ -397,7 +905,7 @@ export class RoadRenderer {
       });
     }
 
-    // 4. Render P1 Buggy (Chibi size 74px)
+    // 4. Render P1 Buggy & P2 Buggy
     const pSize = 74;
     const playerY = GAME_CONFIG.playerY;
 
@@ -407,12 +915,14 @@ export class RoadRenderer {
     if (p1.isInvulnerable) {
       ctx.globalAlpha = Math.sin(performance.now() * 0.035) > 0 ? 0.35 : 0.95;
     }
-    // Cyan aura
     ctx.beginPath();
     ctx.arc(0, 0, pSize * 0.52, 0, Math.PI * 2);
     ctx.strokeStyle = "#06b6d4";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = "#06b6d4";
+    ctx.shadowBlur = 14;
     ctx.stroke();
+    ctx.shadowBlur = 0;
     const p1Img = p1.isGameOver ? this.sprites.dead : this.sprites.running;
     if (p1Img.complete && p1Img.naturalWidth > 0) {
       ctx.drawImage(p1Img, -pSize / 2, -pSize / 2, pSize, pSize);
@@ -425,12 +935,14 @@ export class RoadRenderer {
     if (p2.isInvulnerable) {
       ctx.globalAlpha = Math.sin(performance.now() * 0.035) > 0 ? 0.35 : 0.95;
     }
-    // Amber aura
     ctx.beginPath();
     ctx.arc(0, 0, pSize * 0.52, 0, Math.PI * 2);
     ctx.strokeStyle = "#f59e0b";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = "#f59e0b";
+    ctx.shadowBlur = 14;
     ctx.stroke();
+    ctx.shadowBlur = 0;
     const p2Img = p2.isGameOver ? this.sprites.dead : this.sprites.running;
     if (p2Img.complete && p2Img.naturalWidth > 0) {
       ctx.drawImage(p2Img, -pSize / 2, -pSize / 2, pSize, pSize);
@@ -445,7 +957,7 @@ export class RoadRenderer {
     // 6. Split-Screen Top HUD
     // P1 HUD Box
     ctx.save();
-    ctx.fillStyle = "rgba(6, 182, 212, 0.15)";
+    ctx.fillStyle = "rgba(6, 182, 212, 0.18)";
     ctx.strokeStyle = "#06b6d4";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -466,7 +978,7 @@ export class RoadRenderer {
 
     // P2 HUD Box
     ctx.save();
-    ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
+    ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
     ctx.strokeStyle = "#f59e0b";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -487,8 +999,8 @@ export class RoadRenderer {
 
     // Center Timer Box
     ctx.save();
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(280, 14, 80, 36, 6);

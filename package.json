@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "server": "node server/server.js",
     "start": "node server/server.js",
-    "test": "node test/test-one-euro-filter.js && node test/test-catcher-dual.js && node test/test-jump-gesture.js && node test/test-e2e-duel.js"
+    "test": "node test/test-one-euro-filter.js && node test/test-catcher-dual.js && node test/test-jump-gesture.js && node test/test-perspective-renderer.js && node test/test-e2e-duel.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
