@@ -49,28 +49,28 @@ export const GAME_MODES = {
 
 export const MODE_METADATA = {
   [GAME_MODES.CLASSIC]: {
-    badge: "CHẾ ĐỘ NÉ BUG SOLO",
+    badge: "FLAGSHIP ARCADE RUNNER",
     badgeColor: "var(--fpt-orange)",
-    title: "NÉ BUG CHẠY DEADLINE",
+    title: "BUGGY DASH — ĐUA XE NÉ DEADLINE",
     mascot: "assets/player_3d_run.png",
-    desc: "Đua với deadline 23:59 bằng camera khuôn mặt hoặc cử chỉ bàn tay. Né Syntax Error, nhặt cà phê tăng tốc để giành điểm số cao nhất!",
+    desc: "Chế độ đua xe né deadline đỉnh cao tích hợp toàn diện: Lắc đầu/quét tay né bug, nhảy bổng hất cằm, cúi đầu trượt lướt, hút trọn PR Merged & Git Crystal, và bứt tốc Nitro Highway x1.5!",
     rules: [
-      { badge: "CHUYỂN 3 LÀN", badgeClass: "steer-badge", title: "Lắc / Nghiêng Đầu", desc: "Lắc đầu nhẹ hoặc nghiêng đầu (Tilt) để Buggy lướt chuyển giữa 3 làn Trái - Giữa - Phải" },
-      { badge: "HẤT CẰM NHẢY", badgeClass: "loot-badge", title: "Hất Đầu (JUMP)", desc: "Hất cằm hoặc giật đầu lên nhanh để Buggy bung cánh nhảy bổng qua con bug dưới đất" },
-      { badge: "CÚI ĐẦU TRƯỢT", badgeClass: "avoid-badge", title: "Cúi Đầu (SLIDE)", desc: "Cúi cằm hoặc nhún đầu xuống nhanh để Buggy trượt rạp người né đồng hồ deadline 23:59" }
+      { badge: "CHUYỂN LÀN / BẺ LÁI", badgeClass: "steer-badge", title: "Lắc Đầu Đổi Làn", desc: "Nghiêng đầu nhẹ hoặc bẻ lái vô lăng để chuyển 3 làn Trái - Giữa - Phải hoặc lái tự do Analog" },
+      { badge: "NHẢY & TRƯỢT", badgeClass: "loot-badge", title: "Hất Cằm Nhảy / Cúi Trượt", desc: "Hất đầu nhanh để nhảy qua con bug dưới đất; cúi đầu để trượt sát mặt đường né deadline trên cao" },
+      { badge: "HÚT PR & NITRO", badgeClass: "avoid-badge", title: "Gom Quà & Bứt Tốc", desc: "Hút Pull Request (+100đ), Sao Vàng (+150đ) và ăn Nitro bứt phá tốc độ Highway x1.5 đâm xuyên bug" }
     ],
     faceRules: [
-      { badge: "CHUYỂN 3 LÀN", badgeClass: "steer-badge", title: "Lắc / Nghiêng Đầu", desc: "Lắc đầu nhẹ hoặc nghiêng đầu (Tilt) để Buggy lướt chuyển giữa 3 làn Trái - Giữa - Phải" },
-      { badge: "HẤT CẰM NHẢY", badgeClass: "loot-badge", title: "Hất Đầu (JUMP)", desc: "Hất cằm hoặc giật đầu lên nhanh để Buggy bung cánh nhảy bổng qua con bug dưới đất" },
-      { badge: "CÚI ĐẦU TRƯỢT", badgeClass: "avoid-badge", title: "Cúi Đầu (SLIDE)", desc: "Cúi cằm hoặc nhún đầu xuống nhanh để Buggy trượt rạp người né đồng hồ deadline 23:59" }
+      { badge: "CHUYỂN LÀN / BẺ LÁI", badgeClass: "steer-badge", title: "Lắc Đầu Đổi Làn", desc: "Nghiêng đầu nhẹ hoặc bẻ lái vô lăng để chuyển 3 làn Trái - Giữa - Phải hoặc lái tự do Analog" },
+      { badge: "NHẢY & TRƯỢT", badgeClass: "loot-badge", title: "Hất Cằm Nhảy / Cúi Trượt", desc: "Hất đầu nhanh để nhảy qua con bug dưới đất; cúi đầu để trượt sát mặt đường né deadline trên cao" },
+      { badge: "HÚT PR & NITRO", badgeClass: "avoid-badge", title: "Gom Quà & Bứt Tốc", desc: "Hút Pull Request (+100đ), Sao Vàng (+150đ) và ăn Nitro bứt phá tốc độ Highway x1.5 đâm xuyên bug" }
     ],
     handRules: [
       { badge: "QUÉT TAY ĐỔI LÀN", badgeClass: "steer-badge", title: "Di Chuyển Lòng Bàn Tay", desc: "Đưa bàn tay sang Trái / Giữa / Phải trước webcam để Buggy bám theo làn tay tức thì" },
-      { badge: "VUỐT TAY LÊN", badgeClass: "loot-badge", title: "Swipe Up (JUMP)", desc: "Quét vung bàn tay lên cao để kích hoạt Buggy tung cánh nhảy cao né chướng ngại vật" },
-      { badge: "VUỐT TAY XUỐNG", badgeClass: "avoid-badge", title: "Swipe Down (SLIDE)", desc: "Quét hạ bàn tay xuống thấp để Buggy trượt sát mặt đường lách qua gầm deadline" }
+      { badge: "VUỐT LÊN / VUỐT XUỐNG", badgeClass: "loot-badge", title: "Vuốt Tay Nhảy / Trượt", desc: "Quét tay lên cao để nhảy qua bug đất; quét tay xuống thấp để trượt rạp người né deadline" },
+      { badge: "GOM PR & NITRO RUSH", badgeClass: "avoid-badge", title: "Đón Quà & Đua Tốc Độ", desc: "Đón trọn Pull Request, Git Crystal và bình Nitro kích hoạt tốc độ 200 km/h bất tử" }
     ],
-    tips: "Ăn Cà Phê để nhận x2 Combo & tăng tốc; nhặt Sao Vàng (+150đ) và Git Gem (+50đ) để leo top 1!",
-    ctaText: "Bắt Đầu Né Bug Solo (SPACE)"
+    tips: "Tận dụng phím T để chuyển giữa 3 Làn Nhạy và Lái Tự Do; ăn Cà Phê nhận x2 Combo và Nitro để bất tử càn quét!",
+    ctaText: "Bắt Đầu Buggy Dash (SPACE)"
   },
   [GAME_MODES.CATCHER]: {
     badge: "MINIGAME HỨNG CODE MERGED",
@@ -145,27 +145,27 @@ export const MODE_METADATA = {
     ctaText: "Vào Chém Bug Ninja (SPACE)"
   },
   [GAME_MODES.FLAPPY]: {
-    badge: "HỘI CHỨNG DEADLINE FPT",
+    badge: "ĐIỀU KHIỂN BÁM MŨI / BÀN TAY",
     badgeColor: "#06b6d4",
     title: "FLAPPY BUGGY — CÁP QUANG FPTU",
     mascot: "assets/player_3d_run_f2.png",
-    desc: "Buggy đập cánh bay lượn qua các cổng logic bitwise và tường lửa Firewall trong đường cáp quang FPT!",
+    desc: "Buggy đập cánh lượn trong đường hầm cáp quang FPT! Dính Buggy vào mũi hoặc lòng bàn tay — mũi/tay nâng hạ đến đâu, Buggy bám theo êm ái đến đó để lọt qua các khe tường lửa Firewall!",
     rules: [
-      { badge: "NGẨNG ĐẦU ĐẬP CÁNH", badgeClass: "steer-badge", title: "Hất Cằm / Ngẩng Đầu", desc: "Ngẩng cằm hoặc nhún đầu dứt khoát để Buggy đập cánh bay bổng lên trên; thả lỏng để hạ cánh" },
-      { badge: "CÂN BẰNG ĐỘ CAO", badgeClass: "avoid-badge", title: "Luồn Lách Cột Firewall", desc: "Giữ nhịp gật đầu đều đặn để Buggy lướt êm ái qua khe hở giữa 2 cột tường lửa điện từ" },
-      { badge: "PASS CỔNG LOGIC", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic (AND, OR, XOR, NAND) bay qua thành công nhận ngay +10 điểm" }
+      { badge: "BÁM THEO MŨI (1:1)", badgeClass: "steer-badge", title: "Mũi Dẫn Đường", desc: "Nâng/hạ đầu tự nhiên — Buggy dính theo vị trí mũi lượn lên xuống mượt mà qua khe hở" },
+      { badge: "KHE HỞ AN TOÀN", badgeClass: "avoid-badge", title: "Căn Khe Firewall", desc: "Giữ mũi hoặc tay trong khe hở rộng 240px giữa 2 cột tường lửa để bay qua an toàn" },
+      { badge: "PASS CỔNG LOGIC", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic (AND, OR, XOR, NAND) bay qua thành công nhận ngay +10 điểm và pháo hoa" }
     ],
     faceRules: [
-      { badge: "NGẨNG ĐẦU ĐẬP CÁNH", badgeClass: "steer-badge", title: "Hất Cằm / Ngẩng Đầu", desc: "Ngẩng cằm hoặc nhún đầu dứt khoát để Buggy đập cánh bay bổng lên trên; thả lỏng để hạ cánh" },
-      { badge: "CÂN BẰNG ĐỘ CAO", badgeClass: "avoid-badge", title: "Luồn Lách Cột Firewall", desc: "Giữ nhịp gật đầu đều đặn để Buggy lướt êm ái qua khe hở giữa 2 cột tường lửa điện từ" },
+      { badge: "BÁM THEO MŨI (1:1)", badgeClass: "steer-badge", title: "Mũi Dẫn Đường (Nose Track)", desc: "Nâng cằm lên để Buggy bay lên, hạ cằm xuống để Buggy lướt xuống. Cực kỳ mượt mà, không mỏi cổ!" },
+      { badge: "CĂN KHE TƯỜNG LỬA", badgeClass: "avoid-badge", title: "Luồn Lách Khe Rộng", desc: "Giữ mũi thẳng hướng vào khe hở giữa 2 cột tường lửa để Buggy vượt qua an toàn tuyệt đối" },
       { badge: "PASS CỔNG LOGIC", badgeClass: "loot-badge", title: "Pass Bit 1 (+10đ)", desc: "Mỗi cổng logic (AND, OR, XOR, NAND) bay qua thành công nhận ngay +10 điểm" }
     ],
     handRules: [
-      { badge: "VẪY TAY ĐẬP CÁNH", badgeClass: "steer-badge", title: "Vẫy Bàn Tay (Flap)", desc: "Vẫy nhẹ bàn tay hoặc nhấc tay lên trước camera để Buggy đập cánh bay lên (hoặc bấm SPACE)" },
-      { badge: "ĐIỀU TIẾT NHỊP BAY", badgeClass: "avoid-badge", title: "Giữ Độ Cao Cân Bằng", desc: "Vẫy tay theo nhịp đều đặn để giữ thân bọ bay lơ lửng chính xác vào tâm khe hở an toàn" },
-      { badge: "VƯỢT TƯỜNG LỬA", badgeClass: "loot-badge", title: "Ghi Điểm Cổng Logic", desc: "Căn thời điểm vẫy tay khi sắp chạm cột Firewall để bay vọt qua an toàn" }
+      { badge: "BÁM THEO BÀN TAY", badgeClass: "steer-badge", title: "Bàn Tay 1:1 Siêu Nhạy", desc: "Đưa lòng bàn tay hoặc ngón trỏ lên/xuống — Buggy lướt theo vị trí tay như drone điều khiển từ xa!" },
+      { badge: "ĐIỀU TIẾT CAO ĐỘ", badgeClass: "avoid-badge", title: "Giữ Độ Cao Cân Bằng", desc: "Giữ tay ổn định trong khe hở an toàn khi sắp chạm cột Firewall để bay qua êm ái" },
+      { badge: "VƯỢT TRỤ AN TOÀN", badgeClass: "loot-badge", title: "Ghi Điểm Cổng Logic", desc: "Bay lọt qua giữa 2 cột Firewall nhận ngay điểm thưởng và hiệu ứng pháo hoa neon" }
     ],
-    tips: "Đừng nhún đầu/vẫy tay quá liên tục — hãy để Buggy rơi tự do một nhịp rồi mới đập cánh nhấp nhả!",
+    tips: "Chỉ cần nghiêng/nâng đầu nhẹ nhàng từ 3-5cm là Buggy đã bám theo cực chuẩn. Hãy nhìn trước vào khe hở của cột tiếp theo!",
     ctaText: "Bay Cáp Quang Flappy (SPACE)"
   },
   [GAME_MODES.DUEL]: {
@@ -248,8 +248,11 @@ export const OBJECT_DEFINITIONS = [
   { type: "bug", label: "BUG", color: "#ef4444", radius: 26, isObstacle: true, damage: 1, textDesc: "Syntax Error" },
   { type: "deadline", label: "DEADLINE", color: "#f97316", radius: 30, isObstacle: true, damage: 1, textDesc: "Deadline 23:59" },
   { type: "grade_f", label: "F", color: "#dc2626", radius: 24, isObstacle: true, damage: 0, scoreDeduct: 30, textDesc: "Rớt Môn SWE" },
-  { type: "coffee", label: "COFFEE", color: "#06b6d4", radius: 24, isObstacle: false, points: 20, buff: "x2", textDesc: "Cà Phê FPTU" },
-  { type: "clean_code", label: "CODE", color: "#10b981", radius: 26, isObstacle: false, points: 50, textDesc: "PR Merged" },
+  { type: "bug_crash", label: "BUG 500", color: "#ef4444", radius: 26, isObstacle: true, damage: 1, textDesc: "Server Crash 500" },
+  { type: "coffee", label: "COFFEE", color: "#06b6d4", radius: 24, isObstacle: false, points: 30, buff: "x2", textDesc: "Cà Phê FPTU" },
+  { type: "clean_code", label: "CODE", color: "#10b981", radius: 26, isObstacle: false, points: 50, textDesc: "Clean Code" },
+  { type: "pr_merged", label: "PR MERGE", color: "#10b981", radius: 26, isObstacle: false, points: 100, textDesc: "PR Merged" },
+  { type: "star", label: "STAR", color: "#f59e0b", radius: 25, isObstacle: false, points: 150, textDesc: "GitHub Star" },
   { type: "nitro", label: "NITRO", color: "#3b82f6", radius: 24, isObstacle: false, points: 40, buff: "fever", textDesc: "Nitro Rush" },
 ];
 
@@ -271,11 +274,11 @@ export const SLICER_CONFIG = {
 };
 
 export const FLAPPY_CONFIG = {
-  gravity: 720,            // Trọng lực rơi của Buggy
-  flapVelocity: -290,      // Lực nhảy khi nhún đầu hoặc bấm Space
-  pipeSpeed: 210,          // Tốc độ trôi của cột Firewall từ phải sang trái
-  pipeSpawnInterval: 1.85, // Khoảng thời gian sinh cột mới (giây)
-  pipeGap: 175,            // Khe hở an toàn để bay qua (px)
+  gravity: 580,            // Trọng lực rơi mềm mại
+  flapVelocity: -280,      // Lực nhảy nhấp nhả
+  pipeSpeed: 195,          // Tốc độ trôi vừa phải, thư thái dễ quan sát
+  pipeSpawnInterval: 2.2,  // Khoảng cách nhịp nhàng giữa các cột
+  pipeGap: 240,            // Khe hở rộng rãi (240px) giúp dễ dàng lọt qua bằng cử chỉ mũi / tay
   pipeWidth: 68,           // Độ rộng cột Firewall (px)
 };
 

@@ -21,6 +21,9 @@ export class FaceTracker {
     this.centerTilt = 0;
     this.smoothedY = 0.5;
     this.centerY = 0.5;
+    this.smoothedNoseX = 0.5;
+    this.smoothedNoseY = 0.5;
+    this.centerNoseY = 0.5;
 
     // Vertical gestures (Jump / Duck) via dY/dt
     this.prevY = 0.5;
@@ -35,6 +38,8 @@ export class FaceTracker {
     this.filterX = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
     this.filterTilt = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
     this.filterY = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+    this.filterNoseX = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+    this.filterNoseY = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
 
     this.onLock = onLockCallback || (() => {});
   }
@@ -98,6 +103,9 @@ export class FaceTracker {
     this.centerTilt = 0;
     this.smoothedY = 0.5;
     this.centerY = 0.5;
+    this.smoothedNoseX = 0.5;
+    this.smoothedNoseY = 0.5;
+    this.centerNoseY = 0.5;
     this.velocityDy = 0;
     this.isJump = false;
     this.isDuck = false;
@@ -106,6 +114,8 @@ export class FaceTracker {
     this.filterX.reset();
     this.filterTilt.reset();
     this.filterY.reset();
+    this.filterNoseX.reset();
+    this.filterNoseY.reset();
   }
 
   calibrateCenter() {
@@ -113,6 +123,7 @@ export class FaceTracker {
       this.centerX = this.smoothedX;
       this.centerTilt = this.smoothedTilt;
       this.centerY = this.smoothedY;
+      this.centerNoseY = this.smoothedNoseY;
       return true;
     }
     return false;
@@ -155,6 +166,8 @@ export class FaceTracker {
           this.filterX.reset();
           this.filterTilt.reset();
           this.filterY.reset();
+          this.filterNoseX.reset();
+          this.filterNoseY.reset();
         }
       }
 
@@ -162,16 +175,22 @@ export class FaceTracker {
         const rawCx = FaceTracker.getCenterX(this.box);
         const rawTilt = this.box.tilt || 0;
         const rawCy = FaceTracker.getCenterY(this.box);
+        const rawNoseX = this.box.nose ? this.box.nose.x : rawCx;
+        const rawNoseY = this.box.nose ? this.box.nose.y : (this.box.y + this.box.h * 0.55);
 
         // Apply 1€ Filter (or EMA fallback)
         if (VISION_CONFIG.useOneEuro) {
           this.smoothedX = this.filterX.filter(rawCx, now);
           this.smoothedTilt = this.filterTilt.filter(rawTilt, now);
           this.smoothedY = this.filterY.filter(rawCy, now);
+          this.smoothedNoseX = this.filterNoseX.filter(rawNoseX, now);
+          this.smoothedNoseY = this.filterNoseY.filter(rawNoseY, now);
         } else {
           this.smoothedX += (rawCx - this.smoothedX) * VISION_CONFIG.ema;
           this.smoothedTilt += (rawTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
           this.smoothedY += (rawCy - this.smoothedY) * 0.4;
+          this.smoothedNoseX += (rawNoseX - this.smoothedNoseX) * 0.4;
+          this.smoothedNoseY += (rawNoseY - this.smoothedNoseY) * 0.4;
         }
 
         // Vertical Gesture Analysis (Jump / Duck via dY/dt with position gating)
@@ -244,19 +263,27 @@ export class FaceTracker {
         const initCx = FaceTracker.getCenterX(primary);
         const initTilt = primary.tilt || 0;
         const initCy = FaceTracker.getCenterY(primary);
+        const initNoseX = primary.nose ? primary.nose.x : initCx;
+        const initNoseY = primary.nose ? primary.nose.y : (primary.y + primary.h * 0.55);
 
         this.smoothedX = this.centerX = initCx;
         this.smoothedTilt = this.centerTilt = initTilt;
         this.smoothedY = this.centerY = initCy;
+        this.smoothedNoseX = initNoseX;
+        this.smoothedNoseY = this.centerNoseY = initNoseY;
         this.prevY = initCy;
         this.prevTimestamp = now;
 
         this.filterX.reset();
         this.filterTilt.reset();
         this.filterY.reset();
+        this.filterNoseX.reset();
+        this.filterNoseY.reset();
         this.filterX.filter(initCx, now);
         this.filterTilt.filter(initTilt, now);
         this.filterY.filter(initCy, now);
+        this.filterNoseX.filter(initNoseX, now);
+        this.filterNoseY.filter(initNoseY, now);
 
         this.onLock(this.box);
       }
@@ -288,6 +315,10 @@ export class FaceTracker {
       smoothedY: this.smoothedY,
       centerY: this.centerY,
       deltaY: this.smoothedY - this.centerY,
+      noseX: this.smoothedNoseX,
+      noseY: this.smoothedNoseY,
+      centerNoseY: this.centerNoseY,
+      deltaNoseY: this.smoothedNoseY - this.centerNoseY,
       velocityDy: this.velocityDy,
       isJump: this.isJump,
       isDuck: this.isDuck,

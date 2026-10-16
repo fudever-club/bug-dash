@@ -40,6 +40,7 @@ class BugDashApp {
     this.bladeTrail = [];
     this.flappyY = 360;
     this.flappyVy = 0;
+    this.flappyTargetY = 360;
 
     // Jump & Slide State
     this.jumpState = { isJumping: false, progress: 0, duration: 0.65, elapsed: 0 };
@@ -220,6 +221,7 @@ class BugDashApp {
 
   flappyFlap() {
     if (this.gameState.state !== GameStates.PLAYING) return;
+    this.flappyTargetY = Math.max(90, (this.flappyTargetY || this.flappyY) - 95);
     this.flappyVy = FLAPPY_CONFIG.flapVelocity;
     sound.playJump();
     this.particles.addCollectBurst(140, this.flappyY + 15, "#06b6d4", 6);
@@ -432,6 +434,7 @@ class BugDashApp {
     } else if (mode === GAME_MODES.FLAPPY) {
       this.flappyY = 360;
       this.flappyVy = 0;
+      this.flappyTargetY = 360;
       this.ui.showStartScreenForMode(GAME_MODES.FLAPPY);
       sound.playBuffActive();
     } else if (mode === GAME_MODES.DUEL) {
@@ -551,16 +554,23 @@ class BugDashApp {
             this.addBladePoint(hx, hy);
           }
           this.laneController.updateFromHand(handStatus);
-          // High Hand -> Jump; Low Hand -> Slide
-          if (handStatus.isHighHand && !this.jumpState.isJumping) {
-            if (this.gameMode === GAME_MODES.FLAPPY) this.flappyFlap();
-            else this.jump();
-          } else if (handStatus.isLowHand && !this.slideState.isSliding) {
-            this.slide();
+
+          if (this.gameMode === GAME_MODES.FLAPPY) {
+            // Direct Hand Altitude Tracking (Bám theo bàn tay 1:1)
+            const palmY = (handStatus.palmY !== undefined) ? handStatus.palmY : (handStatus.indexTip ? handStatus.indexTip.y : 0.5);
+            const normHand = Math.max(0, Math.min(1, (palmY - 0.18) / 0.60));
+            this.flappyTargetY = 90 + normHand * 540;
+          } else {
+            // High Hand -> Jump; Low Hand -> Slide
+            if (handStatus.isHighHand && !this.jumpState.isJumping) {
+              this.jump();
+            } else if (handStatus.isLowHand && !this.slideState.isSliding) {
+              this.slide();
+            }
           }
         }
       }
-      this.ui.drawVisionOverlay(null, null, null, false, null, handStatus, this.inputSource);
+      this.ui.drawVisionOverlay(null, null, null, false, null, handStatus, this.inputSource, this.gameMode);
       if (this.gameMode === GAME_MODES.SLICER) return;
       if (this.inputSource === CONTROL_INPUTS.HAND) return;
     }
@@ -571,25 +581,32 @@ class BugDashApp {
     if (this.gameMode === GAME_MODES.SPLIT_SCREEN) {
       this.dualTracker.update(faces, now);
       const dualStatus = this.dualTracker.getStatus();
-      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, null, this.inputSource);
+      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, null, this.inputSource, this.gameMode);
     } else {
       this.tracker.update(faces, now);
       const trackerStatus = this.tracker.getStatus();
       this.laneController.updateFromTracker(trackerStatus);
 
-      // Physical Jump & Duck gestures via Face Box Velocity (dY/dt)
-      if (trackerStatus.isJump) {
-        if (this.gameMode === GAME_MODES.FLAPPY) {
-          this.flappyFlap();
-        } else if (!this.jumpState.isJumping && !this.slideState.isSliding) {
+      if (this.gameMode === GAME_MODES.FLAPPY) {
+        // Direct Nose Tracking: Mũi đi đâu, Buggy lượn theo đó!
+        const rawNoseY = (trackerStatus.noseY !== undefined) ? trackerStatus.noseY : trackerStatus.smoothedY;
+        const centerNose = (trackerStatus.centerNoseY !== undefined) ? trackerStatus.centerNoseY : (trackerStatus.centerY || 0.50);
+        const deltaNose = rawNoseY - centerNose;
+        // Sensitivity 2.2: +/-0.20 delta in webcam covers full height (80 to 640px)
+        let normY = 0.50 + deltaNose * 2.2;
+        normY = Math.max(0.08, Math.min(0.92, normY));
+        this.flappyTargetY = 80 + normY * 560;
+      } else {
+        // Physical Jump & Duck gestures via Face Box Velocity (dY/dt)
+        if (trackerStatus.isJump && !this.jumpState.isJumping && !this.slideState.isSliding) {
           this.jump();
+        } else if (trackerStatus.isDuck && !this.slideState.isSliding && !this.jumpState.isJumping) {
+          this.slide();
         }
-      } else if (trackerStatus.isDuck && !this.slideState.isSliding && !this.jumpState.isJumping) {
-        this.slide();
       }
 
       this.ui.updateCameraStatus(trackerStatus.phase, currentFps);
-      this.ui.drawVisionOverlay(trackerStatus, faces, VISION_CONFIG.roi, false, null, null, this.inputSource);
+      this.ui.drawVisionOverlay(trackerStatus, faces, VISION_CONFIG.roi, false, null, null, this.inputSource, this.gameMode);
     }
   }
 
@@ -772,9 +789,12 @@ class BugDashApp {
         this.bladeTrail = this.bladeTrail.filter(pt => (now - pt.t) < 140);
 
         if (this.gameMode === GAME_MODES.FLAPPY) {
-          // Flappy Buggy Flight Physics
-          this.flappyVy += FLAPPY_CONFIG.gravity * dt;
-          this.flappyY += this.flappyVy * dt;
+          // Direct Nose/Hand Altitude Glide Tracking
+          const prevY = this.flappyY;
+          const targetY = (this.flappyTargetY !== undefined) ? this.flappyTargetY : 360;
+          const lerpFactor = Math.min(1.0, 14 * dt);
+          this.flappyY += (targetY - this.flappyY) * lerpFactor;
+          this.flappyVy = (this.flappyY - prevY) / Math.max(0.001, dt);
 
           if (this.flappyY < 48) {
             this.flappyY = 48;
@@ -924,7 +944,9 @@ class BugDashApp {
         {
           bladeTrail: this.bladeTrail,
           flappyY: this.flappyY,
-          flappyVy: this.flappyVy
+          flappyVy: this.flappyVy,
+          flappyTargetY: this.flappyTargetY,
+          inputSource: this.inputSource
         }
       );
 

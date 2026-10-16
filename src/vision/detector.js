@@ -64,6 +64,14 @@ export class FaceDetectorWrapper {
           }
         }
 
+        // Nose tip keypoint (index 2 in BlazeFace standard)
+        let noseX = 1 - (b.originX + b.width / 2) / W;
+        let noseY = (b.originY + b.height * 0.55) / H;
+        if (d.keypoints && d.keypoints.length >= 3 && d.keypoints[2]) {
+          noseX = 1 - d.keypoints[2].x;
+          noseY = d.keypoints[2].y;
+        }
+
         return {
           // Flip X horizontally so player tilting right maps to right lane
           x: 1 - (b.originX + b.width) / W,
@@ -72,7 +80,8 @@ export class FaceDetectorWrapper {
           h: b.height / H,
           confidence: (d.categories && d.categories[0]) ? d.categories[0].score : 1.0,
           rollAngle: rollAngle,
-          tilt: tilt
+          tilt: tilt,
+          nose: { x: noseX, y: noseY }
         };
       });
     } catch (err) {

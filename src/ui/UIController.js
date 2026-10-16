@@ -545,7 +545,7 @@ export class UIController {
     this.renderStartModalRules();
   }
 
-  drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null, handStatus = null, inputSource = "face") {
+  drawVisionOverlay(trackerStatus, faces, roi, isSplitScreen = false, dualStatus = null, handStatus = null, inputSource = "face", gameMode = "classic") {
     const cv = this.dom.overlayCanvas;
     if (!cv) return;
     const ctx = cv.getContext("2d");
@@ -626,7 +626,10 @@ export class UIController {
       // Realtime Gesture Feedback Pill
       let gestureText = "LÁI BÀN TAY (TRÁI / PHẢI)";
       let gestureColor = "#10b981";
-      if (handStatus.isHighHand) {
+      if (gameMode === "flappy") {
+        gestureText = "BAY BÁM THEO BÀN TAY (LÊN / XUỐNG)";
+        gestureColor = "#06b6d4";
+      } else if (handStatus.isHighHand) {
         gestureText = "NHẢY LÊN (JUMP)";
         gestureColor = "#38bdf8";
       } else if (handStatus.isLowHand) {
@@ -811,8 +814,35 @@ export class UIController {
       const centerX = W / 2;
       const centerY = H - 24;
 
-      // Vertical Gesture Banner (if Jump or Duck active)
-      if (trackerStatus.isJump) {
+      // Flappy Nose Reticle Indicator & Banner
+      if (gameMode === "flappy") {
+        const nx = (trackerStatus.noseX !== undefined ? (1 - trackerStatus.noseX) : 0.5) * W;
+        const ny = (trackerStatus.noseY !== undefined ? trackerStatus.noseY : 0.5) * H;
+
+        ctx.save();
+        ctx.strokeStyle = "#06b6d4";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#06b6d4";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 7, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#06b6d4";
+        ctx.font = "bold 9px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("🎯 MŨI DẪN ĐƯỜNG", nx, ny - 11);
+        ctx.restore();
+
+        ctx.fillStyle = "rgba(6, 182, 212, 0.90)";
+        ctx.beginPath();
+        ctx.roundRect(W * 0.16, 10, W * 0.68, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = "#050811";
+        ctx.font = "800 10.5px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🎯 BAY BÁM THEO MŨI (LÊN / XUỐNG)", W * 0.5, 25);
+      } else if (trackerStatus.isJump) {
         ctx.fillStyle = "rgba(56, 189, 248, 0.90)";
         ctx.beginPath();
         ctx.roundRect(W * 0.22, 10, W * 0.56, 22, 6);

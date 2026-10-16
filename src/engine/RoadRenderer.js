@@ -151,7 +151,14 @@ export class RoadRenderer {
 
     // Special Dispatch: Flappy Buggy Mode
     if (gameMode === "flappy") {
-      this.renderFlappy(ctx, W, H, dt, playerX, extraData && extraData.flappyY, extraData && extraData.flappyVy, items, particleSystem, isGameOver, isInvulnerable);
+      this.renderFlappy(
+        ctx, W, H, dt, playerX,
+        extraData && extraData.flappyY,
+        extraData && extraData.flappyVy,
+        items, particleSystem, isGameOver, isInvulnerable,
+        extraData && extraData.flappyTargetY,
+        extraData && extraData.inputSource
+      );
       ctx.restore();
       return;
     }
@@ -1354,9 +1361,10 @@ export class RoadRenderer {
   /**
    * Flappy Buggy (Logic Gates & Firewall Pipes) 60 FPS Canvas Renderer
    */
-  renderFlappy(ctx, W, H, dt, playerX, flappyY, flappyVy, items, particleSystem, isGameOver, isInvulnerable) {
+  renderFlappy(ctx, W, H, dt, playerX, flappyY, flappyVy, items, particleSystem, isGameOver, isInvulnerable, flappyTargetY, inputSource) {
     const yPos = (flappyY !== undefined && flappyY !== null) ? flappyY : 360;
     const vy = (flappyVy !== undefined && flappyVy !== null) ? flappyVy : 0;
+    const bX = 140; // Fixed horizontal position for Flappy Buggy
 
     // 1. Fiber Optic Tunnel Background
     const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -1397,6 +1405,44 @@ export class RoadRenderer {
     ctx.moveTo(0, H - 32); ctx.lineTo(W, H - 32);
     ctx.stroke();
     ctx.shadowBlur = 0;
+
+    // Direct Tracking Reticle & Target Altitude Guide (Nose / Hand)
+    if (!isGameOver && flappyTargetY !== undefined && flappyTargetY !== null) {
+      ctx.save();
+      const targetLabel = (inputSource === "hand") ? "✋ BÁM TAY" : "🎯 BÁM MŨI";
+      const targetColor = "#06b6d4";
+
+      // Subtle dashed guide line towards Buggy
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.28)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(12, flappyTargetY);
+      ctx.lineTo(bX - 35, flappyTargetY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Neon reticle circle at target altitude
+      ctx.strokeStyle = targetColor;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = "rgba(6, 182, 212, 0.18)";
+      ctx.beginPath();
+      ctx.arc(28, flappyTargetY, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Mini crosshair lines
+      ctx.beginPath();
+      ctx.moveTo(16, flappyTargetY); ctx.lineTo(40, flappyTargetY);
+      ctx.moveTo(28, flappyTargetY - 12); ctx.lineTo(28, flappyTargetY + 12);
+      ctx.stroke();
+
+      // Label
+      ctx.font = "bold 10px 'JetBrains Mono', monospace";
+      ctx.fillStyle = targetColor;
+      ctx.fillText(targetLabel, 44, flappyTargetY + 3.5);
+      ctx.restore();
+    }
 
     // 2. Render Firewall Logic Gate Pipes
     items.forEach(it => {
@@ -1466,7 +1512,6 @@ export class RoadRenderer {
 
     // 3. Render Mascot Flying Buggy with Dynamic Flapping Wings
     const pSize = 92;
-    const bX = 140; // Fixed horizontal position for Flappy Buggy
     const bY = Math.max(48, Math.min(H - 48, yPos));
 
     ctx.save();
