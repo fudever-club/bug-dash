@@ -901,6 +901,10 @@ export class UIController {
     this.hideAllModals();
     if (this.dom.duelLobbyModal) this.dom.duelLobbyModal.classList.remove("hidden");
     if (this.dom.btnDuelStartMatch) this.dom.btnDuelStartMatch.classList.add("hidden");
+    if (this.dom.btnDuelTabWifi) this.dom.btnDuelTabWifi.classList.add("active-mode");
+    if (this.dom.btnDuelTabSplit) this.dom.btnDuelTabSplit.classList.remove("active-mode");
+    if (this.dom.duelWifiSection) this.dom.duelWifiSection.classList.remove("hidden");
+    if (this.dom.duelSplitSection) this.dom.duelSplitSection.classList.add("hidden");
     this.setDuelLobbyMessage("");
   }
 
@@ -912,7 +916,7 @@ export class UIController {
 
   setDuelOpponentJoined(opponentName) {
     if (this.dom.duelHostStatus) {
-      this.dom.duelHostStatus.textContent = `⚔️ ${opponentName} ĐÃ SẴN SÀNG!`;
+      this.dom.duelHostStatus.textContent = `${opponentName} ĐÃ SẴN SÀNG!`;
       this.dom.duelHostStatus.style.color = "#10b981";
     }
     if (this.dom.btnDuelStartMatch) {
@@ -936,10 +940,10 @@ export class UIController {
         this.dom.duelResultTitle.textContent = "KẾT QUẢ: HÒA NHAU!";
         this.dom.duelResultTitle.style.color = "var(--dever-amber)";
       } else if (isWinner) {
-        this.dom.duelResultTitle.textContent = "🏆 BẠN ĐÃ CHIẾN THẮNG!";
+        this.dom.duelResultTitle.textContent = "BẠN ĐÃ CHIẾN THẮNG!";
         this.dom.duelResultTitle.style.color = "var(--emerald-ok)";
       } else {
-        this.dom.duelResultTitle.textContent = "💀 BẠN ĐÃ THUA CUỘC!";
+        this.dom.duelResultTitle.textContent = "BẠN ĐÃ THUA CUỘC!";
         this.dom.duelResultTitle.style.color = "var(--crimson-bad)";
       }
     }

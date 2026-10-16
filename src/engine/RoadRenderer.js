@@ -1067,7 +1067,7 @@ export class RoadRenderer {
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 11px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(isFever ? "🔥 FEVER RUSH — TẤN CÔNG X2 ĐIỂM!" : "⚡ CODE SLICER — CHÉM BUG BẰNG TAY", W / 2, 34);
+    ctx.fillText(isFever ? "FEVER RUSH — TẤN CÔNG X2 ĐIỂM!" : "CODE SLICER — CHÉM BUG BẰNG TAY", W / 2, 34);
     ctx.restore();
 
     // 2. Render Tossed Items with Rotation and Sliced Halves

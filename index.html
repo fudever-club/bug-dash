@@ -259,98 +259,99 @@
       </div>
 
       <!-- 4. 1v1 Duel Network & Split-Screen Lobby Modal -->
-      <div class="game-state-modal hidden" id="duelLobbyModal" style="max-width:520px; padding:36px 30px; gap:18px;">
-        <span class="modal-mode-badge" style="color:var(--crimson-bad); border-color:rgba(239, 68, 68, 0.4);">ĐỐI KHÁNG ĐỒNG ĐỘI</span>
-        <h2 style="color:#ffffff;" id="duelLobbyTitle">SONG ĐẤU 1V1</h2>
-        
-        <!-- Sub-Tabs: 2 Máy Wi-Fi vs 1 Máy Chung Camera -->
-        <div style="display:flex; gap:10px; width:100%; margin:4px 0 14px;">
-          <button class="btn-outline active-mode" id="btnDuelTabWifi" style="flex:1; font-size:12.5px; padding:9px 12px; justify-content:center;">
-            2 Laptop (Wi-Fi/LAN)
-          </button>
-          <button class="btn-outline" id="btnDuelTabSplit" style="flex:1; font-size:12.5px; padding:9px 12px; justify-content:center;">
-            1 Laptop (Chung Camera)
-          </button>
-        </div>
-
-        <!-- Mode A: 2 Laptops over Wi-Fi -->
-        <div id="duelWifiSection" style="display:flex; flex-direction:column; gap:14px; width:100%;">
-          <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
-            Mỗi máy dùng webcam riêng. Lắc đầu né deadline, ăn chuỗi combo để gửi bug bom tấn công máy đối thủ!
-          </p>
-          <div>
-            <input type="text" id="duelPlayerName" placeholder="Tên Bạn (VD: Hưng K20)" maxlength="15" 
-              style="width:100%; box-sizing:border-box; padding:10px 14px; border-radius:8px; background:#0f172a; border:1px solid var(--border-amber); color:#fff; font-size:13px;">
+      <div class="game-state-modal hidden" id="duelLobbyModal">
+        <div class="duel-lobby-card">
+          <span class="modal-mode-badge" style="color:var(--crimson-bad); border-color:rgba(239, 68, 68, 0.4);">ĐỐI KHÁNG ĐỒNG ĐỘI</span>
+          <h2 style="color:#ffffff;" id="duelLobbyTitle">SONG ĐẤU 1V1</h2>
+          
+          <!-- Sub-Tabs: 2 Máy Wi-Fi vs 1 Máy Chung Camera -->
+          <div class="duel-lobby-subtabs">
+            <button class="btn-outline active-mode" id="btnDuelTabWifi">
+              2 Laptop (Wi-Fi/LAN)
+            </button>
+            <button class="btn-outline" id="btnDuelTabSplit">
+              1 Laptop (Chung Camera)
+            </button>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <!-- Host Room Section -->
-            <div style="background:rgba(255,255,255,0.035); padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
-              <span style="font-size:11px; font-weight:700; color:var(--dever-amber);">TẠO PHÒNG MÁY 1</span>
-              <button class="btn-primary" id="btnDuelCreateRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
-                Tạo Mã Phòng
+          <!-- Mode A: 2 Laptops over Wi-Fi -->
+          <div id="duelWifiSection" style="display:flex; flex-direction:column; gap:14px; width:100%;">
+            <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
+              Mỗi máy dùng webcam riêng. Lắc đầu né deadline, ăn chuỗi combo để gửi bug bom tấn công máy đối thủ!
+            </p>
+            <div>
+              <input type="text" id="duelPlayerName" placeholder="Tên Bạn (VD: Hưng K20)" maxlength="15" class="duel-input-field">
+            </div>
+
+            <div class="duel-subgrid">
+              <!-- Host Room Section -->
+              <div class="duel-subbox">
+                <span style="font-size:11px; font-weight:700; color:var(--dever-amber);">TẠO PHÒNG MÁY 1</span>
+                <button class="btn-primary" id="btnDuelCreateRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
+                  Tạo Mã Phòng
+                </button>
+                <div id="duelCreatedCodeBox" class="hidden" style="text-align:center; padding:8px; background:rgba(245,158,11,0.1); border-radius:6px;">
+                  <span style="font-size:10px; color:var(--text-muted);">MÃ PHÒNG:</span>
+                  <div id="duelRoomCodeText" style="font-size:24px; font-family:'JetBrains Mono'; font-weight:800; color:var(--dever-amber); margin:2px 0;">----</div>
+                  <span id="duelHostStatus" style="font-size:10px; color:var(--cyan-neon);">Chờ máy 2 nhập mã...</span>
+                </div>
+              </div>
+
+              <!-- Join Room Section -->
+              <div class="duel-subbox">
+                <span style="font-size:11px; font-weight:700; color:var(--cyan-neon);">VÀO PHÒNG MÁY 2</span>
+                <input type="text" id="duelJoinCodeInput" placeholder="Mã 4 số (VD: 8821)" maxlength="6"
+                  style="width:100%; box-sizing:border-box; padding:8px 12px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:#fff; font-size:13px; font-family:'JetBrains Mono'; text-align:center;">
+                <button class="btn-outline" id="btnDuelJoinRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
+                  Tham Gia Đấu
+                </button>
+              </div>
+            </div>
+
+            <div id="duelLobbyMsg" style="font-size:12px; color:var(--dever-amber); font-weight:700; min-height:18px; text-align:center;"></div>
+
+            <div style="display:flex; gap:12px; justify-content:center; margin-top:4px;">
+              <button class="btn-primary hidden" id="btnDuelStartMatch" style="padding:11px 26px; font-size:14px; background:#10b981; border-color:#10b981;">
+                Bắt Đầu Trận Đấu Ngay!
               </button>
-              <div id="duelCreatedCodeBox" class="hidden" style="text-align:center; padding:8px; background:rgba(245,158,11,0.1); border-radius:6px;">
-                <span style="font-size:10px; color:var(--text-muted);">MÃ PHÒNG:</span>
-                <div id="duelRoomCodeText" style="font-size:24px; font-family:'JetBrains Mono'; font-weight:800; color:var(--dever-amber); margin:2px 0;">----</div>
-                <span id="duelHostStatus" style="font-size:10px; color:var(--cyan-neon);">Chờ máy 2 nhập mã...</span>
-              </div>
-            </div>
-
-            <!-- Join Room Section -->
-            <div style="background:rgba(255,255,255,0.035); padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
-              <span style="font-size:11px; font-weight:700; color:var(--cyan-neon);">VÀO PHÒNG MÁY 2</span>
-              <input type="text" id="duelJoinCodeInput" placeholder="Mã 4 số (VD: 8821)" maxlength="6"
-                style="width:100%; box-sizing:border-box; padding:8px 12px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:#fff; font-size:13px; font-family:'JetBrains Mono'; text-align:center;">
-              <button class="btn-outline" id="btnDuelJoinRoom" style="padding:9px 12px; font-size:12px; justify-content:center;">
-                Tham Gia Đấu
+              <button class="btn-outline" id="btnCloseDuelLobby" style="padding:10px 18px; font-size:12.5px;">
+                Đóng / Về Menu
               </button>
             </div>
           </div>
 
-          <div id="duelLobbyMsg" style="font-size:12px; color:var(--dever-amber); font-weight:700; min-height:18px; text-align:center;"></div>
+          <!-- Mode B: 1 Laptop Split-Screen (Chung 1 Camera) -->
+          <div id="duelSplitSection" class="hidden" style="display:flex; flex-direction:column; gap:14px; width:100%;">
+            <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
+              Hai bạn cùng đứng kè vai trước webcam. Màn hình game chia đôi thành 2 đường đua đối kháng song song.
+            </p>
 
-          <div style="display:flex; gap:12px; justify-content:center; margin-top:6px;">
-            <button class="btn-primary hidden" id="btnDuelStartMatch" style="padding:11px 26px; font-size:14px; background:#10b981; border-color:#10b981;">
-              Bắt Đầu Trận Đấu Ngay!
-            </button>
-            <button class="btn-outline" id="btnCloseDuelLobby" style="padding:10px 18px; font-size:12.5px;">
-              Đóng / Về Menu
-            </button>
-          </div>
-        </div>
+            <div class="duel-subgrid">
+              <div style="background:rgba(6,182,212,0.08); padding:14px; border-radius:10px; border:1px solid rgba(6,182,212,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:11.5px; font-weight:800; color:var(--cyan-neon);">NGƯỜI CHƠI 1 (TRÁI)</span>
+                <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa trái camera</p>
+                <div id="splitP1Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
+                  ĐANG DÒ MẶT P1
+                </div>
+              </div>
 
-        <!-- Mode B: 1 Laptop Split-Screen (Chung 1 Camera) -->
-        <div id="duelSplitSection" class="hidden" style="display:flex; flex-direction:column; gap:14px; width:100%;">
-          <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5;">
-            Hai bạn cùng đứng kè vai trước webcam. Màn hình game chia đôi thành 2 đường đua đối kháng song song.
-          </p>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div style="background:rgba(6,182,212,0.08); padding:14px; border-radius:10px; border:1px solid rgba(6,182,212,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
-              <span style="font-size:11.5px; font-weight:800; color:var(--cyan-neon);">NGƯỜI CHƠI 1 (TRÁI)</span>
-              <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa trái camera</p>
-              <div id="splitP1Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
-                ĐANG DÒ MẶT P1
+              <div style="background:rgba(245,158,11,0.08); padding:14px; border-radius:10px; border:1px solid rgba(245,158,11,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:11.5px; font-weight:800; color:var(--dever-amber);">NGƯỜI CHƠI 2 (PHẢI)</span>
+                <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa phải camera</p>
+                <div id="splitP2Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
+                  ĐANG DÒ MẶT P2
+                </div>
               </div>
             </div>
 
-            <div style="background:rgba(245,158,11,0.08); padding:14px; border-radius:10px; border:1px solid rgba(245,158,11,0.4); text-align:center; display:flex; flex-direction:column; gap:6px;">
-              <span style="font-size:11.5px; font-weight:800; color:var(--dever-amber);">NGƯỜI CHƠI 2 (PHẢI)</span>
-              <p style="font-size:11.5px; color:var(--text-muted); margin:0;">Đứng nửa phải camera</p>
-              <div id="splitP2Badge" style="font-size:11px; font-weight:700; color:#10b981; padding:6px; background:rgba(16,185,129,0.1); border-radius:6px; margin-top:4px;">
-                ĐANG DÒ MẶT P2
-              </div>
+            <div style="display:flex; gap:12px; justify-content:center; margin-top:8px;">
+              <button class="btn-primary" id="btnStartSplitMatch" style="padding:12px 28px; font-size:14.5px; background:#10b981; border-color:#10b981;">
+                Bắt Đầu Đấu Split-Screen Ngay!
+              </button>
+              <button class="btn-outline" id="btnCloseSplitLobby" style="padding:10px 18px; font-size:12.5px;">
+                Đóng / Về Menu
+              </button>
             </div>
-          </div>
-
-          <div style="display:flex; gap:12px; justify-content:center; margin-top:8px;">
-            <button class="btn-primary" id="btnStartSplitMatch" style="padding:12px 28px; font-size:14.5px; background:#10b981; border-color:#10b981;">
-              Bắt Đầu Đấu Split-Screen Ngay!
-            </button>
-            <button class="btn-outline" id="btnCloseSplitLobby" style="padding:10px 18px; font-size:12.5px;">
-              Đóng / Về Menu
-            </button>
           </div>
         </div>
       </div>
