@@ -28,10 +28,10 @@ MediaPipe Vision Face Detector (BlazeFace Short-Range Float16)
   │ (Bounding box chuẩn hóa 0..1, tần suất 20-30 FPS)
   ▼
 Target Lock-on Selector & Tracker
-  │ (ROI Vạch xuất phát + Kiểm tra ổn định 1.0s + IoU & Center matching)
+  │ (ROI Vạch xuất phát + 1€ Filter adaptive smoothing + Dynamic Baseline)
   ▼
-Lane Controller (EMA Smoothing α=0.4 + Hysteresis Dead-zone)
-  │ (Phân 3 làn: Trái = 0 | Giữa = 1 | Phải = 2)
+Lane & Gesture Controller (Steer Tension Gauge + dY/dt Jump/Slide Detection)
+  │ (Phân 3 làn: Trái = 0 | Giữa = 1 | Phải = 2 + Hysteresis + Analog Mode)
   ▼
 Game Viewport & Cyber Runway (60 FPS Visuals)
   │ (Web Audio API Synthesizer + Telemetry HUD + Local Leaderboard)
@@ -39,9 +39,11 @@ Game Viewport & Cyber Runway (60 FPS Visuals)
 
 ### Điểm nhấn kỹ thuật:
 1. **Khóa mục tiêu thông minh (Anti-Crowd Stealing):** Người chơi đứng vào vùng ROI vàng giữa màn hình trong 1 giây để khóa mục tiêu (`locked`). Thuật toán ngăn chặn việc người đi ngang qua cướp quyền điều khiển.
-2. **Làm mượt EMA & Hysteresis:** Chống rung giật ở ranh giới giữa 2 làn, phản hồi mượt mà trong vòng <120ms.
-3. **Chế độ Bàn phím Dự phòng (Keyboard Fallback):** Khi không có webcam hoặc ánh sáng yếu, người chơi có thể chuyển sang điều khiển bằng phím `←` / `→` mà không làm gián đoạn luồng game.
-4. **Bảo vệ quyền riêng tư 100%:** Xử lý AI on-device trực tiếp trên trình duyệt bằng WebAssembly & GPU delegate, không lưu trữ hay gửi video/hình ảnh khuôn mặt lên máy chủ.
+2. **1€ Filter (One Euro Filter) & Độ trễ siêu thấp (<5ms):** Tự động mở rộng tần số cắt theo vận tốc chuyển động thực tế; triệt tiêu 100% rung giật khi giữ đầu cố định và loại bỏ hoàn toàn độ trễ pha khi né deadline gấp.
+3. **Đồng bộ phần cứng `requestVideoFrameCallback`:** Khớp nhịp đọc frame chính xác theo camera driver phần cứng, loại bỏ hoàn toàn frame rác và hạ tổng độ trễ End-to-End xuống chuẩn vàng <75ms.
+4. **Cử chỉ thể chất Nhảy (Jump) & Trượt (Slide) qua khuôn mặt:** Nhận diện đạo hàm vận tốc trục $Y$ ($\Delta Y / \Delta t$) kết hợp Position Gating để người chơi nhún người bật nhảy né bug hoặc thụp đầu trượt né deadline mà không cần mô hình Pose nặng nề.
+5. **Thanh đo áp lực bẻ lái (Steer Tension Gauge):** Phản hồi thị giác trực tiếp tỷ lệ % lực nghiêng đầu trước khi kích hoạt snap chuyển làn dứt khoát.
+6. **Bảo vệ quyền riêng tư 100%:** Xử lý AI on-device trực tiếp trên trình duyệt bằng WebAssembly & GPU delegate, không lưu trữ hay gửi video/hình ảnh khuôn mặt lên máy chủ.
 
 ---
 

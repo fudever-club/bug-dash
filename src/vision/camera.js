@@ -18,7 +18,7 @@ export class CameraController {
         width: { ideal: width },
         height: { ideal: height },
         facingMode: "user",
-        frameRate: { ideal: 30, max: 60 }
+        frameRate: { ideal: 60, min: 30 }
       }
     };
 

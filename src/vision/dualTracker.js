@@ -4,6 +4,7 @@
 
 import { VISION_CONFIG, SPLIT_CONFIG } from "../config.js";
 import { FaceTracker } from "./tracker.js";
+import { OneEuroFilter } from "./OneEuroFilter.js";
 
 class SingleSlotTracker {
   constructor(slotId, roiX0, roiX1, defaultCenterX) {
@@ -21,6 +22,10 @@ class SingleSlotTracker {
     this.centerTilt = 0;
     this.currentLane = 1;
     this.analogNormalized = 0.5;
+
+    const oe = VISION_CONFIG.oneEuro || { minCutoff: 1.0, beta: 0.007, dCutoff: 1.0 };
+    this.filterX = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+    this.filterTilt = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
   }
 
   reset() {
@@ -34,6 +39,9 @@ class SingleSlotTracker {
     this.centerTilt = 0;
     this.currentLane = 1;
     this.analogNormalized = 0.5;
+
+    this.filterX.reset();
+    this.filterTilt.reset();
   }
 
   calibrateCenter() {
@@ -45,7 +53,7 @@ class SingleSlotTracker {
     return false;
   }
 
-  update(facesInSlot, now) {
+  update(facesInSlot, now = performance.now()) {
     // 1. If currently locked or in lost grace period: match best face in slot
     if (this.phase === "lock" || this.phase === "lost") {
       let bestMatch = null;
@@ -71,20 +79,29 @@ class SingleSlotTracker {
         if (this.lostFrames > (VISION_CONFIG.maxLostFrames || 60)) {
           this.phase = "wait";
           this.box = null;
+          this.filterX.reset();
+          this.filterTilt.reset();
         }
       }
 
       if (this.phase === "lock" && this.box) {
-        const cx = FaceTracker.getCenterX(this.box);
-        this.smoothedX += (cx - this.smoothedX) * VISION_CONFIG.ema;
-        const currentTilt = this.box.tilt || 0;
-        this.smoothedTilt += (currentTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
+        const rawCx = FaceTracker.getCenterX(this.box);
+        const rawTilt = this.box.tilt || 0;
+
+        if (VISION_CONFIG.useOneEuro) {
+          this.smoothedX = this.filterX.filter(rawCx, now);
+          this.smoothedTilt = this.filterTilt.filter(rawTilt, now);
+        } else {
+          this.smoothedX += (rawCx - this.smoothedX) * VISION_CONFIG.ema;
+          this.smoothedTilt += (rawTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
+        }
 
         // Compute steering offset normalized to slot width (0.50 width)
         const slotWidth = this.roi.x1 - this.roi.x0;
         const deltaX = (this.smoothedX - this.centerX) / slotWidth;
-        const tilt = this.smoothedTilt || 0;
-        const effectiveSteer = deltaX + tilt * (VISION_CONFIG.tiltWeight || 0.45);
+        const tilt = this.smoothedTilt - this.centerTilt;
+        const tiltWeight = VISION_CONFIG.tiltWeight || 0.65;
+        const effectiveSteer = deltaX + tilt * tiltWeight;
 
         // Continuous analog steering [0.0 .. 1.0]
         this.analogNormalized = Math.max(0.0, Math.min(1.0, 0.5 + effectiveSteer * 2.2));
@@ -126,8 +143,15 @@ class SingleSlotTracker {
         this.box = primary;
         this.phase = "lock";
         this.lostFrames = 0;
-        this.smoothedX = this.centerX = FaceTracker.getCenterX(primary);
-        this.smoothedTilt = this.centerTilt = primary.tilt || 0;
+        const initCx = FaceTracker.getCenterX(primary);
+        const initTilt = primary.tilt || 0;
+        this.smoothedX = this.centerX = initCx;
+        this.smoothedTilt = this.centerTilt = initTilt;
+
+        this.filterX.reset();
+        this.filterTilt.reset();
+        this.filterX.filter(initCx, now);
+        this.filterTilt.filter(initTilt, now);
       }
     } else {
       this.cand = primary;

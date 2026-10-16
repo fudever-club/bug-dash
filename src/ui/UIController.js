@@ -737,40 +737,97 @@ export class UIController {
       }
     });
 
-    // 3. Head Tilt Horizon / Curved Steering Arc
+    // 3. Head Tilt Horizon & Steer Tension Gauge (Visual Feedback)
     if (trackerStatus.phase === "lock") {
       const roll = trackerStatus.rollAngle || 0;
       const deg = Math.round(roll * 180 / Math.PI);
       const centerX = W / 2;
-      const centerY = H - 18;
+      const centerY = H - 24;
 
-      // Arc base track
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      // Vertical Gesture Banner (if Jump or Duck active)
+      if (trackerStatus.isJump) {
+        ctx.fillStyle = "rgba(56, 189, 248, 0.90)";
+        ctx.beginPath();
+        ctx.roundRect(W * 0.22, 10, W * 0.56, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = "#050811";
+        ctx.font = "800 11px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⬆ NHẢY QUA BUG (JUMP)!", W * 0.5, 25);
+      } else if (trackerStatus.isDuck) {
+        ctx.fillStyle = "rgba(245, 158, 11, 0.90)";
+        ctx.beginPath();
+        ctx.roundRect(W * 0.22, 10, W * 0.56, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = "#050811";
+        ctx.font = "800 11px 'Be Vietnam Pro', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⬇ TRƯỢT NÉ DEADLINE (SLIDE)!", W * 0.5, 25);
+      }
+
+      // Curved Arc Base Track
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.arc(centerX, centerY - 6, 42, Math.PI * 0.2, Math.PI * 0.8, false);
+      ctx.arc(centerX, centerY - 8, 44, Math.PI * 0.2, Math.PI * 0.8, false);
       ctx.stroke();
 
-      // Steering Marker dot
-      const markerAngle = Math.PI * 0.5 + Math.max(-0.6, Math.min(0.6, roll * 1.4));
-      const mx = centerX + Math.cos(markerAngle) * 42;
-      const my = centerY - 6 + Math.sin(markerAngle) * 42;
+      // Steering Marker Dot
+      const markerAngle = Math.PI * 0.5 + Math.max(-0.62, Math.min(0.62, roll * 1.5));
+      const mx = centerX + Math.cos(markerAngle) * 44;
+      const my = centerY - 8 + Math.sin(markerAngle) * 44;
 
-      ctx.fillStyle = Math.abs(deg) > 7 ? "#f59e0b" : "#10b981";
-      ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 8;
+      const tension = trackerStatus.steerTension || 0;
+      const absTension = Math.min(1.5, Math.abs(tension));
+      const isTriggered = absTension >= 1.0;
+
+      const dotColor = isTriggered ? "#10b981" : (Math.abs(deg) > 7 ? "#f59e0b" : "#38bdf8");
+      ctx.fillStyle = dotColor;
+      ctx.shadowColor = dotColor;
+      ctx.shadowBlur = isTriggered ? 12 : 6;
       ctx.beginPath();
-      ctx.arc(mx, my, 4.5, 0, Math.PI * 2);
+      ctx.arc(mx, my, isTriggered ? 5.5 : 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Degree readout
-      ctx.fillStyle = Math.abs(deg) > 7 ? "#f59e0b" : "#ffffff";
-      ctx.font = "700 10px 'Be Vietnam Pro', sans-serif";
+      // Steer Tension Progress Gauge (Bottom Dual Bar)
+      const barW = W * 0.72;
+      const barH = 5;
+      const barX = (W - barW) / 2;
+      const barY = H - 10;
+      const halfW = barW / 2;
+
+      // Background track
+      ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      ctx.fillRect(barX, barY, barW, barH);
+
+      // Center divider
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.fillRect(centerX - 1, barY - 2, 2, barH + 4);
+
+      // Fill tension towards Left or Right
+      if (tension < 0) {
+        // Left steer
+        const fillW = Math.min(1.0, Math.abs(tension)) * halfW;
+        ctx.fillStyle = isTriggered ? "#10b981" : "#f59e0b";
+        ctx.fillRect(centerX - fillW, barY, fillW, barH);
+      } else if (tension > 0) {
+        // Right steer
+        const fillW = Math.min(1.0, tension) * halfW;
+        ctx.fillStyle = isTriggered ? "#10b981" : "#f59e0b";
+        ctx.fillRect(centerX, barY, fillW, barH);
+      }
+
+      // Text Status
+      ctx.fillStyle = isTriggered ? "#10b981" : (Math.abs(deg) > 7 ? "#f59e0b" : "#ffffff");
+      ctx.font = "700 9.5px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
-      const steerText = deg < -7 ? "NGHIÊNG TRÁI" : (deg > 7 ? "NGHIÊNG PHẢI" : "TÂM THẲNG");
-      ctx.fillText(`${steerText} (${deg > 0 ? '+' : ''}${deg}°)`, centerX, H - 4);
+      const tensionPercent = Math.round(Math.min(100, absTension * 100));
+      const steerLabel = tension < -0.15 
+        ? `LÁI TRÁI ${tensionPercent}%` 
+        : (tension > 0.15 ? `LÁI PHẢI ${tensionPercent}%` : "TÂM CHUẨN");
+      ctx.fillText(`${steerLabel} (${deg > 0 ? '+' : ''}${deg}°)`, centerX, centerY + 2);
     }
   }
 

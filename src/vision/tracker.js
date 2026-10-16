@@ -1,7 +1,10 @@
 // FU-DEVER BUG DASH - Single-Player Robust Face Tracker
-// Implements ROI gating, Candidate confirmation lock, IoU tracking, and EMA smoothing.
+// Implements ROI gating, Candidate confirmation lock, Hybrid matching,
+// 1€ Filter (One Euro Filter) for ultra-low latency & anti-jitter,
+// Dynamic Auto-Zeroing Baseline, and Vertical Gesture (Jump / Duck) detection.
 
 import { VISION_CONFIG } from "../config.js";
+import { OneEuroFilter } from "./OneEuroFilter.js";
 
 export class FaceTracker {
   constructor(onLockCallback) {
@@ -10,8 +13,29 @@ export class FaceTracker {
     this.candSince = 0;
     this.box = null;
     this.lostFrames = 0;
+
+    // Spatial coordinates & baselines
     this.smoothedX = 0.5;
     this.centerX = 0.5;
+    this.smoothedTilt = 0;
+    this.centerTilt = 0;
+    this.smoothedY = 0.5;
+    this.centerY = 0.5;
+
+    // Vertical gestures (Jump / Duck) via dY/dt
+    this.prevY = 0.5;
+    this.prevTimestamp = 0;
+    this.velocityDy = 0;
+    this.isJump = false;
+    this.isDuck = false;
+    this.lastVerticalGestureTime = 0;
+
+    // 1€ Filter instances
+    const oe = VISION_CONFIG.oneEuro || { minCutoff: 1.0, beta: 0.007, dCutoff: 1.0 };
+    this.filterX = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+    this.filterTilt = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+    this.filterY = new OneEuroFilter(30, oe.minCutoff, oe.beta, oe.dCutoff);
+
     this.onLock = onLockCallback || (() => {});
   }
 
@@ -59,6 +83,10 @@ export class FaceTracker {
     return box.x + box.w / 2;
   }
 
+  static getCenterY(box) {
+    return box.y + box.h / 2;
+  }
+
   reset() {
     this.phase = "wait";
     this.cand = null;
@@ -68,20 +96,35 @@ export class FaceTracker {
     this.centerX = 0.5;
     this.smoothedTilt = 0;
     this.centerTilt = 0;
+    this.smoothedY = 0.5;
+    this.centerY = 0.5;
+    this.velocityDy = 0;
+    this.isJump = false;
+    this.isDuck = false;
+    this.prevTimestamp = 0;
+
+    this.filterX.reset();
+    this.filterTilt.reset();
+    this.filterY.reset();
   }
 
   calibrateCenter() {
     if (this.phase === "lock" && this.box) {
       this.centerX = this.smoothedX;
       this.centerTilt = this.smoothedTilt;
+      this.centerY = this.smoothedY;
       return true;
     }
     return false;
   }
 
-  update(faces, now) {
+  update(faces, now = performance.now()) {
     // 1. Filter out background faces (far away)
     const validFaces = faces.filter(f => (f.w * f.h) >= VISION_CONFIG.minArea);
+
+    // Reset single-frame gesture triggers
+    this.isJump = false;
+    this.isDuck = false;
 
     // 2. If locked or temporarily lost: keep tracking the target person
     if (this.phase === "lock" || this.phase === "lost") {
@@ -109,15 +152,59 @@ export class FaceTracker {
         if (this.lostFrames > (VISION_CONFIG.maxLostFrames || 60)) {
           this.phase = "wait";
           this.box = null;
+          this.filterX.reset();
+          this.filterTilt.reset();
+          this.filterY.reset();
         }
       }
 
       if (this.phase === "lock" && this.box) {
-        const cx = FaceTracker.getCenterX(this.box);
-        this.smoothedX += (cx - this.smoothedX) * VISION_CONFIG.ema;
+        const rawCx = FaceTracker.getCenterX(this.box);
+        const rawTilt = this.box.tilt || 0;
+        const rawCy = FaceTracker.getCenterY(this.box);
 
-        const currentTilt = this.box.tilt || 0;
-        this.smoothedTilt += (currentTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
+        // Apply 1€ Filter (or EMA fallback)
+        if (VISION_CONFIG.useOneEuro) {
+          this.smoothedX = this.filterX.filter(rawCx, now);
+          this.smoothedTilt = this.filterTilt.filter(rawTilt, now);
+          this.smoothedY = this.filterY.filter(rawCy, now);
+        } else {
+          this.smoothedX += (rawCx - this.smoothedX) * VISION_CONFIG.ema;
+          this.smoothedTilt += (rawTilt - this.smoothedTilt) * (VISION_CONFIG.tiltEma || 0.35);
+          this.smoothedY += (rawCy - this.smoothedY) * 0.4;
+        }
+
+        // Vertical Gesture Analysis (Jump / Duck via dY/dt with position gating)
+        if (this.prevTimestamp > 0) {
+          const dt = Math.max(0.005, (now - this.prevTimestamp) / 1000);
+          const rawDy = (rawCy - this.prevY) / dt;
+
+          // If frame gap is large (>150ms), reset velocity to avoid carrying old momentum
+          if (dt > 0.15) {
+            this.velocityDy = rawDy;
+          } else {
+            this.velocityDy = this.velocityDy * 0.5 + rawDy * 0.5;
+          }
+
+          const vg = VISION_CONFIG.verticalGesture || { jumpVelocity: -0.32, duckVelocity: 0.35, cooldownMs: 400 };
+          const cooldownOk = (now - this.lastVerticalGestureTime) >= vg.cooldownMs;
+
+          if (cooldownOk) {
+            // Position gating ensures upward recovery from duck doesn't trigger jump, and vice versa
+            const isAboveCenter = rawCy < (this.centerY - 0.02);
+            const isBelowCenter = rawCy > (this.centerY + 0.02);
+
+            if (isAboveCenter && this.velocityDy < vg.jumpVelocity) {
+              this.isJump = true;
+              this.lastVerticalGestureTime = now;
+            } else if (isBelowCenter && this.velocityDy > vg.duckVelocity) {
+              this.isDuck = true;
+              this.lastVerticalGestureTime = now;
+            }
+          }
+        }
+        this.prevY = rawCy;
+        this.prevTimestamp = now;
       }
       return;
     }
@@ -153,8 +240,24 @@ export class FaceTracker {
         this.box = primary;
         this.phase = "lock";
         this.lostFrames = 0;
-        this.smoothedX = this.centerX = FaceTracker.getCenterX(primary);
-        this.smoothedTilt = this.centerTilt = primary.tilt || 0;
+
+        const initCx = FaceTracker.getCenterX(primary);
+        const initTilt = primary.tilt || 0;
+        const initCy = FaceTracker.getCenterY(primary);
+
+        this.smoothedX = this.centerX = initCx;
+        this.smoothedTilt = this.centerTilt = initTilt;
+        this.smoothedY = this.centerY = initCy;
+        this.prevY = initCy;
+        this.prevTimestamp = now;
+
+        this.filterX.reset();
+        this.filterTilt.reset();
+        this.filterY.reset();
+        this.filterX.filter(initCx, now);
+        this.filterTilt.filter(initTilt, now);
+        this.filterY.filter(initCy, now);
+
         this.onLock(this.box);
       }
     } else {
@@ -165,14 +268,31 @@ export class FaceTracker {
   }
 
   getStatus() {
+    const deltaX = this.smoothedX - this.centerX;
+    const deltaTilt = this.smoothedTilt - this.centerTilt;
+    const tiltWeight = VISION_CONFIG.tiltWeight || 0.65;
+    const effectiveSteer = deltaX + deltaTilt * tiltWeight;
+    const steerThreshold = VISION_CONFIG.defaultThreshold || 0.09;
+    const steerTension = Math.max(-1.5, Math.min(1.5, effectiveSteer / steerThreshold));
+
     return {
       phase: this.phase,
       box: this.box,
       smoothedX: this.smoothedX,
       centerX: this.centerX,
-      deltaX: this.smoothedX - this.centerX,
-      smoothedTilt: this.smoothedTilt || 0,
+      deltaX: deltaX,
+      smoothedTilt: this.smoothedTilt,
+      centerTilt: this.centerTilt,
+      deltaTilt: deltaTilt,
       rollAngle: this.box ? (this.box.rollAngle || 0) : 0,
+      smoothedY: this.smoothedY,
+      centerY: this.centerY,
+      deltaY: this.smoothedY - this.centerY,
+      velocityDy: this.velocityDy,
+      isJump: this.isJump,
+      isDuck: this.isDuck,
+      effectiveSteer: effectiveSteer,
+      steerTension: steerTension, // -1.0 (full left threshold) .. +1.0 (full right threshold)
       lostFrames: this.lostFrames,
       candProgress: (this.phase === "cand") ? Math.min(1.0, (performance.now() - this.candSince) / VISION_CONFIG.lockMs) : 0
     };

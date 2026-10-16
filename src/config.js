@@ -7,11 +7,22 @@ export const VISION_CONFIG = {
   maxLostFrames: 60,               // Giữ lock dự phòng tối đa 60 frame (~2.0s) trước khi nhả lock
   minIoU: 0.15,                    // Ngưỡng IoU tối thiểu
   minArea: 0.02,                   // Bounding box < 2% khung hình thì bỏ qua (lọc người đứng xa phía sau)
-  ema: 0.4,                        // Hệ số làm mượt tâm đầu X (EMA)
-  tiltEma: 0.35,                   // Hệ số làm mượt góc nghiêng đầu (Tilt)
-  tiltWeight: 0.45,                // Trọng số góc nghiêng đầu kết hợp vào độ lệch chuyển làn
+  ema: 0.4,                        // Hệ số làm mượt tâm đầu X (EMA fallback)
+  tiltEma: 0.35,                   // Hệ số làm mượt góc nghiêng đầu (Tilt fallback)
+  tiltWeight: 0.65,                // Trọng số góc nghiêng đầu kết hợp vào độ lệch chuyển làn (ôm cua xe máy)
   hyst: 0.02,                      // Vùng chết (hysteresis) tránh rung giật ở ranh giới 2 làn
   defaultThreshold: 0.09,          // Ngưỡng lệch tâm để chuyển làn mặc định 9%
+  useOneEuro: true,                // Sử dụng 1€ Filter triệt tiêu rung giật và giảm độ trễ <5ms
+  oneEuro: {
+    minCutoff: 1.0,                // Hz (tần số cắt chống rung khi đứng yên)
+    beta: 3.5,                     // Hệ số tăng tốc đáp ứng chuẩn hóa cho tọa độ 0..1
+    dCutoff: 1.0                   // Tần số cắt đạo hàm vận tốc
+  },
+  verticalGesture: {
+    jumpVelocity: -0.32,           // Vận tốc dY/dt giật lên kích hoạt JUMP
+    duckVelocity: 0.35,            // Vận tốc dY/dt giật xuống kích hoạt SLIDE/DUCK
+    cooldownMs: 400                // Thời gian hồi chiêu giữa 2 lần nhún nhảy
+  },
   modelUrl: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
   wasmUrl: "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
 };

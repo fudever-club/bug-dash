@@ -388,10 +388,16 @@ class BugDashApp {
   // ====== Computer Vision Loop ======
   visionLoop() {
     if (!this.isVisionRunning) return;
-    requestAnimationFrame(() => this.visionLoop());
+
+    // Zero-latency hardware frame synchronization with rAF fallback
+    if (this.videoElement && 'requestVideoFrameCallback' in this.videoElement) {
+      this.videoElement.requestVideoFrameCallback(() => this.visionLoop());
+    } else {
+      requestAnimationFrame(() => this.visionLoop());
+    }
 
     const video = this.videoElement;
-    if (video.readyState < 2) return;
+    if (!video || video.readyState < 2) return;
 
     const now = performance.now();
 
@@ -434,6 +440,14 @@ class BugDashApp {
       this.tracker.update(faces, now);
       const trackerStatus = this.tracker.getStatus();
       this.laneController.updateFromTracker(trackerStatus);
+
+      // Physical Jump & Duck gestures via Face Box Velocity (dY/dt)
+      if (trackerStatus.isJump && !this.jumpState.isJumping && !this.slideState.isSliding) {
+        this.jump();
+      } else if (trackerStatus.isDuck && !this.slideState.isSliding && !this.jumpState.isJumping) {
+        this.slide();
+      }
+
       this.ui.updateCameraStatus(trackerStatus.phase, currentFps);
       this.ui.drawVisionOverlay(trackerStatus, faces, VISION_CONFIG.roi, false, null, null, this.inputSource);
     }

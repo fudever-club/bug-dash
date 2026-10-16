@@ -95,11 +95,12 @@ export class LaneController {
     // Only update from vision if locked
     if (trackerStatus.phase !== "lock") return;
 
-    // Combine horizontal displacement + Head Roll Tilt
-    const deltaX = trackerStatus.deltaX;
-    const tilt = trackerStatus.smoothedTilt || 0;
-    const effectiveSteer = deltaX + tilt * (VISION_CONFIG.tiltWeight || 0.45);
+    // Combine horizontal displacement + Head Roll Tilt with Dynamic Baseline
+    const effectiveSteer = trackerStatus.effectiveSteer !== undefined 
+      ? trackerStatus.effectiveSteer 
+      : (trackerStatus.deltaX + (trackerStatus.deltaTilt !== undefined ? trackerStatus.deltaTilt : (trackerStatus.smoothedTilt || 0)) * (VISION_CONFIG.tiltWeight || 0.65));
     this.effectiveSteer = effectiveSteer;
+    this.steerTension = trackerStatus.steerTension || (effectiveSteer / this.threshold);
 
     if (this.steeringMode === STEERING_MODES.ANALOG) {
       // Continuous Analog Head Steering
