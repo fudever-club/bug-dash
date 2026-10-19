@@ -827,7 +827,7 @@ input[type=range] {
   background-size: cover;
   background-position: center;
   filter: brightness(0.7) saturate(1.15);
-  transition: transform 0.4s ease, filter 0.4s ease;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s ease, filter 0.4s ease;
 }
 
 .modal-hero-showcase:hover .modal-hero-bg {

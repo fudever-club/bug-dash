@@ -108,6 +108,9 @@ export const MODE_METADATA = {
     badgeColor: "#10b981",
     title: "HỨNG PR & GIT CRYSTAL",
     mascot: "assets/player_3d_run_f2.png",
+    heroBg: "assets/item_3d_gem.png",
+    heroTag: "MINIGAME HỨNG CODE MERGED",
+    heroTech: "ANALOG STEER • 1:1 WEBCAM CV • PR GEMS",
     desc: "Trang bị giỏ hứng công nghệ PR Catcher! Di chuyển liên tục gom trọn Pull Request, Git Crystal và Sao Vàng, tránh xa Syntax Error!",
     rules: [
       { badge: "LÁI ANALOG TỰ DO", badgeClass: "steer-badge", title: "Lắc Đầu Mượt Mà", desc: "Lắc đầu tự do trái/phải — giỏ PR Catcher bám theo đầu mượt mà không bị giới hạn 3 làn" },
@@ -132,6 +135,9 @@ export const MODE_METADATA = {
     badgeColor: "#f59e0b",
     title: "FPT HIGHWAY RACER",
     mascot: "assets/player_3d_run.png",
+    heroBg: "assets/player_3d_bank_right.png",
+    heroTag: "FPT HIGHWAY RACER • TỐC ĐỘ X1.5",
+    heroTech: "HEAD-TILT DRIFT • NITRO FEVER • 60 FPS",
     desc: "Lướt trên đại lộ FPT University Đà Nẵng với tốc độ cao! Drift tự do lách qua các chướng ngại vật xuất hiện dồn dập.",
     rules: [
       { badge: "NGHIÊNG ĐẦU ÔM CUA", badgeClass: "steer-badge", title: "Head Tilt Ôm Cua", desc: "Nghiêng đầu (Tilt) sang trái/phải như ôm cua xe máy — Buggy nghiêng bánh drift cực gắt" },
@@ -156,6 +162,9 @@ export const MODE_METADATA = {
     badgeColor: "#f43f5e",
     title: "CODE SLICER — CHÉM BUG BẰNG TAY",
     mascot: "assets/player_3d_run_f2.png",
+    heroBg: "assets/player_3d_run_f2.png",
+    heroTag: "CODE SLICER • CHÉM BUG NINJA",
+    heroTech: "CYBER BLADE • MULTI-SLASH • VELOCITY TRACK",
     desc: "Vung kiếm Cyber Blade chém đứt các con bug bay tung lên! Gom PR Merged, né bom Deadline 23:59!",
     rules: [
       { badge: "VUNG KIẾM LASER", badgeClass: "steer-badge", title: "Vung Tay Nhanh (>260px/s)", desc: "Vung ngón tay hoặc bàn tay chém ngang/dọc dứt khoát để phóng đường kiếm Laser Neon rực sáng" },
@@ -180,6 +189,9 @@ export const MODE_METADATA = {
     badgeColor: "#06b6d4",
     title: "FLAPPY BUGGY — CÁP QUANG FPTU",
     mascot: "assets/player_3d_run_f2.png",
+    heroBg: "assets/player_3d_jump.png",
+    heroTag: "FLAPPY BUGGY • CÁP QUANG FPTU",
+    heroTech: "1:1 NOSE / HAND ALTITUDE • LOGIC GATES",
     desc: "Buggy đập cánh lượn trong đường hầm cáp quang FPT! Dính Buggy vào mũi hoặc lòng bàn tay — mũi/tay nâng hạ đến đâu, Buggy bám theo êm ái đến đó để lọt qua các khe tường lửa Firewall!",
     rules: [
       { badge: "BÁM THEO MŨI (1:1)", badgeClass: "steer-badge", title: "Mũi Dẫn Đường", desc: "Nâng/hạ đầu tự nhiên — Buggy dính theo vị trí mũi lượn lên xuống mượt mà qua khe hở" },
@@ -204,6 +216,9 @@ export const MODE_METADATA = {
     badgeColor: "#ef4444",
     title: "SONG ĐẤU 1V1",
     mascot: "assets/player_3d_run.png",
+    heroBg: "assets/buggy_champion.png",
+    heroTag: "SONG ĐẤU 1V1 • WEBSOCKET WI-FI",
+    heroTech: "REAL-TIME SYNC • COUNTER ATTACK • KNOCKOUT",
     desc: "Thử tài so trình né deadline giữa 2 lập trình viên! Chọn đấu 2 máy qua Wi-Fi/LAN hoặc 2 người cùng chơi trên 1 webcam máy tính.",
     rules: [
       { badge: "ĐẤU 2 MÁY WI-FI", badgeClass: "steer-badge", title: "Mỗi Máy 1 Webcam", desc: "Mỗi người ngồi trước 1 laptop, lắc đầu né bug và gom combo sao vàng trên màn hình riêng" },
@@ -228,6 +243,9 @@ export const MODE_METADATA = {
     badgeColor: "#06b6d4",
     title: "SPLIT-SCREEN ĐỐI KHÁNG",
     mascot: "assets/player_3d_run.png",
+    heroBg: "assets/buggy_champion.png",
+    heroTag: "SPLIT-SCREEN 2P • 1 WEBCAM CHUNG",
+    heroTech: "SPATIAL PARTITION • DUAL LOCK • DIRECT DUEL",
     desc: "Hai bạn cùng đứng kè vai trước webcam máy tính! Màn hình chia đôi thi tài né deadline song song.",
     rules: [
       { badge: "ĐỨNG KÈ VAI (P1 & P2)", badgeClass: "steer-badge", title: "P1 Bên Trái • P2 Bên Phải", desc: "P1 đứng nửa trái camera (Làn Cyan), P2 đứng nửa phải camera (Làn Amber)" },
@@ -337,8 +355,8 @@ export const REACTOR_CONFIG = {
   startTemp: 90,                 // Nhiệt độ xuất phát (°C)
   boostTemp: 44,                 // Ngưỡng Final Boost (°C)
   safeTemp: 28,                  // Nhiệt độ an toàn đích (°C)
-  coolingPerWave: 1.6,           // Độ sụt nhiệt mỗi cú vẫy tay mạnh (°C)
-  minWaveVelocity: 160,          // Ngưỡng vận tốc vẫy tay (px/s)
+  coolingPerWave: 2.2,           // Độ sụt nhiệt mỗi cú vẫy tay mạnh (°C)
+  minWaveVelocity: 80,           // Ngưỡng vận tốc vẫy tay (px/s)
   passiveHeatRise: 0.35,         // Tự tăng nhiệt nhẹ nếu ngừng tương tác (°C/s)
   
   // Tọa độ sàn đấu

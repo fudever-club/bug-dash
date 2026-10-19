@@ -10,6 +10,11 @@ export class HandDetectorWrapper {
     this.isReady = false;
     this.isLoading = false;
     this.lastTimestamp = -1;
+    this.lastMultiTimestamp = 0;
+    this.prevP1PalmX = null;
+    this.prevP1PalmY = null;
+    this.prevP2PalmX = null;
+    this.prevP2PalmY = null;
   }
 
   async init() {
@@ -152,6 +157,9 @@ export class HandDetectorWrapper {
         }
       }
 
+      const dt = this.lastMultiTimestamp > 0 ? Math.max(0.016, (timestamp - this.lastMultiTimestamp) / 1000) : 0.033;
+      this.lastMultiTimestamp = timestamp;
+
       // Process Player 1 (Left Half: 0.0 .. 0.50)
       let p1Data = null;
       if (p1Hands.length > 0) {
@@ -159,13 +167,28 @@ export class HandDetectorWrapper {
         p1Hands.sort((a, b) => a.palmY - b.palmY);
         const best = p1Hands[0];
         const normX = Math.max(0, Math.min(1.0, (best.palmX - 0.05) / 0.40));
+
+        let waveVelocity = 0;
+        if (this.prevP1PalmX !== null && this.prevP1PalmY !== null) {
+          const dx = (best.palmX - this.prevP1PalmX) * 640;
+          const dy = (best.palmY - this.prevP1PalmY) * 480;
+          waveVelocity = Math.hypot(dx, dy) / dt;
+        }
+        this.prevP1PalmX = best.palmX;
+        this.prevP1PalmY = best.palmY;
+
         p1Data = {
+          landmarks: best.landmarks,
           palmX: best.palmX,
           palmY: best.palmY,
           normX,
           isRaised: best.isRaised,
+          waveVelocity,
           handCount: p1Hands.length
         };
+      } else {
+        this.prevP1PalmX = null;
+        this.prevP1PalmY = null;
       }
 
       // Process Player 2 (Right Half: 0.50 .. 1.00)
@@ -174,13 +197,28 @@ export class HandDetectorWrapper {
         p2Hands.sort((a, b) => a.palmY - b.palmY);
         const best = p2Hands[0];
         const normX = Math.max(0, Math.min(1.0, (best.palmX - 0.55) / 0.40));
+
+        let waveVelocity = 0;
+        if (this.prevP2PalmX !== null && this.prevP2PalmY !== null) {
+          const dx = (best.palmX - this.prevP2PalmX) * 640;
+          const dy = (best.palmY - this.prevP2PalmY) * 480;
+          waveVelocity = Math.hypot(dx, dy) / dt;
+        }
+        this.prevP2PalmX = best.palmX;
+        this.prevP2PalmY = best.palmY;
+
         p2Data = {
+          landmarks: best.landmarks,
           palmX: best.palmX,
           palmY: best.palmY,
           normX,
           isRaised: best.isRaised,
+          waveVelocity,
           handCount: p2Hands.length
         };
+      } else {
+        this.prevP2PalmX = null;
+        this.prevP2PalmY = null;
       }
 
       return {

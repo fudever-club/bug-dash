@@ -600,6 +600,147 @@ export class UIController {
     ctx.clearRect(0, 0, W, H);
 
     // ==========================================
+    // REACTOR RUSH: CO-OP MULTIMODAL OVERLAY (2P HANDS + FACES)
+    // Tự động kích hoạt song song cho 2 người chơi (P1 Trái • P2 Phải)
+    // Không bị ảnh hưởng bởi toggle Mặt / Tay của game 1 người chơi
+    // ==========================================
+    if (gameMode === "reactor") {
+      // 1. Center Divider Line
+      ctx.strokeStyle = "rgba(0, 245, 255, 0.45)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5, 0); ctx.lineTo(W * 0.5, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 2. Zone Headers
+      ctx.font = "800 9.5px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = "rgba(0, 245, 255, 0.9)";
+      ctx.textAlign = "left";
+      ctx.fillText("P1 (NỬA TRÁI)", 8, 14);
+
+      ctx.fillStyle = "rgba(244, 114, 182, 0.9)";
+      ctx.textAlign = "right";
+      ctx.fillText("P2 (NỬA PHẢI)", W - 8, 14);
+
+      // 3. Draw Hands for both players (from multiHands)
+      const bones = [
+        [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
+        [0, 5], [5, 6], [6, 7], [7, 8],       // Index
+        [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+        [0, 13], [13, 14], [14, 15], [15, 16],// Ring
+        [0, 17], [17, 18], [18, 19], [19, 20],// Pinky
+        [5, 9], [9, 13], [13, 17]              // Palm base
+      ];
+
+      const drawHandSkeleton = (hand, color, tipColor, label) => {
+        if (!hand || !hand.landmarks) return;
+        const pts = hand.landmarks;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        bones.forEach(([i, j]) => {
+          if (pts[i] && pts[j]) {
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x * W, pts[i].y * H);
+            ctx.lineTo(pts[j].x * W, pts[j].y * H);
+            ctx.stroke();
+          }
+        });
+        pts.forEach((pt, idx) => {
+          const px = pt.x * W;
+          const py = pt.y * H;
+          const isTip = (idx === 4 || idx === 8 || idx === 12 || idx === 16 || idx === 20);
+          ctx.fillStyle = isTip ? tipColor : color;
+          ctx.beginPath();
+          ctx.arc(px, py, isTip ? 3.5 : 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Palm circle
+        const cx = hand.palmX * W;
+        const cy = hand.palmY * H;
+        ctx.strokeStyle = tipColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = tipColor;
+        ctx.font = "800 9px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(label, cx, Math.max(14, cy - 16));
+      };
+
+      const handsList = (handStatus && handStatus.allHands) ? handStatus.allHands : (handStatus && handStatus.landmarks ? [handStatus] : []);
+      if (handsList.length > 0) {
+        handsList.forEach((h) => {
+          const isP1 = h.palmX < 0.5;
+          const color = isP1 ? "rgba(0, 245, 255, 0.75)" : "rgba(244, 114, 182, 0.75)";
+          const tipColor = isP1 ? "#38bdf8" : "#f472b6";
+          let label = isP1 ? "P1 TAY" : "P2 TAY";
+          if (h.isRaised) {
+            label = isP1 ? "P1 [GIƠ CAO ✓]" : "P2 [GIƠ CAO ✓]";
+          } else if (h.waveVelocity && h.waveVelocity >= 80) {
+            label = isP1 ? "P1 [QUẠT GIÓ]" : "P2 [QUẠT GIÓ]";
+          }
+          drawHandSkeleton(h, color, tipColor, label);
+        });
+      }
+
+      // 4. Draw Face boxes for P1 & P2 if available
+      if (dualStatus) {
+        const p1 = dualStatus.p1;
+        if (p1 && p1.box) {
+          const bx = (1 - p1.box.x - p1.box.w) * W;
+          const by = p1.box.y * H;
+          const bw = p1.box.w * W;
+          const bh = p1.box.h * H;
+          ctx.strokeStyle = "rgba(0, 245, 255, 0.8)";
+          ctx.lineWidth = 1.8;
+          ctx.strokeRect(bx, by, bw, bh);
+          ctx.fillStyle = "rgba(0, 245, 255, 0.85)";
+          ctx.fillRect(bx, by - 14, 46, 14);
+          ctx.fillStyle = "#000000";
+          ctx.font = "800 8.5px 'Be Vietnam Pro', sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("P1 MẶT", bx + 3, by - 3);
+        }
+        const p2 = dualStatus.p2;
+        if (p2 && p2.box) {
+          const bx = (1 - p2.box.x - p2.box.w) * W;
+          const by = p2.box.y * H;
+          const bw = p2.box.w * W;
+          const bh = p2.box.h * H;
+          ctx.strokeStyle = "rgba(244, 114, 182, 0.8)";
+          ctx.lineWidth = 1.8;
+          ctx.strokeRect(bx, by, bw, bh);
+          ctx.fillStyle = "rgba(244, 114, 182, 0.85)";
+          ctx.fillRect(bx, by - 14, 46, 14);
+          ctx.fillStyle = "#000000";
+          ctx.font = "800 8.5px 'Be Vietnam Pro', sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("P2 MẶT", bx + 3, by - 3);
+        }
+      }
+
+      // 5. Co-op status pill at bottom
+      ctx.fillStyle = "rgba(5, 8, 17, 0.85)";
+      ctx.beginPath();
+      ctx.roundRect(W * 0.08, H - 22, W * 0.84, 18, 5);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.5)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "800 9px 'Be Vietnam Pro', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("CO-OP ĐA CẢM BIẾN: TAY & MẶT (P1 TRÁI • P2 PHẢI)", W * 0.5, H - 10);
+      return;
+    }
+
+    // ==========================================
     // HAND TRACKING OVERLAY (MediaPipe Skeleton)
     // ==========================================
     if (inputSource === "hand") {
@@ -1006,7 +1147,11 @@ export class UIController {
     // Hero Visual Showcase Banner Setup
     if (this.dom.modalHeroBg) {
       const heroBgUrl = meta.heroBg || meta.mascot || "assets/player_3d_run.png";
+      this.dom.modalHeroBg.style.opacity = "0.2";
       this.dom.modalHeroBg.style.backgroundImage = `url('${heroBgUrl}')`;
+      requestAnimationFrame(() => {
+        if (this.dom.modalHeroBg) this.dom.modalHeroBg.style.opacity = "1";
+      });
     }
     if (this.dom.startModalHeroTag) {
       this.dom.startModalHeroTag.textContent = meta.heroTag || meta.badge || "GAME MODE";

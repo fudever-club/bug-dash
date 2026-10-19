@@ -31,10 +31,11 @@ export class ReactorRushEngine {
       round3: new ImageCtor(),
       victory: new ImageCtor()
     };
-    this.bgImages.round1.src = "assets/reactor/round1_bg.jpg";
-    this.bgImages.round2.src = "assets/reactor/round2_bg.jpg";
-    this.bgImages.round3.src = "assets/reactor/round3_bg.jpg";
-    this.bgImages.victory.src = "assets/reactor/victory_bg.jpg";
+    const basePath = (typeof window !== "undefined" && window.location && window.location.origin) ? (window.location.origin + "/") : "";
+    this.bgImages.round1.src = basePath + "assets/reactor/round1_bg.jpg";
+    this.bgImages.round2.src = basePath + "assets/reactor/round2_bg.jpg";
+    this.bgImages.round3.src = basePath + "assets/reactor/round3_bg.jpg";
+    this.bgImages.victory.src = basePath + "assets/reactor/victory_bg.jpg";
 
     this.stage = REACTOR_STAGES.CALIBRATION;
     this.stageTime = 0;
@@ -286,8 +287,9 @@ export class ReactorRushEngine {
     }
 
     // Cool the core
-    const drop = REACTOR_CONFIG.coolingPerWave * (this.finalBoostActive ? 1.5 : 1.0);
+    const drop = REACTOR_CONFIG.coolingPerWave * (this.finalBoostActive ? 1.6 : 1.0);
     this.coreTemp = Math.max(REACTOR_CONFIG.safeTemp, this.coreTemp - drop);
+    this.addFloatingText(side === "p1" ? this.p1.x + 30 : this.p2.x - 30, 480, `-${drop.toFixed(1)}°C`, side === "p1" ? "#67e8f9" : "#f472b6");
   }
 
   skipIntermission() {
@@ -595,10 +597,13 @@ export class ReactorRushEngine {
     }
 
     // Check continuous wave gestures from webcam telemetry
-    if (this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity && this.totalTime - this.p1.lastWaveTime > 0.22) {
+    const p1Waving = (this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p1.handRaised;
+    const p2Waving = (this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p2.handRaised;
+
+    if (p1Waving && (this.totalTime - this.p1.lastWaveTime > 0.18)) {
       this.triggerP1Wave();
     }
-    if (this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity && this.totalTime - this.p2.lastWaveTime > 0.22) {
+    if (p2Waving && (this.totalTime - this.p2.lastWaveTime > 0.18)) {
       this.triggerP2Wave();
     }
 
@@ -720,31 +725,31 @@ export class ReactorRushEngine {
     switch (this.stage) {
       case REACTOR_STAGES.CALIBRATION:
         activeBg = this.bgImages.round1;
-        overlayAlpha = 0.50; // Darken for calibration boxes
+        overlayAlpha = 0.08; // High visibility for cel-shaded lab art
         break;
       case REACTOR_STAGES.ROUND_1_ENERGY:
         activeBg = this.bgImages.round1;
-        overlayAlpha = 0.12; // Crisp cel-shaded map
+        overlayAlpha = 0.04; // Crisp cel-shaded map
         break;
       case REACTOR_STAGES.SWAP_ROUND_2:
         activeBg = this.bgImages.round2;
-        overlayAlpha = 0.55;
+        overlayAlpha = 0.35;
         break;
       case REACTOR_STAGES.ROUND_2_CIRCUIT:
         activeBg = this.bgImages.round2;
-        overlayAlpha = 0.12;
+        overlayAlpha = 0.04;
         break;
       case REACTOR_STAGES.SWAP_ROUND_3:
         activeBg = this.bgImages.round3;
-        overlayAlpha = 0.55;
+        overlayAlpha = 0.35;
         break;
       case REACTOR_STAGES.ROUND_3_COOLING:
         activeBg = this.bgImages.round3;
-        overlayAlpha = 0.12;
+        overlayAlpha = 0.04;
         break;
       case REACTOR_STAGES.MISSION_COMPLETE:
         activeBg = this.bgImages.victory;
-        overlayAlpha = 0.08;
+        overlayAlpha = 0;
         break;
     }
 
@@ -876,28 +881,35 @@ export class ReactorRushEngine {
 
   renderCalibrationSlot(ctx, x, y, w, h, label, player, primaryColor, accentColor) {
     ctx.save();
-    ctx.fillStyle = "rgba(11, 19, 43, 0.88)";
-    ctx.strokeStyle = player.isReady ? primaryColor : "rgba(56, 189, 248, 0.35)";
+    // Frosted glass panel - allows the stunning cel-shaded background art to shine through
+    ctx.fillStyle = "rgba(11, 19, 43, 0.28)";
+    ctx.strokeStyle = player.isReady ? primaryColor : "rgba(56, 189, 248, 0.45)";
     ctx.lineWidth = player.isReady ? 2.5 : 1.5;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 12);
+    ctx.roundRect(x, y, w, h, 14);
     ctx.fill();
     ctx.stroke();
 
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
-    ctx.lineWidth = 1;
-    for (let gx = x + 20; gx < x + w; gx += 25) {
-      ctx.beginPath();
-      ctx.moveTo(gx, y + 40);
-      ctx.lineTo(gx, y + h - 50);
-      ctx.stroke();
-    }
-    for (let gy = y + 50; gy < y + h - 50; gy += 25) {
-      ctx.beginPath();
-      ctx.moveTo(x + 10, gy);
-      ctx.lineTo(x + w - 10, gy);
-      ctx.stroke();
-    }
+    // Subtle corner brackets instead of dense grid lines
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    const corner = 16;
+    // Top-Left
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + 10 + corner); ctx.lineTo(x + 10, y + 10); ctx.lineTo(x + 10 + corner, y + 10);
+    ctx.stroke();
+    // Top-Right
+    ctx.beginPath();
+    ctx.moveTo(x + w - 10 - corner, y + 10); ctx.lineTo(x + w - 10, y + 10); ctx.lineTo(x + w - 10, y + 10 + corner);
+    ctx.stroke();
+    // Bottom-Left
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + h - 10 - corner); ctx.lineTo(x + 10, y + h - 10); ctx.lineTo(x + 10 + corner, y + h - 10);
+    ctx.stroke();
+    // Bottom-Right
+    ctx.beginPath();
+    ctx.moveTo(x + w - 10 - corner, y + h - 10); ctx.lineTo(x + w - 10, y + h - 10); ctx.lineTo(x + w - 10, y + h - 10 - corner);
+    ctx.stroke();
 
     // Member Label (Large text for TV visibility)
     ctx.font = "800 13.5px 'Be Vietnam Pro', sans-serif";
@@ -1013,8 +1025,8 @@ export class ReactorRushEngine {
     const remainingSwap = Math.max(0, Math.ceil(this.swapDuration - this.stageTime));
     const pair = this.getActivePair();
 
-    // Backdrop overlay
-    ctx.fillStyle = "rgba(7, 11, 25, 0.94)";
+    // Backdrop overlay: translucent so the upcoming round's art is visible!
+    ctx.fillStyle = "rgba(7, 11, 25, 0.45)";
     ctx.fillRect(0, 72, W, H - 72);
 
     // Intermission Box
@@ -1023,7 +1035,7 @@ export class ReactorRushEngine {
     const boxX = W / 2 - boxW / 2;
     const boxY = 120;
 
-    ctx.fillStyle = "rgba(13, 22, 50, 0.95)";
+    ctx.fillStyle = "rgba(13, 22, 50, 0.72)";
     ctx.strokeStyle = "#facc15";
     ctx.lineWidth = 2.5;
     ctx.beginPath();

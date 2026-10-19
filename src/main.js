@@ -652,7 +652,7 @@ class BugDashApp {
       };
 
       this.reactorEngine.setInputs(inputs);
-      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, multiHands && multiHands.allHands ? multiHands.allHands[0] : null, "coop_multimodal", this.gameMode);
+      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, multiHands, "coop_multimodal", this.gameMode);
       return;
     }
 
