@@ -9,7 +9,14 @@ Toàn bộ các ảnh chụp màn hình demo 4K độ nét cao được đặt t
 ## 📸 Bộ Sưu Tập Ảnh Chụp Màn Hình Demo Gameplay
 
 ### 1. Vòng 1: Energy Catch (Hứng Hạt Năng Lượng & Sync Combo)
-![Vòng 1: Energy Catch — Hứng Hạt Năng Lượng & Sync Combo](./demo_screenshots/01_round1_energy_catch.jpg)
+
+#### 🌟 Bản Nâng Cấp Mỹ Thuật Chuẩn Indie Game (Anti-AI Cel-Shaded Art Direction):
+![Bản nâng cấp Cel-Shaded Anti-AI](./demo_screenshots/01_round1_anti_ai_celshaded_demo.jpg)
+
+* **Điểm cải tiến vượt bậc:** Loại bỏ hoàn toàn hiệu ứng nhựa bóng (plastic sheen), xóa rác hạt vô định và viền mờ airbrush; sử dụng nét mực viền (ink outline) sắc nét, đổ bóng cel-shading 2 tầng (two-tone), hậu cảnh hạ độ bão hòa (desaturated dark slate lab) giúp 2 nhân vật xe bọ Buggy Cyan & Pink nổi bật rõ ràng và typography HUD vector monospace cực kỳ thanh thoát.
+
+#### 📷 Bản Render 3D Cũ (Tham khảo ban đầu):
+![Vòng 1: Energy Catch — Bản cũ](./demo_screenshots/01_round1_energy_catch.jpg)
 
 * **Cặp đôi thi đấu:** P1 (Thành viên 1) & P2 (Thành viên 2).
 * **Cơ chế Computer Vision:** 
