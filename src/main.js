@@ -1,7 +1,7 @@
 // FU-DEVER BUG DASH — Main Application Entry Point
 // Connects Computer Vision, Audio Synthesizer, 2D Game Engine, UI, and Backend API.
 
-import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG, CONTROL_INPUTS, SLICER_CONFIG, FLAPPY_CONFIG } from "./config.js";
+import { VISION_CONFIG, GAME_CONFIG, GAME_MODES, SPLIT_CONFIG, CONTROL_INPUTS, SLICER_CONFIG, FLAPPY_CONFIG, REACTOR_CONFIG } from "./config.js";
 import { sound } from "./audio/SoundEngine.js";
 import { CameraController } from "./vision/camera.js";
 import { FaceDetectorWrapper } from "./vision/detector.js";
@@ -16,6 +16,7 @@ import { ParticleSystem } from "./engine/ParticleSystem.js";
 import { RoadRenderer } from "./engine/RoadRenderer.js";
 import { UIController } from "./ui/UIController.js";
 import { DuelClient } from "./multiplayer/DuelClient.js";
+import { ReactorRushEngine, REACTOR_STAGES } from "./engine/ReactorRushEngine.js";
 
 // Helper: Distance from point to line segment
 function distPointToSegment(px, py, x1, y1, x2, y2) {
@@ -99,6 +100,7 @@ class BugDashApp {
     this.spawnerP2 = new Spawner(SPLIT_CONFIG.p2Lanes, SPLIT_CONFIG.p2RoadBounds);
     this.particles = new ParticleSystem();
     this.renderer = new RoadRenderer(this.gameCanvas);
+    this.reactorEngine = new ReactorRushEngine(this.gameCanvas);
 
     // 2. Initialize 1v1 Network Duel Client
     this.duelClient = new DuelClient({
@@ -158,6 +160,11 @@ class BugDashApp {
       onLaneSelect: (lane) => this.laneController.setLane(lane, true),
       onStartCamera: () => this.startCamera(),
       onSelectGameMode: (mode) => this.setGameMode(mode),
+      onSetReactorRoster: (teamName, members) => {
+        if (this.reactorEngine) {
+          this.reactorEngine.setTeamRoster(teamName, members);
+        }
+      },
       onSelectDuelType: (type) => this.setDuelType(type),
       onStartSplitMatch: () => this.startSplitMatch(),
       onSelectInputSource: (src) => this.setInputSource(src),
@@ -203,6 +210,12 @@ class BugDashApp {
       this.addBladePoint(px, py);
       if (this.gameMode === GAME_MODES.FLAPPY) {
         this.flappyFlap();
+      } else if (this.gameMode === GAME_MODES.REACTOR) {
+        if (this.reactorEngine.stage === REACTOR_STAGES.SWAP_ROUND_2 || this.reactorEngine.stage === REACTOR_STAGES.SWAP_ROUND_3) {
+          this.reactorEngine.skipIntermission();
+        } else if (this.reactorEngine.stage === REACTOR_STAGES.MISSION_COMPLETE) {
+          this.reactorEngine.reset();
+        }
       }
     });
 
@@ -281,8 +294,57 @@ class BugDashApp {
 
   initKeyboardControls() {
     window.addEventListener("keydown", (e) => {
+      // Reactor Rush 2-Player Controls (Lab Room & Booth Setup)
+      if (this.gameMode === GAME_MODES.REACTOR) {
+        if (e.key === " ") {
+          e.preventDefault();
+          if (this.reactorEngine.stage === REACTOR_STAGES.SWAP_ROUND_2 || this.reactorEngine.stage === REACTOR_STAGES.SWAP_ROUND_3) {
+            this.reactorEngine.skipIntermission();
+            return;
+          }
+          if (this.reactorEngine.stage === REACTOR_STAGES.MISSION_COMPLETE) {
+            this.reactorEngine.reset();
+            return;
+          }
+        }
+        // Player 1 (Cyan): A (Left), D (Right), W (Raise Hand / Fan)
+        if (e.code === "KeyA") {
+          this.reactorEngine.p1.targetX = Math.max(REACTOR_CONFIG.p1FloorBounds.minX, this.reactorEngine.p1.targetX - 25);
+        }
+        if (e.code === "KeyD") {
+          this.reactorEngine.p1.targetX = Math.min(REACTOR_CONFIG.p1FloorBounds.maxX, this.reactorEngine.p1.targetX + 25);
+        }
+        if (e.code === "KeyW") {
+          this.reactorEngine.p1.handRaised = true;
+          this.reactorEngine.triggerP1Wave();
+          setTimeout(() => { if (this.reactorEngine) this.reactorEngine.p1.handRaised = false; }, 350);
+        }
+
+        // Player 2 (Pink): J (Left), L (Right), I (Raise Hand / Fan)
+        if (e.code === "KeyJ") {
+          this.reactorEngine.p2.targetX = Math.max(REACTOR_CONFIG.p2FloorBounds.minX, this.reactorEngine.p2.targetX - 25);
+        }
+        if (e.code === "KeyL") {
+          this.reactorEngine.p2.targetX = Math.min(REACTOR_CONFIG.p2FloorBounds.maxX, this.reactorEngine.p2.targetX + 25);
+        }
+        if (e.code === "KeyI") {
+          this.reactorEngine.p2.handRaised = true;
+          this.reactorEngine.triggerP2Wave();
+          setTimeout(() => { if (this.reactorEngine) this.reactorEngine.p2.handRaised = false; }, 350);
+        }
+      }
+
+      // Fullscreen toggle for Big TV display in Lab room
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+
       // Space to start / restart or Jump during play
-      if (e.key === " ") {
+      if (e.key === " " && this.gameMode !== GAME_MODES.REACTOR) {
         if (this.gameState.state !== GameStates.PLAYING) {
           e.preventDefault();
           this.startGame();
@@ -437,6 +499,13 @@ class BugDashApp {
       this.flappyTargetY = 360;
       this.ui.showStartScreenForMode(GAME_MODES.FLAPPY);
       sound.playBuffActive();
+    } else if (mode === GAME_MODES.REACTOR) {
+      this.reactorEngine.reset();
+      this.ui.showStartScreenForMode(GAME_MODES.REACTOR);
+      sound.playBuffActive();
+      if (!this.handDetector.isReady && !this.handDetector.isLoading) {
+        this.handDetector.init().catch(() => {});
+      }
     } else if (mode === GAME_MODES.DUEL) {
       this.ui.showDuelLobby();
       if (this.ui.dom.btnDuelTabWifi) this.ui.dom.btnDuelTabWifi.click();
@@ -489,6 +558,11 @@ class BugDashApp {
 
   startGame() {
     sound.init();
+    if (this.gameMode === GAME_MODES.REACTOR) {
+      this.reactorEngine.reset();
+      this.ui.hideAllModals();
+      return;
+    }
     this.laneController.reset();
     this.spawner.reset();
     this.particles.reset();
@@ -578,6 +652,38 @@ class BugDashApp {
     // 2. Face Tracking Mode (BlazeFace)
     const faces = this.detector.detectForVideo(video, now);
 
+    // Multimodal 2-Player Tracking for Reactor Rush (Lab Room Webcam & Big TV)
+    if (this.gameMode === GAME_MODES.REACTOR) {
+      let multiHands = null;
+      if (this.handDetector.isReady) {
+        multiHands = this.handDetector.detectMultiHandsForVideo(video, now);
+      }
+
+      this.dualTracker.update(faces, now);
+      const dualStatus = this.dualTracker.getStatus();
+
+      const p1Hand = multiHands && multiHands.p1;
+      const p2Hand = multiHands && multiHands.p2;
+      const p1Face = dualStatus.p1;
+      const p2Face = dualStatus.p2;
+
+      const inputs = {
+        // P1: Left Side
+        p1NormX: p1Hand ? p1Hand.normX : (p1Face ? p1Face.analogNormalized : undefined),
+        p1HandRaised: (p1Hand && p1Hand.isRaised) || (p1Face && p1Face.isJump),
+        p1WaveVelocity: p1Hand && p1Hand.waveVelocity ? p1Hand.waveVelocity : (p1Face && p1Face.isJump ? 260 : 0),
+
+        // P2: Right Side
+        p2NormX: p2Hand ? p2Hand.normX : (p2Face ? p2Face.analogNormalized : undefined),
+        p2HandRaised: (p2Hand && p2Hand.isRaised) || (p2Face && p2Face.isJump),
+        p2WaveVelocity: p2Hand && p2Hand.waveVelocity ? p2Hand.waveVelocity : (p2Face && p2Face.isJump ? 260 : 0)
+      };
+
+      this.reactorEngine.setInputs(inputs);
+      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, multiHands && multiHands.allHands ? multiHands.allHands[0] : null, this.inputSource, this.gameMode);
+      return;
+    }
+
     if (this.gameMode === GAME_MODES.SPLIT_SCREEN) {
       this.dualTracker.update(faces, now);
       const dualStatus = this.dualTracker.getStatus();
@@ -615,6 +721,39 @@ class BugDashApp {
     const loop = (now) => {
       const dt = Math.min(0.06, (now - this.lastGameTime) / 1000);
       this.lastGameTime = now;
+
+      // ==========================================
+      // REACTOR RUSH 2-PLAYER LOCAL CO-OP LOOP (STEM FAIR 2026)
+      // ==========================================
+      if (this.gameMode === GAME_MODES.REACTOR) {
+        this.reactorEngine.update(dt);
+        this.ui.updateScore(this.reactorEngine.totalScore);
+
+        this.renderer.render(
+          dt,
+          this.reactorEngine.p1.x,
+          this.reactorEngine.p1.targetX,
+          1,
+          [],
+          this.particles,
+          false,
+          false,
+          false,
+          false,
+          "analog",
+          null,
+          this.gameMode,
+          this.jumpState,
+          this.slideState,
+          {
+            reactorEngine: this.reactorEngine,
+            inputSource: this.inputSource
+          }
+        );
+
+        requestAnimationFrame(loop);
+        return;
+      }
 
       // ==========================================
       // SPLIT-SCREEN 2-PLAYER LOCAL LOOP

@@ -47,6 +47,7 @@ export class UIController {
       btnSound: $("btnSound"),
       iconSoundOn: $("iconSoundOn"),
       iconSoundOff: $("iconSoundOff"),
+      btnFullscreen: $("btnFullscreen"),
       btnHelp: $("btnHelp"),
       btnCloseHelp: $("btnCloseHelp"),
       btnCloseHelpX: $("btnCloseHelpX"),
@@ -60,6 +61,12 @@ export class UIController {
       startModalTitle: $("startModalTitle"),
       startModalDesc: $("startModalDesc"),
       startRulesGrid: $("startRulesGrid"),
+      reactorTeamRosterBlock: $("reactorTeamRosterBlock"),
+      inputReactorTeamName: $("inputReactorTeamName"),
+      inputReactorMem1: $("inputReactorMem1"),
+      inputReactorMem2: $("inputReactorMem2"),
+      inputReactorMem3: $("inputReactorMem3"),
+      inputReactorMem4: $("inputReactorMem4"),
       btnStartSwitchFace: $("btnStartSwitchFace"),
       btnStartSwitchHand: $("btnStartSwitchHand"),
       startModalTipsText: $("startModalTipsText"),
@@ -81,6 +88,7 @@ export class UIController {
       btnModeSnap3: $("btnModeSnap3"),
       btnModeAnalog: $("btnModeAnalog"),
       tabModeClassic: $("tabModeClassic"),
+      tabModeReactor: $("tabModeReactor"),
       tabModeCatcher: $("tabModeCatcher"),
       tabModeHighway: $("tabModeHighway"),
       tabModeSlicer: $("tabModeSlicer"),
@@ -137,6 +145,12 @@ export class UIController {
       this.dom.tabModeClassic.onclick = () => {
         sound.playClick();
         if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("classic");
+      };
+    }
+    if (this.dom.tabModeReactor) {
+      this.dom.tabModeReactor.onclick = () => {
+        sound.playClick();
+        if (this.callbacks.onSelectGameMode) this.callbacks.onSelectGameMode("reactor");
       };
     }
     if (this.dom.tabModeCatcher) {
@@ -367,6 +381,18 @@ export class UIController {
       });
     }
 
+    // Fullscreen for Big TV
+    if (this.dom.btnFullscreen) {
+      this.dom.btnFullscreen.onclick = () => {
+        sound.playClick();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      };
+    }
+
     // Start Camera Button
     if (this.dom.startCamera) {
       this.dom.startCamera.onclick = () => {
@@ -379,6 +405,14 @@ export class UIController {
     if (this.dom.btnStartGame) {
       this.dom.btnStartGame.onclick = () => {
         sound.playClick();
+        if (this.currentActiveStartMode === "reactor" && this.callbacks.onSetReactorRoster) {
+          const teamName = (this.dom.inputReactorTeamName && this.dom.inputReactorTeamName.value.trim()) || "TEAM NOVA";
+          const mem1 = (this.dom.inputReactorMem1 && this.dom.inputReactorMem1.value.trim()) || "Hoàng Nam";
+          const mem2 = (this.dom.inputReactorMem2 && this.dom.inputReactorMem2.value.trim()) || "Quang Nhật";
+          const mem3 = (this.dom.inputReactorMem3 && this.dom.inputReactorMem3.value.trim()) || "Đình Khoa";
+          const mem4 = (this.dom.inputReactorMem4 && this.dom.inputReactorMem4.value.trim()) || "Thái Hưng";
+          this.callbacks.onSetReactorRoster(teamName, [mem1, mem2, mem3, mem4]);
+        }
         this.callbacks.onStartGame();
       };
     }
@@ -930,6 +964,7 @@ export class UIController {
 
   updateGameModeUI(mode) {
     if (this.dom.tabModeClassic) this.dom.tabModeClassic.classList.toggle("active", mode === "classic");
+    if (this.dom.tabModeReactor) this.dom.tabModeReactor.classList.toggle("active", mode === "reactor");
     if (this.dom.tabModeCatcher) this.dom.tabModeCatcher.classList.toggle("active", mode === "catcher");
     if (this.dom.tabModeHighway) this.dom.tabModeHighway.classList.toggle("active", mode === "highway");
     if (this.dom.tabModeSlicer) this.dom.tabModeSlicer.classList.toggle("active", mode === "slicer");
@@ -963,6 +998,14 @@ export class UIController {
 
     // Render rules based on current active sensor
     this.renderStartModalRules();
+
+    if (this.dom.reactorTeamRosterBlock) {
+      if (mode === "reactor") {
+        this.dom.reactorTeamRosterBlock.classList.remove("hidden");
+      } else {
+        this.dom.reactorTeamRosterBlock.classList.add("hidden");
+      }
+    }
 
     if (this.dom.startScreenModal) this.dom.startScreenModal.classList.remove("hidden");
   }

@@ -163,6 +163,13 @@ export class RoadRenderer {
       return;
     }
 
+    // Special Dispatch: Reactor Rush Mode (STEM Fair 2026)
+    if (gameMode === "reactor" && extraData && extraData.reactorEngine) {
+      extraData.reactorEngine.render(ctx, W, H, dt);
+      ctx.restore();
+      return;
+    }
+
     // Smooth Dynamic Road Curvature & Banking (Classic / Highway / Catcher / Duel)
     const steerOffset = (playerX - this.VANISHING_X) / 190;
     const dynamicLean = (targetX - playerX) * 0.006;

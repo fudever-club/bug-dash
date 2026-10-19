@@ -156,6 +156,58 @@ class SoundEngine {
       osc.stop(this.ctx.currentTime + 0.18);
     } catch (e) {}
   }
+
+  // --- REACTOR RUSH PROCEDURAL SFX ---
+  playEnergyCatch() {
+    this.playTone(880, "sine", 0.07, 0.1);
+    setTimeout(() => this.playTone(1320, "sine", 0.09, 0.11), 50);
+  }
+
+  playSyncCombo() {
+    // Harmonized bright dual-burst chord (C6 + E6 + G6)
+    const notes = [1046, 1318, 1568];
+    notes.forEach((freq, idx) => {
+      setTimeout(() => this.playTone(freq, "sine", 0.18, 0.12), idx * 30);
+    });
+  }
+
+  playSwitchClick() {
+    this.playTone(420, "triangle", 0.04, 0.14);
+    setTimeout(() => this.playTone(840, "sine", 0.06, 0.12), 35);
+  }
+
+  playBulbLight() {
+    // Electric surge into warm glowing resonance
+    this.playTone(320, "sawtooth", 0.15, 0.12);
+    setTimeout(() => this.playTone(659, "triangle", 0.25, 0.15), 60);
+    setTimeout(() => this.playTone(1046, "sine", 0.40, 0.18), 120);
+  }
+
+  playCoolingWhoosh() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx || !this.masterGain) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(160, this.ctx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.18);
+    } catch (e) {}
+  }
+
+  playMissionComplete() {
+    const fanfare = [523, 659, 784, 1046, 1318, 1568, 2093];
+    fanfare.forEach((freq, idx) => {
+      setTimeout(() => this.playTone(freq, "sine", 0.28, 0.16), idx * 85);
+    });
+  }
 }
 
 export const sound = new SoundEngine();

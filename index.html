@@ -33,6 +33,7 @@
 
     <nav class="mode-tabs">
       <button class="mode-tab active" id="tabModeClassic">🏎️ Buggy Dash</button>
+      <button class="mode-tab" id="tabModeReactor">⚡ Reactor Rush (2P)</button>
       <button class="mode-tab" id="tabModeCatcher" style="display:none;">Hứng PR Merged</button>
       <button class="mode-tab" id="tabModeHighway" style="display:none;">FPT Highway Racer</button>
       <button class="mode-tab" id="tabModeSlicer">🗡️ Chém Bug Ninja</button>
@@ -44,6 +45,10 @@
       <button class="btn-icon" id="btnSound" title="Bật / Tắt âm thanh (M)">
         <svg id="iconSoundOn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
         <svg id="iconSoundOff" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+      </button>
+
+      <button class="btn-icon" id="btnFullscreen" title="Toàn màn hình TV phòng lab (F)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
 
       <button class="btn-icon" id="btnHelp" title="Hướng dẫn chơi">
@@ -225,6 +230,28 @@
         <div class="start-tips-box" id="startModalTips">
           <span class="tips-pill">MẸO PRO</span>
           <span id="startModalTipsText">Ăn Cà Phê để nhận x2 Combo & tăng tốc; nhặt Sao Vàng (+150đ) để leo top 1!</span>
+        </div>
+
+        <!-- Team Roster Setup Block (Only visible for Reactor Rush mode) -->
+        <div id="reactorTeamRosterBlock" class="hidden" style="display:flex; flex-direction:column; gap:10px; width:100%; margin:8px 0; background:rgba(0,245,255,0.06); border:1px solid rgba(0,245,255,0.3); border-radius:10px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; font-weight:800; color:#00f5ff;">ĐỘI HÌNH 3-4 THÀNH VIÊN (LUÂN PHIÊN 2 NGƯỜI/LƯỢT)</span>
+            <span style="font-size:10px; color:#facc15; font-family:'JetBrains Mono'; font-weight:700;">WEBCAM LAB • MÀN LỚN TV</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="inputReactorTeamName" placeholder="Tên Đội (VD: TEAM NOVA)" value="TEAM NOVA"
+              style="flex:1; padding:7px 10px; border-radius:6px; background:#0b132b; border:1px solid #1e293b; color:#fff; font-size:12px; font-weight:700;">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <input type="text" id="inputReactorMem1" placeholder="Thành viên 1 (P1 V1)" value="Hoàng Nam"
+              style="padding:6px 10px; border-radius:6px; background:#0b132b; border:1px solid #1e293b; color:#00f5ff; font-size:11.5px; font-weight:600;">
+            <input type="text" id="inputReactorMem2" placeholder="Thành viên 2 (P2 V1)" value="Quang Nhật"
+              style="padding:6px 10px; border-radius:6px; background:#0b132b; border:1px solid #1e293b; color:#ff2a8d; font-size:11.5px; font-weight:600;">
+            <input type="text" id="inputReactorMem3" placeholder="Thành viên 3 (Vòng 2)" value="Đình Khoa"
+              style="padding:6px 10px; border-radius:6px; background:#0b132b; border:1px solid #1e293b; color:#00f5ff; font-size:11.5px; font-weight:600;">
+            <input type="text" id="inputReactorMem4" placeholder="Thành viên 4 (tùy chọn)" value="Thái Hưng"
+              style="padding:6px 10px; border-radius:6px; background:#0b132b; border:1px solid #1e293b; color:#ff2a8d; font-size:11.5px; font-weight:600;">
+          </div>
         </div>
 
         <button class="btn-primary" id="btnStartGame" style="padding:14px 36px; font-size:15px; margin-top:6px;">
@@ -433,9 +460,10 @@
     <!-- Tabs chọn chế độ game trong Hướng Dẫn -->
     <div class="help-mode-tabs" id="helpModeTabs">
       <button class="help-tab-btn active" data-help-mode="classic">1. Buggy Dash (Đua Xe)</button>
-      <button class="help-tab-btn" data-help-mode="slicer">2. Chém Bug Ninja</button>
-      <button class="help-tab-btn" data-help-mode="flappy">3. Flappy Buggy (Bám Mũi / Tay)</button>
-      <button class="help-tab-btn" data-help-mode="duel">4. Song Đấu 1v1</button>
+      <button class="help-tab-btn" data-help-mode="reactor">2. Reactor Rush (2P STEM Fair)</button>
+      <button class="help-tab-btn" data-help-mode="slicer">3. Chém Bug Ninja</button>
+      <button class="help-tab-btn" data-help-mode="flappy">4. Flappy Buggy (Bám Mũi / Tay)</button>
+      <button class="help-tab-btn" data-help-mode="duel">5. Song Đấu 1v1</button>
       <!-- Legacy tabs kept hidden for 100% test compatibility -->
       <button class="help-tab-btn" data-help-mode="catcher" style="display:none;"></button>
       <button class="help-tab-btn" data-help-mode="highway" style="display:none;"></button>

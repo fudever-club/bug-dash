@@ -25,7 +25,7 @@ export class HandDetectorWrapper {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numHands: 1,
+        numHands: 4,
         minHandDetectionConfidence: 0.5,
         minHandPresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
@@ -43,7 +43,7 @@ export class HandDetectorWrapper {
             delegate: "CPU",
           },
           runningMode: "VIDEO",
-          numHands: 1,
+          numHands: 4,
           minHandDetectionConfidence: 0.4,
           minHandPresenceConfidence: 0.4,
           minTrackingConfidence: 0.4,
@@ -104,6 +104,89 @@ export class HandDetectorWrapper {
         isHighHand,
         isLowHand,
         isOpenPalm
+      };
+    } catch (err) {
+      return null;
+    }
+  }
+
+  detectMultiHandsForVideo(videoElement, timestamp) {
+    if (!this.isReady || !this.handLandmarker) return null;
+    try {
+      const result = this.handLandmarker.detectForVideo(videoElement, timestamp);
+      if (!result || !result.landmarks || result.landmarks.length === 0) {
+        return null;
+      }
+
+      const allHands = [];
+      const p1Hands = [];
+      const p2Hands = [];
+
+      for (let i = 0; i < result.landmarks.length; i++) {
+        const rawLandmarks = result.landmarks[i];
+        // Mirror X
+        const landmarks = rawLandmarks.map(pt => ({
+          x: 1 - pt.x,
+          y: pt.y,
+          z: pt.z
+        }));
+
+        const palmX = (landmarks[0].x + landmarks[9].x) * 0.5;
+        const palmY = (landmarks[0].y + landmarks[9].y) * 0.5;
+        const indexTip = landmarks[8];
+        const isRaised = palmY < 0.38 || (indexTip && indexTip.y < 0.35);
+
+        const handObj = {
+          landmarks,
+          palmX,
+          palmY,
+          indexTip,
+          isRaised
+        };
+        allHands.push(handObj);
+
+        if (palmX < 0.50) {
+          p1Hands.push(handObj);
+        } else {
+          p2Hands.push(handObj);
+        }
+      }
+
+      // Process Player 1 (Left Half: 0.0 .. 0.50)
+      let p1Data = null;
+      if (p1Hands.length > 0) {
+        // Pick primary hand (the highest or closest)
+        p1Hands.sort((a, b) => a.palmY - b.palmY);
+        const best = p1Hands[0];
+        const normX = Math.max(0, Math.min(1.0, (best.palmX - 0.05) / 0.40));
+        p1Data = {
+          palmX: best.palmX,
+          palmY: best.palmY,
+          normX,
+          isRaised: best.isRaised,
+          handCount: p1Hands.length
+        };
+      }
+
+      // Process Player 2 (Right Half: 0.50 .. 1.00)
+      let p2Data = null;
+      if (p2Hands.length > 0) {
+        p2Hands.sort((a, b) => a.palmY - b.palmY);
+        const best = p2Hands[0];
+        const normX = Math.max(0, Math.min(1.0, (best.palmX - 0.55) / 0.40));
+        p2Data = {
+          palmX: best.palmX,
+          palmY: best.palmY,
+          normX,
+          isRaised: best.isRaised,
+          handCount: p2Hands.length
+        };
+      }
+
+      return {
+        allHands,
+        p1: p1Data,
+        p2: p2Data
       };
     } catch (err) {
       return null;

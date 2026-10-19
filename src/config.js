@@ -39,6 +39,7 @@ export const CONTROL_INPUTS = {
 
 export const GAME_MODES = {
   CLASSIC: "classic",              // Né Bug Chạy Deadline (Solo Arcade)
+  REACTOR: "reactor",              // Reactor Rush (2 Người • 3 Vòng • 1 Nhiệm Vụ • STEM Fair 2026)
   CATCHER: "catcher",              // Hứng PR Merged (Analog Basket Catcher)
   HIGHWAY: "highway",              // FPT Highway Racer (Đua Xe Cao Tốc FPTU)
   SLICER: "slicer",                // Code Slicer (Chém Bug Bằng Tay - Fruit Ninja style)
@@ -71,6 +72,30 @@ export const MODE_METADATA = {
     ],
     tips: "Tận dụng phím T để chuyển giữa 3 Làn Nhạy và Lái Tự Do; ăn Cà Phê nhận x2 Combo và Nitro để bất tử càn quét!",
     ctaText: "Bắt Đầu Buggy Dash (SPACE)"
+  },
+  [GAME_MODES.REACTOR]: {
+    badge: "CO-OP STEM FAIR 2026",
+    badgeColor: "#00f5ff",
+    title: "REACTOR RUSH — 2 NGƯỜI • 3 VÒNG • 1 NHIỆM VỤ",
+    mascot: "assets/player_3d_run.png",
+    desc: "Trải nghiệm khoa học tương tác 2 người đỉnh cao: Hiệu chuẩn giơ 2 tay, Vòng 1 Hứng Năng Lượng (Energy Catch), Vòng 2 Mạch Điện Đồng Đội (Duo Circuit), và Vòng 3 Hạ Nhiệt Lò Phản Ứng (Cool The Core)!",
+    rules: [
+      { badge: "VÒNG 1: ENERGY CATCH", badgeClass: "loot-badge", title: "Hứng Năng Lượng & Sync Combo", desc: "P1 & P2 lướt tay di chuyển Robot hứng hạt năng lượng (+), né gai đỏ (!), kích hoạt Sync Combo +15 khi cùng hứng!" },
+      { badge: "VÒNG 2: DUO CIRCUIT", badgeClass: "steer-badge", title: "Cùng Giơ Tay Đóng Mạch", desc: "Cả 2 người chơi cùng giơ tay đóng 2 công tắc nối tiếp để phóng dòng điện thắp sáng bóng đèn trung tâm!" },
+      { badge: "VÒNG 3: COOL THE CORE", badgeClass: "avoid-badge", title: "Vẫy Tay Giải Nhiệt Reactor", desc: "Cả 2 cật lực vẫy tay phóng luồng khí lạnh hạ nhiệt lõi lò phản ứng từ 90°C về dưới 28°C an toàn!" }
+    ],
+    faceRules: [
+      { badge: "VÒNG 1: ENERGY CATCH", badgeClass: "loot-badge", title: "Nghiêng Đầu Lái Robot", desc: "P1 nghiêng đầu nửa trái, P2 nghiêng đầu nửa phải để hứng trọn các hạt năng lượng rơi xuống" },
+      { badge: "VÒNG 2: DUO CIRCUIT", badgeClass: "steer-badge", title: "Cùng Ngẩng Đầu Đóng Công Tắc", desc: "Cả 2 người cùng ngẩng đầu/giơ tay để bật ON 2 công tắc, kích điện làm sáng bóng đèn khổng lồ" },
+      { badge: "VÒNG 3: COOL THE CORE", badgeClass: "avoid-badge", title: "Lắc/Gật Đầu Làm Mát Lõi", desc: "Cả 2 chuyển động liên tục phóng sóng lạnh dập tắt nhiệt độ nguy hiểm của lò hạt nhân" }
+    ],
+    handRules: [
+      { badge: "VÒNG 1: ENERGY CATCH", badgeClass: "loot-badge", title: "Lướt Lòng Bàn Tay", desc: "Di chuyển tay ngang để Cyber Buggy hứng hạt năng lượng (+), né chướng ngại vật đỏ" },
+      { badge: "VÒNG 2: DUO CIRCUIT", badgeClass: "steer-badge", title: "Cùng Giơ Cao Tay", desc: "Cả 2 người chơi cùng giơ cao tay lên trên để đóng mạch điện nối tiếp thắp sáng bóng đèn" },
+      { badge: "VÒNG 3: COOL THE CORE", badgeClass: "avoid-badge", title: "Vẫy Tay Cực Nhanh", desc: "Vung vẫy bàn tay thật nhanh về phía lò phản ứng để thổi luồng băng tuyết hạ nhiệt cấp tốc!" }
+    ],
+    tips: "Phối hợp nhịp nhàng: Ở Vòng 1 cùng hứng năng lượng để kích hoạt SYNC COMBO; Vòng 2 phải CÙNG LÚC giơ tay mạch mới thông; Vòng 3 hãy vẫy tay hết tốc lực!",
+    ctaText: "Khởi Động Reactor Rush (SPACE)"
   },
   [GAME_MODES.CATCHER]: {
     badge: "MINIGAME HỨNG CODE MERGED",
@@ -280,6 +305,50 @@ export const FLAPPY_CONFIG = {
   pipeSpawnInterval: 2.2,  // Khoảng cách nhịp nhàng giữa các cột
   pipeGap: 240,            // Khe hở rộng rãi (240px) giúp dễ dàng lọt qua bằng cử chỉ mũi / tay
   pipeWidth: 68,           // Độ rộng cột Firewall (px)
+};
+
+export const REACTOR_CONFIG = {
+  // Giai đoạn 0: Hiệu chuẩn Camera
+  calibrationDuration: 1.5,      // Cả 2 cùng giơ tay giữ 1.5s để sẵn sàng
+  
+  // Vòng 1: Energy Catch (Thu thập năng lượng)
+  round1Duration: 35,            // 35 giây
+  r1SpawnInterval: 0.72,         // Tần suất xuất hiện hạt năng lượng / bẫy
+  r1ItemSpeed: 230,              // Tốc độ rơi px/s
+  r1SyncWindow: 0.65,            // Khoảng cách thời gian (s) giữa 2 người hứng để nhận SYNC COMBO
+  r1SyncBonus: 15,               // Điểm thưởng Sync Combo
+  r1HazardDeduct: 15,            // Trừ điểm khi dính vật phẩm đỏ
+  r1HazardStun: 0.8,             // Đóng băng ngắn khi va chạm
+  
+  // Vòng 2: Duo Circuit (Mạch điện đồng đội)
+  round2Duration: 20,            // 20 giây
+  r2TargetPulses: 4,             // Số lần cần hoàn tất đóng mạch
+  r2ChargeTimeRequired: 1.2,     // Thời gian cần cùng giơ tay để hoàn thành 1 nhịp (s)
+  r2PulseScore: 120,             // Điểm mỗi lần hoàn thành mạch
+  
+  // Vòng 3: Cool The Core (Giải nhiệt lò phản ứng)
+  round3Duration: 25,            // 25 giây
+  startTemp: 90,                 // Nhiệt độ xuất phát (°C)
+  boostTemp: 44,                 // Ngưỡng Final Boost (°C)
+  safeTemp: 28,                  // Nhiệt độ an toàn đích (°C)
+  coolingPerWave: 1.6,           // Độ sụt nhiệt mỗi cú vẫy tay mạnh (°C)
+  minWaveVelocity: 160,          // Ngưỡng vận tốc vẫy tay (px/s)
+  passiveHeatRise: 0.35,         // Tự tăng nhiệt nhẹ nếu ngừng tương tác (°C/s)
+  
+  // Tọa độ sàn đấu
+  p1FloorBounds: { minX: 60, maxX: 290 },
+  p2FloorBounds: { minX: 350, maxX: 580 },
+  floorY: 620,
+  
+  // Phím tắt dự phòng (Booth Fallback)
+  keys: {
+    p1Left: "KeyA",
+    p1Right: "KeyD",
+    p1Action: "KeyW",   // Giơ tay / Vẫy
+    p2Left: "KeyJ",
+    p2Right: "KeyL",
+    p2Action: "KeyI"    // Giơ tay / Vẫy
+  }
 };
 
 export const ASSET_PATHS = {
