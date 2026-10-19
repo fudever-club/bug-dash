@@ -1,79 +1,68 @@
-# ⚡ REACTOR RUSH (STEM FAIR 2026) — GAMEPLAY DEMO SHOWCASE
+# ⚡ REACTOR RUSH (STEM FAIR 2026) — GAMEPLAY DEMO SHOWCASE (BẢN ĐẠI TU ĐỒ HỌA CEL-SHADED)
 
 Chào mừng bạn đến với bộ sưu tập hình ảnh trực quan mô phỏng chế độ chơi co-op 2 người **REACTOR RUSH** của CLB FU-DEVER!
 
-Toàn bộ các ảnh chụp màn hình demo 4K độ nét cao được đặt trực tiếp trong thư mục [`./demo_screenshots/`](./demo_screenshots/) để bạn có thể mở xem trực tiếp trên máy tính hoặc xem Markdown preview.
+Toàn bộ 4 phân cảnh gameplay đã được đại tu toàn diện theo chuẩn **Stylized 3D Cel-shaded Indie Game** (áp dụng kỹ năng mới `fu-dever-game-art-craftsman`):
+- **Xóa bỏ hoàn toàn "AI Slop":** Không bóng nhựa silicon, không rác hạt bụi vô định, không lem màu bóng đổ.
+- **Nâng cấp Map & Môi trường có chiều sâu:** Bổ sung sàn thép công nghiệp dập nổi vạch kẻ làn LED cyan, vạch vàng chevron cảnh báo an toàn, trạm đo đạc chẩn đoán, dàn dây cáp treo trần xưởng và hệ thống cơ khí logic cho từng vòng.
+- **Độ nét 16:9 4K sắc nét:** Tối ưu tương phản cao cho màn hình TV lớn và máy chiếu hội trường STEM Fair 2026.
 
 ---
 
-## 📸 Bộ Sưu Tập Ảnh Chụp Màn Hình Demo Gameplay
+## 📸 Bộ Sưu Tập 4 Bản Đồ & Phân Cảnh Gameplay Đã Nâng Cấp
 
-### 1. Vòng 1: Energy Catch (Hứng Hạt Năng Lượng & Sync Combo)
-
-#### 🌟 Bản Nâng Cấp Mỹ Thuật Chuẩn Indie Game (Anti-AI Cel-Shaded Art Direction):
-![Bản nâng cấp Cel-Shaded Anti-AI](./demo_screenshots/01_round1_anti_ai_celshaded_demo.jpg)
-
-* **Điểm cải tiến vượt bậc:** Loại bỏ hoàn toàn hiệu ứng nhựa bóng (plastic sheen), xóa rác hạt vô định và viền mờ airbrush; sử dụng nét mực viền (ink outline) sắc nét, đổ bóng cel-shading 2 tầng (two-tone), hậu cảnh hạ độ bão hòa (desaturated dark slate lab) giúp 2 nhân vật xe bọ Buggy Cyan & Pink nổi bật rõ ràng và typography HUD vector monospace cực kỳ thanh thoát.
-
-#### 📷 Bản Render 3D Cũ (Tham khảo ban đầu):
-![Vòng 1: Energy Catch — Bản cũ](./demo_screenshots/01_round1_energy_catch.jpg)
+### 1. Vòng 1: Energy Catch (Sàn Đấu Thu Thập Năng Lượng & Sync Combo)
+![Vòng 1: Energy Catch — Bản Nâng Cấp Cel-Shaded](./demo_screenshots/01_round1_energy_catch_celshaded.jpg)
 
 * **Cặp đôi thi đấu:** P1 (Thành viên 1) & P2 (Thành viên 2).
-* **Cơ chế Computer Vision:** 
-  - Người chơi đứng trước webcam, di chuyển sang trái/phải để điều khiển 2 robot **Cyber Buggy Cyan** và **Cyber Buggy Pink**.
-  - Tọa độ bàn tay được phân vùng: Nửa trái màn hình cho P1 ($x < 0.5$), nửa phải màn hình cho P2 ($x \ge 0.5$).
-* **Điểm nhấn gameplay:**
-  - Hứng hạt năng lượng vàng (+10 điểm), xanh lam (+25 điểm), kim cương tím (+50 điểm) và né tránh gai điện đỏ (-15 điểm).
-  - Khi cả 2 người chơi cùng bắt trúng hạt trong khoảng thời gian $\le 0.35$s, một tia điện hồ quang rực sáng sẽ nối liền 2 xe kèm thông báo nổi: **`SYNC COMBO +15!`**.
+* **Chi tiết Môi trường (Map):** 
+  - Sàn thép công nghiệp với 2 đường ray LED cyan phát sáng, vạch cảnh báo an toàn chevron vàng đen, và các trụ nam châm từ trường ở 2 biên sân đấu.
+  - Hậu cảnh xưởng chế tạo với dàn cần cẩu giàn giáo (overhead crane girders), dây cáp treo và các trạm máy tính chẩn đoán hiển thị đồ thị nhịp tim/năng lượng màu xanh lá.
+* **Cơ chế gameplay & Computer Vision:**
+  - Hai người chơi đứng trước webcam, di chuyển sang trái/phải để điều khiển 2 xe bọ **Cyber Buggy Cyan** và **Cyber Buggy Pink** lướt trên sàn hứng các hạt năng lượng vàng (+10 điểm).
+  - Khi cả 2 bắt trúng cùng lúc ($\Delta t \le 0.35$s), tia sét hồ quang điện hình học phóng nối giữa 2 xe kèm hiệu ứng nổi: **`SYNC COMBO +15!`**.
 
 ---
 
-### 2. Vòng 2: Duo Circuit (Mạch Điện Nối Tiếp & Thắp Sáng Bóng Đèn)
-![Vòng 2: Duo Circuit — Cùng Giơ Tay Nối Mạch Thắp Sáng Bóng Đèn](./demo_screenshots/02_round2_duo_circuit.jpg)
+### 2. Vòng 2: Duo Circuit (Trạm Thí Nghiệm Mạch Điện Cao Thế & Giơ Tay Đóng Mạch)
+![Vòng 2: Duo Circuit — Bản Nâng Cấp Cel-Shaded](./demo_screenshots/02_round2_duo_circuit_celshaded.jpg)
 
 * **Đổi ca luân phiên:** Màn hình nghỉ 10 giây thông báo thành viên tiếp theo vào sân (Thành viên 3 & 4).
-* **Cơ chế Computer Vision:**
-  - Cả 2 người chơi cùng giơ tay lên cao trước camera để đóng 2 công tắc gạt mạch điện.
-  - Cần cả 2 tay cùng giơ đồng thời thì dòng điện mới chạy thông suốt qua mạch nối tiếp, sạc năng lượng vào tụ điện.
-* **Điểm nhấn gameplay:**
-  - Khi thanh nạp đầy 100%, bóng đèn trung tâm sẽ bùng nổ ánh sáng kèm tiếng chuông điện và hiệu ứng **`CIRCUIT COMPLETE! +50`**.
-  - Đội cần hoàn thành 4 xung nạp thành công trước khi hết thời gian 35 giây.
+* **Chi tiết Môi trường (Map):**
+  - Trung tâm là khối bóng đèn sợi đốt khổng lồ đặt trên bệ đỡ kim loại lục giác, các đường mạch in đồng mạ vàng (PCB copper traces) phát sáng chạy dọc mặt sàn.
+  - Hai bên là 2 bục công tắc gạt cơ khí công nghiệp màu đỏ (Industrial Knife-Switches) nối liền bằng các bó dây cáp bện chịu tải cao.
+  - Phía sau là dàn tụ điện cao áp (capacitor banks) và máy đo dao động ký (oscilloscope).
+* **Cơ chế gameplay & Computer Vision:**
+  - Cả 2 người chơi cùng giơ tay lên cao trước camera để robot vươn cánh tay cơ khí gạt đồng thời 2 công tắc. Dòng điện cao áp chạy qua thắp sáng rực rỡ bóng đèn trung tâm kèm hiệu ứng nổ pháo hoa truyện tranh **`CIRCUIT COMPLETE! +50`**.
 
 ---
 
-### 3. Vòng 3: Cool The Core (Hạ Nhiệt Lò Phản Ứng)
-![Vòng 3: Cool The Core — Vẫy Tay Cực Đại Hạ Nhiệt Lò Phản Ứng](./demo_screenshots/03_round3_cool_the_core.jpg)
+### 3. Vòng 3: Cool The Core (Buồng Lò Phản Ứng Cryo & Vẫy Tay Cực Đại)
+![Vòng 3: Cool The Core — Bản Nâng Cấp Cel-Shaded](./demo_screenshots/03_round3_cool_the_core_celshaded.jpg)
 
-* **Cặp đôi quyết định:** Cặp thành viên luân phiên cuối cùng bước vào vị trí thi đấu.
-* **Cơ chế Computer Vision:**
-  - Thuật toán đo vận tốc chuyển động bàn tay liên tục (`waveVelocity`).
-  - Người chơi cật lực vẫy 2 tay qua lại thật nhanh trước camera để tạo ra các luồng sóng tuyết và khí lạnh cực mạnh xả thẳng vào tâm lò phản ứng.
-* **Điểm nhấn gameplay:**
-  - Nhiệt độ lò khởi đầu ở mức báo động **90°C**. Mục tiêu là hạ nhiệt về vùng an toàn **$\le 28°C$**.
-  - Khi nhiệt độ hạ xuống dưới **50°C**, hệ thống tự động kích hoạt **`⚡ FINAL BOOST (Cooling x1.5!)`**, tăng gấp rưỡi công suất làm mát để cả đội bứt phá về đích ngoạn mục!
-
----
-
-### 4. Vinh Danh Toàn Đội (Mission Complete & Reactor Stabilized!)
-![Vinh Danh Toàn Đội: Mission Complete & Reactor Stabilized!](./demo_screenshots/04_mission_complete_victory.jpg)
-
-* **Bảng vinh danh vinh quang:** Tự động hiển thị **đầy đủ tên của cả 4 bạn trong đội** (không chỉ riêng 2 người chơi cuối).
-* **Điểm số & Xếp hạng:** Tổng điểm tích lũy chung của cả 3 vòng được cộng dồn kèm xếp hạng huy chương (**S+ Cyber Legend**, **S Gold Pioneer**, ...).
-* Hiệu ứng pháo hoa neon, cúp vàng Cyber Trophy và linh thú bọ Buggy nhảy múa chúc mừng.
+* **Cặp đôi quyết định:** Lượt đổi ca cuối cùng đưa cặp đôi bứt phá vào sân.
+* **Chi tiết Môi trường (Map):**
+  - Lò phản ứng hạt nhân hình trụ khổng lồ ở giữa với các vòng dây nhiệt phát sáng cam đỏ rực, tích hợp đồng hồ nhiệt độ điện tử lớn: **`32.4°C / SAFE <= 28°C`**.
+  - Hệ thống ống dẫn khí hóa lỏng làm lạnh (cryogenic pipes) đóng băng tuyết, sàn buồng chứa bốc hơi sương lạnh mờ ảo, tường gia cố chống nổ với quạt hút gió công nghiệp lớn và đèn cảnh báo xanh lam.
+* **Cơ chế gameplay & Computer Vision:**
+  - Cả 2 cật lực vẫy tay qua lại thật nhanh trước camera để robot phóng các tinh thể băng hình học, bão tuyết và lốc xoáy khí lạnh dập tắt nhiệt lượng lò phản ứng.
+  - Khi nhiệt độ hạ xuống dưới 50°C, hệ thống tự động kích hoạt **`⚡ FINAL BOOST ACTIVE! COOLING x1.5!`** đẩy tốc độ làm mát lên mức tối đa!
 
 ---
 
-## 🛠️ Hướng Dẫn Khắc Phục Khi Mở Trình Duyệt Bị Chậm / Lag
+### 4. Vinh Danh Toàn Đội: Mission Complete (Đại Sân Khấu Vinh Danh STEM Fair 2026)
+![Vinh Danh Toàn Đội — Bản Nâng Cấp Cel-Shaded](./demo_screenshots/04_mission_complete_celshaded.jpg)
 
-Nếu bạn truy cập `http://localhost:5173/` thấy load lâu hoặc trình duyệt báo đơ/chậm, dưới đây là nguyên nhân và cách xử lý nhanh chóng:
+* **Chi tiết Môi trường (Map):**
+  - Khán đài sân khấu đại lễ hội triển lãm khoa học STEM Fair 2026 với bục podium vinh danh bậc thang trung tâm.
+  - Chiếc Cúp Vàng Cyber Trophy đa giác độc bản, pháo hoa giấy hình học (geometric confetti) tung bay, đèn chiếu spotlight rực rỡ.
+  - Màn hình LED thể thao cỡ lớn hiển thị **`TOTAL SCORE: 1,850 PTS`** và **`RANK: S+ CYBER LEGEND`**.
+  - Hai bên treo trang trọng dải cờ hiệu và biểu trưng chính thức của **`FU-DEVER`** và **`FPT UNIVERSITY DA NANG`**.
+* **Vinh danh trọn vẹn 4 thành viên:**
+  - Dưới chân bục có 4 kỷ niệm chương mang avatar và tên đầy đủ của cả 4 bạn: **`1. Minh Nam`**, **`2. Quang Nhật`**, **`3. Đình Khoa`**, **`4. Thái Hưng`**.
 
-1. **Nguyên nhân chính:** 
-   - Lần đầu tiên chạy, trình duyệt cần tải model AI MediaPipe (`@mediapipe/tasks-vision` và weights BlazeFace/HandLandmarker ~30MB) từ Google CDN về cache máy.
-   - Nếu đường truyền mạng chập chờn, việc tải model này có thể bị treo hoặc mất vài phút.
-2. **Cách xử lý tối ưu:**
-   - **Tắt bớt extension chặn script:** Đảm bảo AdBlock hoặc Brave Shields không chặn kết nối tới `cdn.jsdelivr.net`.
-   - **Mở tab ẩn danh (Incognito) hoặc Chrome mới:** Giúp giải phóng bộ nhớ RAM và tải tài nguyên sạch sẽ.
-   - **Chơi bằng phím tắt dự phòng:**
-     * **P1:** Phím <kbd>A</kbd> / <kbd>D</kbd> để di chuyển, phím <kbd>W</kbd> để giơ tay / vẫy tay.
-     * **P2:** Phím <kbd>J</kbd> / <kbd>L</kbd> để di chuyển, phím <kbd>I</kbd> để giơ tay / vẫy tay.
-     * **Toàn màn hình TV:** Bấm phím <kbd>F</kbd> để bật chế độ TV toàn màn hình không viền.
+---
+
+## 🛠️ Hướng Dẫn Mở & Trải Nghiệm Trực Tiếp
+* Tất cả ảnh được lưu với độ phân giải cao tại thư mục: [`./demo_screenshots/`](./demo_screenshots/).
+* Bạn có thể mở trực tiếp từng file ảnh bằng bất kỳ trình xem ảnh nào trên máy tính, hoặc mở bản xem trước Markdown trong VS Code / IDE.
