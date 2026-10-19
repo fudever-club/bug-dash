@@ -114,6 +114,18 @@ export class ReactorRushEngine {
 
     // Floating text feedback popups
     this.floatingTexts = [];
+
+    // Cinematic Stage & Game Transition System
+    this.transition = {
+      active: false,
+      type: null,
+      timer: 0,
+      duration: 1.2,
+      title: "",
+      subtitle: "",
+      soundPlayed: false
+    };
+    this.screenShake = 0;
   }
 
   setTeamRoster(name, members) {
@@ -207,6 +219,28 @@ export class ReactorRushEngine {
 
     this.floatingTexts = [];
     this.initConfetti();
+    this.transition = {
+      active: false,
+      type: null,
+      timer: 0,
+      duration: 1.2,
+      title: "",
+      subtitle: "",
+      soundPlayed: false
+    };
+    this.screenShake = 0;
+  }
+
+  startTransition(type, title, subtitle, duration = 1.2) {
+    this.transition = {
+      active: true,
+      type,
+      timer: 0,
+      duration,
+      title,
+      subtitle,
+      soundPlayed: false
+    };
   }
 
   addFloatingText(x, y, text, color = "#facc15") {
@@ -297,11 +331,13 @@ export class ReactorRushEngine {
       sound.playCountdownGo();
       this.stage = REACTOR_STAGES.ROUND_2_CIRCUIT;
       this.stageTime = 0;
+      this.startTransition("blast_doors", "CIRCUIT GRID ONLINE", "BẮT ĐẦU VÒNG 02", 0.9);
       this.addFloatingText(this.W / 2, 280, "VÒNG 2: BẮT ĐẦU!", "#facc15");
     } else if (this.stage === REACTOR_STAGES.SWAP_ROUND_3) {
       sound.playCountdownGo();
       this.stage = REACTOR_STAGES.ROUND_3_COOLING;
       this.stageTime = 0;
+      this.startTransition("cryo_freeze", "CRYO CHAMBER UNLOCKED", "BẮT ĐẦU VÒNG 03", 0.9);
       this.addFloatingText(this.W / 2, 280, "VÒNG 3: BẮT ĐẦU!", "#00f5ff");
     }
   }
@@ -309,6 +345,17 @@ export class ReactorRushEngine {
   update(dt) {
     this.totalTime += dt;
     this.stageTime += dt;
+
+    // Cinematic transition progress & screen shake decay
+    if (this.transition.active) {
+      this.transition.timer += dt;
+      if (this.transition.timer >= this.transition.duration) {
+        this.transition.active = false;
+      }
+    }
+    if (this.screenShake > 0) {
+      this.screenShake = Math.max(0, this.screenShake - dt * 28);
+    }
 
     // Smooth movement towards target X
     this.p1.x += (this.p1.targetX - this.p1.x) * Math.min(1.0, dt * 12);
@@ -449,6 +496,7 @@ export class ReactorRushEngine {
       this.stageTime = 0;
       this.p1.handRaised = false;
       this.p2.handRaised = false;
+      this.startTransition("blast_doors", "ACCESSING CIRCUIT DECK", "VÒNG 02: MẠCH ĐIỆN ĐÔI", 1.3);
     }
   }
 
@@ -569,6 +617,7 @@ export class ReactorRushEngine {
       this.stageTime = 0;
       this.p1.handRaised = false;
       this.p2.handRaised = false;
+      this.startTransition("cryo_freeze", "CORE TEMPERATURE CRITICAL", "VÒNG 03: HẠ NHIỆT LÒ NĂNG LƯỢNG", 1.3);
     }
   }
 
@@ -593,7 +642,7 @@ export class ReactorRushEngine {
     if (this.coreTemp <= REACTOR_CONFIG.boostTemp && !this.finalBoostActive) {
       this.finalBoostActive = true;
       sound.playBuffActive();
-      this.addFloatingText(this.W / 2, 220, "⚡ FINAL BOOST KÍCH HOẠT! VẪY TAY CỰC ĐẠI!", "#facc15");
+      this.addFloatingText(this.W / 2, 220, "FINAL BOOST KÍCH HOẠT! VẪY TAY CỰC ĐẠI!", "#facc15");
     }
 
     // Check continuous wave gestures from webcam telemetry
@@ -626,6 +675,7 @@ export class ReactorRushEngine {
       this.totalScore += coolingBonus;
       this.stage = REACTOR_STAGES.MISSION_COMPLETE;
       this.stageTime = 0;
+      this.startTransition("victory_warp", "MISSION ACCOMPLISHED", "CHÚC MỪNG CHIẾN THẮNG!", 1.6);
     }
   }
 
@@ -652,6 +702,15 @@ export class ReactorRushEngine {
     this.ctx = ctx;
     this.W = W;
     this.H = H;
+
+    let shaking = false;
+    if (this.screenShake > 0) {
+      shaking = true;
+      ctx.save();
+      const sx = (Math.random() - 0.5) * this.screenShake;
+      const sy = (Math.random() - 0.5) * this.screenShake;
+      ctx.translate(sx, sy);
+    }
 
     this.renderBackground(ctx, W, H);
 
@@ -680,6 +739,14 @@ export class ReactorRushEngine {
     }
 
     this.renderFloatingTexts(ctx);
+
+    if (this.transition.active) {
+      this.renderTransition(ctx, W, H);
+    }
+
+    if (shaking) {
+      ctx.restore();
+    }
   }
 
   drawBackgroundCover(ctx, img, W, H, darkOverlayAlpha = 0) {
@@ -932,10 +999,11 @@ export class ReactorRushEngine {
 
     const mascotX = x + w / 2;
     const mascotY = y + h / 2 + 10;
-    this.drawCyberBuggy(ctx, mascotX, mascotY, label.includes("P1") ? "cyan" : "pink", {
+    this.drawMechaPilotKart(ctx, mascotX, mascotY, label.includes("P1") ? "cyan" : "pink", {
       handsRaised: player.handRaised,
       isReady: player.isReady,
-      scale: 1.15
+      scale: 1.15,
+      eyeState: player.handRaised ? "happy" : "focus"
     });
 
     ctx.textAlign = "center";
@@ -990,19 +1058,27 @@ export class ReactorRushEngine {
       this.renderSyncArc(ctx);
     }
 
-    // Render Cyber Buggies on floor with Nametags
-    this.drawCyberBuggy(ctx, this.p1.x, this.p1.y, "cyan", {
+    // Render Mecha Pilot Karts on floor with Nametags & Dynamic Steering Tilt
+    this.drawMechaPilotKart(ctx, this.p1.x, this.p1.y, "cyan", {
       handsRaised: false,
       isCatching: true,
       scale: 1.05,
-      playerName: pair.p1Name
+      playerName: pair.p1Name,
+      steerTilt: (this.p1.targetX - this.p1.x) * 0.005,
+      justCaught: (this.totalTime - this.p1.lastCatchTime < 0.45),
+      stunned: this.p1.stunTimer > 0,
+      eyeState: this.p1.eyeState
     });
 
-    this.drawCyberBuggy(ctx, this.p2.x, this.p2.y, "pink", {
+    this.drawMechaPilotKart(ctx, this.p2.x, this.p2.y, "pink", {
       handsRaised: false,
       isCatching: true,
       scale: 1.05,
-      playerName: pair.p2Name
+      playerName: pair.p2Name,
+      steerTilt: (this.p2.targetX - this.p2.x) * 0.005,
+      justCaught: (this.totalTime - this.p2.lastCatchTime < 0.45),
+      stunned: this.p2.stunTimer > 0,
+      eyeState: this.p2.eyeState
     });
 
     // Floor Scores
@@ -1049,7 +1125,7 @@ export class ReactorRushEngine {
     ctx.fillStyle = "#facc15";
     ctx.shadowColor = "#facc15";
     ctx.shadowBlur = 12;
-    ctx.fillText("🔄 ĐỔI CA THÀNH VIÊN TRONG TEAM!", W / 2, boxY + 45);
+    ctx.fillText("ĐỔI CA THÀNH VIÊN TRONG TEAM", W / 2, boxY + 45);
     ctx.shadowBlur = 0;
 
     // Previous round recap
@@ -1229,17 +1305,23 @@ export class ReactorRushEngine {
       ctx.fillText("WAIT FOR YOUR TEAMMATE...", bulbX, centerY + 105);
     }
 
-    // Render Cyber Buggies with Nametags
-    this.drawCyberBuggy(ctx, 110, REACTOR_CONFIG.floorY, "cyan", {
+    // Render Mecha Pilot Karts with Nametags, Crane Arms & Steering Tilt
+    this.drawMechaPilotKart(ctx, 110, REACTOR_CONFIG.floorY, "cyan", {
       handsRaised: this.p1.handRaised,
+      isCircuit: true,
       scale: 1.05,
-      playerName: pair.p1Name
+      playerName: pair.p1Name,
+      steerTilt: (this.p1.targetX - this.p1.x) * 0.005,
+      eyeState: this.p1.eyeState
     });
 
-    this.drawCyberBuggy(ctx, W - 110, REACTOR_CONFIG.floorY, "pink", {
+    this.drawMechaPilotKart(ctx, W - 110, REACTOR_CONFIG.floorY, "pink", {
       handsRaised: this.p2.handRaised,
+      isCircuit: true,
       scale: 1.05,
-      playerName: pair.p2Name
+      playerName: pair.p2Name,
+      steerTilt: (this.p2.targetX - this.p2.x) * 0.005,
+      eyeState: this.p2.eyeState
     });
 
     this.renderBottomTicker(ctx, W, H, "SCIENCE: 2 CÔNG TẮC NỐI TIẾP PHẢI CÙNG ĐÓNG", "Mạch kín = Đèn sáng (+120 pts)");
@@ -1343,18 +1425,27 @@ export class ReactorRushEngine {
       ctx.fill();
     }
 
-    // P1 Robot (Left) with Nametag
-    this.drawCyberBuggy(ctx, 120, REACTOR_CONFIG.floorY, "cyan", {
-      isWaving: true,
+    const p1Waving = (this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p1.handRaised;
+    const p2Waving = (this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p2.handRaised;
+
+    // P1 Robot (Left) with Nametag & Cryo Cannons
+    this.drawMechaPilotKart(ctx, 120, REACTOR_CONFIG.floorY, "cyan", {
+      isWaving: p1Waving,
+      isCooling: true,
       scale: 1.15,
-      playerName: pair.p1Name
+      playerName: pair.p1Name,
+      steerTilt: (this.p1.targetX - this.p1.x) * 0.005,
+      eyeState: p1Waving ? "happy" : "focus"
     });
 
-    // P2 Robot (Right) with Nametag
-    this.drawCyberBuggy(ctx, W - 120, REACTOR_CONFIG.floorY, "pink", {
-      isWaving: true,
+    // P2 Robot (Right) with Nametag & Cryo Cannons
+    this.drawMechaPilotKart(ctx, W - 120, REACTOR_CONFIG.floorY, "pink", {
+      isWaving: p2Waving,
+      isCooling: true,
       scale: 1.15,
-      playerName: pair.p2Name
+      playerName: pair.p2Name,
+      steerTilt: (this.p2.targetX - this.p2.x) * 0.005,
+      eyeState: p2Waving ? "happy" : "focus"
     });
 
     ctx.font = "900 24px 'JetBrains Mono', monospace";
@@ -1549,18 +1640,23 @@ export class ReactorRushEngine {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.fillText("• SCIENCE IS FOR EVERYONE •", W / 2, 495);
 
-    // Celebrating Mascot Pair (only draw vector fallback if background image not yet loaded)
-    if (!this.bgImages.victory || !this.bgImages.victory.complete) {
-      this.drawCyberBuggy(ctx, W / 2 - 85, 575, "cyan", {
-        handsRaised: true,
-        scale: 1.2
-      });
+    // Celebrating Champion Mascot Pair on the 3-Tier Victory Podium
+    const champPair = this.getActivePair();
+    this.drawMechaPilotKart(ctx, W / 2 - 75, 545, "cyan", {
+      handsRaised: true,
+      isWinner: true,
+      scale: 1.22,
+      playerName: champPair.p1Name,
+      eyeState: "happy"
+    });
 
-      this.drawCyberBuggy(ctx, W / 2 + 85, 575, "pink", {
-        handsRaised: true,
-        scale: 1.2
-      });
-    }
+    this.drawMechaPilotKart(ctx, W / 2 + 75, 545, "pink", {
+      handsRaised: true,
+      isWinner: true,
+      scale: 1.22,
+      playerName: champPair.p2Name,
+      eyeState: "happy"
+    });
 
     ctx.font = "800 11px 'JetBrains Mono', monospace";
     ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
@@ -1569,8 +1665,13 @@ export class ReactorRushEngine {
     ctx.restore();
   }
 
-  // --- MASCOT RENDERER: CYBER BUGGY (with Big TV Player Nametag) ---
+  // --- ALIAS FOR COMPATIBILITY ---
   drawCyberBuggy(ctx, x, y, colorTheme = "cyan", options = {}) {
+    this.drawMechaPilotKart(ctx, x, y, colorTheme, options);
+  }
+
+  // --- TOP-TIER CEL-SHADED MECHA PILOT KART RENDERER ---
+  drawMechaPilotKart(ctx, x, y, colorTheme = "cyan", options = {}) {
     ctx.save();
     ctx.translate(x, y);
 
@@ -1579,141 +1680,834 @@ export class ReactorRushEngine {
 
     const isCyan = colorTheme === "cyan";
     const primaryColor = isCyan ? "#00f5ff" : "#ff2a8d";
-    const darkShell = isCyan ? "#0369a1" : "#9d174d";
+    const darkShell = isCyan ? "#0284c7" : "#be185d";
+    const darkMetal = "#090d16";
     const lightGlow = isCyan ? "#a5f3fc" : "#fbcfe8";
 
-    // Player Nametag on top for Lab Room TV readability
+    // 1. Suspension & Idle Bounce Physics
+    const idleBob = Math.sin(this.totalTime * 8) * 2.2;
+    const steerTilt = Math.max(-0.22, Math.min(0.22, options.steerTilt || 0));
+
+    // 2. Nametag for Big TV / Lab Room readability
     if (options.playerName) {
       ctx.save();
-      ctx.font = "900 11px 'Be Vietnam Pro', sans-serif";
-      ctx.fillStyle = primaryColor;
+      ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
+      const tagW = ctx.measureText ? (ctx.measureText(options.playerName).width + 20) : 76;
+      ctx.fillStyle = "rgba(7, 13, 28, 0.88)";
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 1.5;
       ctx.shadowColor = primaryColor;
       ctx.shadowBlur = 6;
-      ctx.fillText(options.playerName, 0, -62);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-tagW / 2, -78 + idleBob, tagW, 20, 6);
+      else ctx.rect(-tagW / 2, -78 + idleBob, tagW, 20);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = primaryColor;
+      ctx.fillText(options.playerName, 0, -64 + idleBob);
       ctx.restore();
     }
 
-    const antennaBob = Math.sin(this.totalTime * 6) * 3;
+    // 3. Ground Shadow & Neon Underglow
+    ctx.save();
+    if (ctx.createRadialGradient) {
+      const underglow = ctx.createRadialGradient(0, 24, 6, 0, 24, 42);
+      underglow.addColorStop(0, primaryColor);
+      underglow.addColorStop(0.5, isCyan ? "rgba(0, 245, 255, 0.32)" : "rgba(255, 42, 141, 0.32)");
+      underglow.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = underglow;
+      ctx.beginPath();
+      if (ctx.ellipse) ctx.ellipse(0, 25, 44, 12, 0, 0, Math.PI * 2);
+      else ctx.arc(0, 25, 24, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // Ground Jet Glow / Shadow
-    const shadowGlow = ctx.createRadialGradient(0, 22, 5, 0, 22, 28);
-    shadowGlow.addColorStop(0, primaryColor);
-    shadowGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = shadowGlow;
+    // Dark ground contact shadow
+    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
     ctx.beginPath();
-    ctx.ellipse(0, 22, 32, 10, 0, 0, Math.PI * 2);
+    if (ctx.ellipse) ctx.ellipse(0, 24, 32, 7, 0, 0, Math.PI * 2);
+    else ctx.arc(0, 24, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 4. Rear Rocket Thrusters (Spitting animated plasma flames)
+    ctx.save();
+    const thrusterBob = idleBob * 0.5;
+    const flameFlicker = (Math.sin(this.totalTime * 28) + 1) * 3;
+    const flameLen = 14 + flameFlicker;
+
+    // Left Thruster Flame
+    ctx.fillStyle = primaryColor;
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(-18, 12 + thrusterBob);
+    ctx.lineTo(-24, 22 + flameLen + thrusterBob);
+    ctx.lineTo(-12, 12 + thrusterBob);
+    ctx.closePath();
     ctx.fill();
 
-    // Antennae
-    ctx.strokeStyle = primaryColor;
+    // Left Core white flame
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(-17, 12 + thrusterBob);
+    ctx.lineTo(-20, 18 + flameLen * 0.5 + thrusterBob);
+    ctx.lineTo(-13, 12 + thrusterBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // Right Thruster Flame
+    ctx.fillStyle = primaryColor;
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(12, 12 + thrusterBob);
+    ctx.lineTo(24, 22 + flameLen + thrusterBob);
+    ctx.lineTo(18, 12 + thrusterBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // Right Core white flame
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(13, 12 + thrusterBob);
+    ctx.lineTo(20, 18 + flameLen * 0.5 + thrusterBob);
+    ctx.lineTo(17, 12 + thrusterBob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Tilt entire kart body into turns
+    ctx.save();
+    ctx.rotate(steerTilt);
+    ctx.translate(0, idleBob);
+
+    // 5. Heavy Off-Road Cyber Wheels (Left & Right)
+    this.drawCyberWheel(ctx, -30, 8, primaryColor, this.totalTime);
+    this.drawCyberWheel(ctx, 30, 8, primaryColor, this.totalTime);
+
+    // 6. Kart Chassis Lower Body (Cel-shaded dark armor with neon side skirts)
+    ctx.save();
+    ctx.fillStyle = darkMetal;
+    ctx.strokeStyle = "#1e293b";
     ctx.lineWidth = 2.5;
-
     ctx.beginPath();
-    ctx.moveTo(-10, -28);
-    ctx.quadraticCurveTo(-22, -45 + antennaBob, -20, -52 + antennaBob);
+    if (ctx.roundRect) ctx.roundRect(-28, 2, 56, 18, [4, 4, 8, 8]);
+    else ctx.rect(-28, 2, 56, 18);
+    ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#facc15";
+    // Neon Side Skirts & Aerodynamic Fins
+    ctx.fillStyle = primaryColor;
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 8;
+    ctx.fillRect(-29, 6, 4, 12);
+    ctx.fillRect(25, 6, 4, 12);
+    ctx.shadowBlur = 0;
+
+    // Front Bumper with Team Racing Stripe & Headlights
+    if (ctx.createLinearGradient) {
+      const bumperGrad = ctx.createLinearGradient(0, 12, 0, 24);
+      bumperGrad.addColorStop(0, darkShell);
+      bumperGrad.addColorStop(1, "#0a0f1d");
+      ctx.fillStyle = bumperGrad;
+    } else {
+      ctx.fillStyle = darkShell;
+    }
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(-20, -52 + antennaBob, 4.5, 0, Math.PI * 2);
+    if (ctx.roundRect) ctx.roundRect(-24, 12, 48, 11, 4);
+    else ctx.rect(-24, 12, 48, 11);
+    ctx.fill();
+    ctx.stroke();
+
+    // Dual Projector LED Headlights
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 12;
+    ctx.fillRect(-20, 15, 7, 4);
+    ctx.fillRect(13, 15, 7, 4);
+    ctx.shadowBlur = 0;
+
+    // Headlight Beam Projection Cones onto Floor
+    ctx.save();
+    ctx.fillStyle = isCyan ? "rgba(0, 245, 255, 0.16)" : "rgba(255, 42, 141, 0.16)";
+    ctx.beginPath();
+    ctx.moveTo(-20, 19);
+    ctx.lineTo(-34, 44);
+    ctx.lineTo(-6, 44);
+    ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(10, -28);
-    ctx.quadraticCurveTo(22, -45 - antennaBob, 20, -52 - antennaBob);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(20, -52 - antennaBob, 4.5, 0, Math.PI * 2);
+    ctx.moveTo(13, 19);
+    ctx.lineTo(6, 44);
+    ctx.lineTo(34, 44);
+    ctx.closePath();
     ctx.fill();
+    ctx.restore();
 
-    // Rounded Cyber Buggy Body
-    const shellGrad = ctx.createLinearGradient(0, -32, 0, 18);
-    shellGrad.addColorStop(0, primaryColor);
-    shellGrad.addColorStop(0.4, darkShell);
-    shellGrad.addColorStop(1, "#070b19");
-    ctx.fillStyle = shellGrad;
+    // Racing Number Badge (01 for P1, 02 for P2)
+    ctx.font = "900 8.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = primaryColor;
+    ctx.textAlign = "center";
+    ctx.fillText(isCyan ? "01" : "02", 0, 21);
+    ctx.restore();
+
+    // 7. Cockpit Shell & Rollcage
+    ctx.save();
+    ctx.fillStyle = "#0c1527";
     ctx.strokeStyle = primaryColor;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(-26, -32, 52, 50, 18);
+    if (ctx.roundRect) ctx.roundRect(-20, -18, 40, 24, 6);
+    else ctx.rect(-20, -18, 40, 24);
     ctx.fill();
     ctx.stroke();
 
-    // Visor
+    // Glowing Dashboard Dials inside Cockpit
+    ctx.fillStyle = "#22c55e";
+    ctx.fillRect(-12, -4, 4, 2);
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(-6, -4, 4, 2);
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, -4, 12, 2);
+    ctx.restore();
+
+    // 8. Chibi Mecha Pilot
+    this.drawChibiMechaPilot(ctx, 0, -18, primaryColor, darkShell, lightGlow, options);
+
+    // 9. Round-Specific High-Tech Dynamic Equipment
+    if (options.isCatching) {
+      // Round 1: Magneto-Electric Energy Catch Net / Funnel
+      this.drawEnergyCatchNet(ctx, 0, -32, primaryColor, options);
+    } else if (options.isCircuit || options.handsRaised) {
+      // Round 2: Telescopic Crane Arm reaching high
+      this.drawCircuitCraneArm(ctx, 0, -28, primaryColor, options.handsRaised);
+    } else if (options.isWaving || options.isCooling) {
+      // Round 3: Twin Cryo Blaster Cannons
+      this.drawCryoCannons(ctx, primaryColor, options.isWaving);
+    }
+
+    // 10. Winner Trophy Star Aura
+    if (options.isWinner) {
+      ctx.save();
+      const auraPulse = (Math.sin(this.totalTime * 8) + 1) * 3;
+      ctx.fillStyle = "#facc15";
+      ctx.shadowColor = "#facc15";
+      ctx.shadowBlur = 12;
+      ctx.font = "900 16px 'JetBrains Mono', monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("★ 1ST ★", 0, -60 - auraPulse);
+      ctx.restore();
+    }
+
+    // 11. Stunned Stars when hazard hit
+    if (options.stunned || options.eyeState === "dizzy") {
+      this.drawStunStars(ctx, 0, -56);
+    }
+
+    ctx.restore(); // end steerTilt & idleBob
+    ctx.restore(); // end base transform
+  }
+
+  drawCyberWheel(ctx, x, y, rimColor, time) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Heavy tire rubber
+    ctx.fillStyle = "#0f172a";
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-7, -13, 14, 26, 4);
+    else ctx.rect(-7, -13, 14, 26);
+    ctx.fill();
+    ctx.stroke();
+
+    // Tire tread grip notches
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(-7, -10, 3, 4);
+    ctx.fillRect(-7, 0, 3, 4);
+    ctx.fillRect(-7, 7, 3, 4);
+    ctx.fillRect(4, -10, 3, 4);
+    ctx.fillRect(4, 0, 3, 4);
+    ctx.fillRect(4, 7, 3, 4);
+
+    // Glowing Neon Rim Core
+    ctx.strokeStyle = rimColor;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = rimColor;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 5.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Rotating Spokes
+    const rot = (time * 10) % (Math.PI * 2);
+    ctx.beginPath();
+    ctx.moveTo(-Math.cos(rot) * 5, -Math.sin(rot) * 5);
+    ctx.lineTo(Math.cos(rot) * 5, Math.sin(rot) * 5);
+    ctx.moveTo(-Math.sin(rot) * 5, Math.cos(rot) * 5);
+    ctx.lineTo(Math.sin(rot) * 5, -Math.cos(rot) * 5);
+    ctx.stroke();
+
+    // Center Chrome Hub
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(0, 0, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  drawChibiMechaPilot(ctx, x, y, primaryColor, darkShell, lightGlow, options) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Antennae with inertia bob
+    const antBob = Math.sin(this.totalTime * 8) * 3;
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2.5;
+
+    // Left Antenna
+    ctx.beginPath();
+    ctx.moveTo(-9, -14);
+    ctx.quadraticCurveTo(-18, -28 + antBob, -16, -34 + antBob);
+    ctx.stroke();
+
+    ctx.fillStyle = "#facc15";
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(-16, -34 + antBob, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right Antenna
+    ctx.beginPath();
+    ctx.moveTo(9, -14);
+    ctx.quadraticCurveTo(18, -28 - antBob, 16, -34 - antBob);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(16, -34 - antBob, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Rounded Cyber Pilot Helmet
+    if (ctx.createLinearGradient) {
+      const helmetGrad = ctx.createLinearGradient(0, -22, 0, 4);
+      helmetGrad.addColorStop(0, primaryColor);
+      helmetGrad.addColorStop(0.4, darkShell);
+      helmetGrad.addColorStop(1, "#070b19");
+      ctx.fillStyle = helmetGrad;
+    } else {
+      ctx.fillStyle = primaryColor;
+    }
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-18, -22, 36, 26, 12);
+    else ctx.rect(-18, -22, 36, 26);
+    ctx.fill();
+    ctx.stroke();
+
+    // Glossy Dark Visor
     ctx.fillStyle = "#030712";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(-20, -24, 40, 24, 8);
+    if (ctx.roundRect) ctx.roundRect(-14, -16, 28, 16, 6);
+    else ctx.rect(-14, -16, 28, 16);
     ctx.fill();
     ctx.stroke();
 
-    // LED Eyes
+    // Specular Light Sheen on Visor
+    ctx.fillStyle = "rgba(255, 255, 255, 0.28)";
+    ctx.beginPath();
+    ctx.moveTo(-11, -14);
+    ctx.lineTo(-4, -14);
+    ctx.lineTo(-9, -7);
+    ctx.closePath();
+    ctx.fill();
+
+    // Animated LED Matrix Eyes
     ctx.fillStyle = lightGlow;
+    ctx.strokeStyle = lightGlow;
     ctx.shadowColor = primaryColor;
     ctx.shadowBlur = 8;
 
-    if (options.handsRaised || options.isReady) {
-      ctx.strokeStyle = lightGlow;
+    // Periodic Natural Blink (closes for 0.15s every 3.5s)
+    const blinkCycle = (this.totalTime % 3.5);
+    const isBlinking = blinkCycle > 3.35;
+
+    const eyeState = options.eyeState || "focus";
+
+    if (isBlinking) {
+      // Slit line eyes
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-10, -9); ctx.lineTo(-4, -9);
+      ctx.moveTo(4, -9); ctx.lineTo(10, -9);
+      ctx.stroke();
+    } else if (options.stunned || eyeState === "dizzy") {
+      // Dizzy Cross Eyes (X X)
+      ctx.lineWidth = 2;
+      // Left X
+      ctx.beginPath();
+      ctx.moveTo(-9, -11); ctx.lineTo(-5, -7);
+      ctx.moveTo(-5, -11); ctx.lineTo(-9, -7);
+      ctx.stroke();
+      // Right X
+      ctx.beginPath();
+      ctx.moveTo(5, -11); ctx.lineTo(9, -7);
+      ctx.moveTo(9, -11); ctx.lineTo(5, -7);
+      ctx.stroke();
+    } else if (options.handsRaised || options.isReady || options.isWinner || eyeState === "happy") {
+      // Cheerful Arched Eyes (^ ^)
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(-10, -11, 5, Math.PI, 0);
+      ctx.arc(-7, -8, 4, Math.PI, 0);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(10, -11, 5, Math.PI, 0);
+      ctx.arc(7, -8, 4, Math.PI, 0);
+      ctx.stroke();
+    } else if (options.isWaving) {
+      // Sharp determined eyes (> <)
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-5, -11); ctx.lineTo(-9, -9); ctx.lineTo(-5, -7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(5, -11); ctx.lineTo(9, -9); ctx.lineTo(5, -7);
       ctx.stroke();
     } else {
+      // Default focused LED eyes with oval pupils
       ctx.beginPath();
-      ctx.arc(-10, -12, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(10, -12, 4, 0, Math.PI * 2);
+      if (ctx.ellipse) {
+        ctx.ellipse(-7, -9, 3, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(7, -9, 3, 4, 0, 0, Math.PI * 2);
+      } else {
+        ctx.arc(-7, -9, 3.5, 0, Math.PI * 2);
+        ctx.arc(7, -9, 3.5, 0, Math.PI * 2);
+      }
       ctx.fill();
     }
     ctx.shadowBlur = 0;
 
-    // Robotic Arms
+    // Pilot Hands / Gloves grasping steering wheel
+    ctx.fillStyle = primaryColor;
+    ctx.beginPath();
+    ctx.arc(-11, 2, 3.5, 0, Math.PI * 2);
+    ctx.arc(11, 2, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawEnergyCatchNet(ctx, x, y, primaryColor, options) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Twin mechanical support struts
     ctx.strokeStyle = primaryColor;
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = "round";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-16, 12);
+    ctx.lineTo(-24, -8);
+    ctx.moveTo(16, 12);
+    ctx.lineTo(24, -8);
+    ctx.stroke();
 
-    if (options.handsRaised) {
-      ctx.beginPath();
-      ctx.moveTo(-22, -6);
-      ctx.lineTo(-32, -38);
-      ctx.stroke();
+    // Parabolic Magnetic Collector Dish
+    ctx.fillStyle = "rgba(7, 13, 28, 0.9)";
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, -10, 26, Math.PI * 0.85, Math.PI * 0.15, true);
+    ctx.stroke();
 
-      ctx.beginPath();
-      ctx.moveTo(22, -6);
-      ctx.lineTo(32, -38);
-      ctx.stroke();
-    } else if (options.isWaving) {
-      const waveOffset = Math.sin(this.totalTime * 14) * 8;
-      ctx.beginPath();
-      ctx.moveTo(-22, -6);
-      ctx.lineTo(-35 + waveOffset, -14);
-      ctx.stroke();
+    // Glowing Electromagnetic Containment Rings
+    const pulse = (Math.sin(this.totalTime * 14) + 1) * 3;
+    ctx.strokeStyle = options.justCaught ? "#facc15" : primaryColor;
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = options.justCaught ? 16 : 8;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.ellipse) ctx.ellipse(0, -18, 24 + pulse, 7, 0, 0, Math.PI * 2);
+    else ctx.arc(0, -18, 24, 0, Math.PI * 2);
+    ctx.stroke();
 
-      ctx.beginPath();
-      ctx.moveTo(22, -6);
-      ctx.lineTo(35 - waveOffset, -14);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(-22, -6);
-      ctx.lineTo(-32, 4);
-      ctx.stroke();
+    // Catch Spark Burst when item caught
+    if (options.justCaught) {
+      ctx.fillStyle = "#ffffff";
+      for (let i = 0; i < 6; i++) {
+        const ang = (i / 6) * Math.PI * 2 + this.totalTime * 8;
+        const dist = 16 + pulse * 2;
+        ctx.beginPath();
+        ctx.arc(Math.cos(ang) * dist, -18 + Math.sin(ang) * 6, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
+    ctx.restore();
+  }
+
+  drawCircuitCraneArm(ctx, x, y, primaryColor, isRaised) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    const armReach = isRaised ? -58 : -32;
+    const jointX = isRaised ? 6 : -4;
+
+    // Heavy Hydraulic Arm Segment 1
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(jointX, armReach * 0.55);
+    ctx.stroke();
+
+    // Chrome Piston Shaft
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(jointX, armReach * 0.55);
+    ctx.lineTo(0, armReach);
+    ctx.stroke();
+
+    // Arm Articulated Joint
+    ctx.fillStyle = primaryColor;
+    ctx.beginPath();
+    ctx.arc(jointX, armReach * 0.55, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // High-Voltage Copper Switch Clamp at Tip
+    ctx.fillStyle = "#facc15";
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = isRaised ? 16 : 6;
+    ctx.fillRect(-6, armReach - 8, 12, 8);
+
+    // Tesla Electrical Sparks when raised
+    if (isRaised) {
+      ctx.strokeStyle = "#00f5ff";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(22, -6);
-      ctx.lineTo(32, 4);
+      ctx.moveTo(-4, armReach - 8);
+      ctx.lineTo(-12 + (Math.random() - 0.5) * 8, armReach - 24);
+      ctx.lineTo(0, armReach - 34);
+      ctx.lineTo(12 + (Math.random() - 0.5) * 8, armReach - 24);
+      ctx.lineTo(4, armReach - 8);
       ctx.stroke();
     }
 
+    ctx.restore();
+  }
+
+  drawCryoCannons(ctx, primaryColor, isWaving) {
+    ctx.save();
+
+    const recoil = isWaving ? Math.sin(this.totalTime * 24) * 4 : 0;
+
+    // Left Cryo Blaster Cannon
     ctx.fillStyle = "#1e293b";
-    ctx.fillRect(-16, 18, 32, 6);
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    ctx.fillRect(-34, -14 + recoil, 8, 22);
+    ctx.strokeRect(-34, -14 + recoil, 8, 22);
+
+    // Left Coolant Coil
+    ctx.fillStyle = "#67e8f9";
+    ctx.fillRect(-33, -10 + recoil, 6, 4);
+    ctx.fillRect(-33, -2 + recoil, 6, 4);
+
+    // Right Cryo Blaster Cannon
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(26, -14 - recoil, 8, 22);
+    ctx.strokeRect(26, -14 - recoil, 8, 22);
+
+    // Right Coolant Coil
+    ctx.fillStyle = "#67e8f9";
+    ctx.fillRect(27, -10 - recoil, 6, 4);
+    ctx.fillRect(27, -2 - recoil, 6, 4);
+
+    // Muzzle Frost Vapor rings when waving
+    if (isWaving) {
+      ctx.strokeStyle = "#a5f3fc";
+      ctx.shadowColor = "#00f5ff";
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 1.5;
+      const puff = (Math.sin(this.totalTime * 18) + 1) * 3;
+
+      ctx.beginPath();
+      if (ctx.ellipse) {
+        ctx.ellipse(-30, -20 - puff, 6 + puff, 2.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(30, -20 - puff, 6 + puff, 2.5, 0, 0, Math.PI * 2);
+      } else {
+        ctx.arc(-30, -20 - puff, 6, 0, Math.PI * 2);
+        ctx.arc(30, -20 - puff, 6, 0, Math.PI * 2);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  drawStunStars(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    const starCount = 3;
+    const angleStep = (Math.PI * 2) / starCount;
+    for (let i = 0; i < starCount; i++) {
+      const ang = i * angleStep + this.totalTime * 6;
+      const sx = Math.cos(ang) * 16;
+      const sy = Math.sin(ang) * 6;
+      ctx.fillStyle = "#facc15";
+      ctx.shadowColor = "#facc15";
+      ctx.shadowBlur = 8;
+      ctx.font = "900 12px sans-serif";
+      ctx.fillText("★", sx, sy);
+    }
+    ctx.restore();
+  }
+
+  renderTransition(ctx, W, H) {
+    const tr = this.transition;
+    const p = Math.min(1.0, tr.timer / tr.duration);
+    ctx.save();
+
+    if (tr.type === "blast_doors") {
+      let doorOffset = 0;
+      if (p < 0.42) {
+        const ease = 1 - Math.pow(1 - (p / 0.42), 3);
+        doorOffset = (1 - ease) * (W / 2);
+      } else if (p > 0.68) {
+        const openEase = Math.pow((p - 0.68) / 0.32, 2.5);
+        doorOffset = openEase * (W / 2);
+      } else {
+        doorOffset = 0;
+        if (!tr.soundPlayed) {
+          sound.playLock();
+          this.screenShake = 16;
+          tr.soundPlayed = true;
+        }
+      }
+
+      // Left Blast Door
+      const leftW = W / 2 - doorOffset;
+      if (leftW > 0) {
+        if (ctx.createLinearGradient) {
+          const gradL = ctx.createLinearGradient(0, 0, leftW, 0);
+          gradL.addColorStop(0, "#080d1a");
+          gradL.addColorStop(0.75, "#131e38");
+          gradL.addColorStop(1, "#1e293b");
+          ctx.fillStyle = gradL;
+        } else {
+          ctx.fillStyle = "#131e38";
+        }
+        ctx.fillRect(0, 0, leftW, H);
+
+        // Industrial hazard caution bar along the left door edge
+        const hazardW = 24;
+        const hx = leftW - hazardW;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(hx, 0, hazardW, H);
+        if (ctx.clip) ctx.clip();
+        ctx.fillStyle = "#facc15";
+        ctx.fillRect(hx, 0, hazardW, H);
+        ctx.fillStyle = "#000000";
+        for (let y = -30; y < H + 30; y += 32) {
+          ctx.beginPath();
+          ctx.moveTo(hx, y);
+          ctx.lineTo(hx + hazardW, y + hazardW);
+          ctx.lineTo(hx + hazardW, y + hazardW + 16);
+          ctx.lineTo(hx, y + 16);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // High-tech panel lines
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 20, Math.max(0, leftW - 55), H - 40);
+      }
+
+      // Right Blast Door
+      const rightX = W / 2 + doorOffset;
+      const rightW = W - rightX;
+      if (rightW > 0) {
+        if (ctx.createLinearGradient) {
+          const gradR = ctx.createLinearGradient(rightX, 0, W, 0);
+          gradR.addColorStop(0, "#1e293b");
+          gradR.addColorStop(0.25, "#131e38");
+          gradR.addColorStop(1, "#080d1a");
+          ctx.fillStyle = gradR;
+        } else {
+          ctx.fillStyle = "#131e38";
+        }
+        ctx.fillRect(rightX, 0, rightW, H);
+
+        // Industrial hazard caution bar along the right door edge
+        const hazardW = 24;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(rightX, 0, hazardW, H);
+        if (ctx.clip) ctx.clip();
+        ctx.fillStyle = "#facc15";
+        ctx.fillRect(rightX, 0, hazardW, H);
+        ctx.fillStyle = "#000000";
+        for (let y = -30; y < H + 30; y += 32) {
+          ctx.beginPath();
+          ctx.moveTo(rightX, y + hazardW);
+          ctx.lineTo(rightX + hazardW, y);
+          ctx.lineTo(rightX + hazardW, y + 16);
+          ctx.lineTo(rightX, y + hazardW + 16);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // High-tech panel lines
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rightX + 35, 20, Math.max(0, rightW - 55), H - 40);
+      }
+
+      // Center HUD Holographic Seal when sealed
+      if (p >= 0.35 && p <= 0.75) {
+        const alpha = p < 0.45 ? (p - 0.35) / 0.1 : (p > 0.65 ? (0.75 - p) / 0.1 : 1.0);
+        ctx.globalAlpha = Math.max(0, Math.min(1.0, alpha));
+
+        const cW = 440;
+        const cH = 120;
+        const cx = W / 2 - cW / 2;
+        const cy = H / 2 - cH / 2;
+
+        ctx.fillStyle = "rgba(7, 13, 28, 0.94)";
+        ctx.strokeStyle = "#facc15";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#facc15";
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(cx, cy, cW, cH, 12);
+        else ctx.rect(cx, cy, cW, cH);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "center";
+        ctx.font = "900 22px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#facc15";
+        ctx.fillText(tr.title || "ACCESSING CIRCUIT DECK", W / 2, cy + 46);
+
+        ctx.font = "800 14px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(tr.subtitle || "PREPARING NEXT ROUND", W / 2, cy + 82);
+      }
+    } else if (tr.type === "cryo_freeze") {
+      const alarmCycle = Math.sin(tr.timer * 18);
+      const freezeAlpha = p < 0.5 ? Math.sin((p / 0.5) * (Math.PI / 2)) : Math.sin(((1 - p) / 0.5) * (Math.PI / 2));
+
+      if (ctx.createRadialGradient) {
+        const frostGrad = ctx.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, W * 0.75);
+        frostGrad.addColorStop(0, "rgba(6, 182, 212, 0)");
+        frostGrad.addColorStop(0.5, `rgba(14, 165, 233, ${0.45 * freezeAlpha})`);
+        frostGrad.addColorStop(1, `rgba(165, 243, 252, ${0.92 * freezeAlpha})`);
+        ctx.fillStyle = frostGrad;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      // Warning Klaxon Bars
+      if (alarmCycle > 0) {
+        ctx.fillStyle = "rgba(239, 68, 68, 0.75)";
+        ctx.fillRect(0, 0, W, 28);
+        ctx.fillRect(0, H - 28, W, 28);
+
+        ctx.textAlign = "center";
+        ctx.font = "900 13px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText("WARNING: REACTOR THERMAL RUNAWAY // CRYO SYSTEM ACTIVE", W / 2, 19);
+        ctx.fillText("WARNING: REACTOR THERMAL RUNAWAY // CRYO SYSTEM ACTIVE", W / 2, H - 9);
+      }
+
+      if (freezeAlpha > 0.3) {
+        ctx.globalAlpha = Math.min(1.0, freezeAlpha * 1.2);
+        const cW = 460;
+        const cH = 110;
+        const cx = W / 2 - cW / 2;
+        const cy = H / 2 - cH / 2;
+
+        ctx.fillStyle = "rgba(6, 18, 38, 0.94)";
+        ctx.strokeStyle = "#00f5ff";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#00f5ff";
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(cx, cy, cW, cH, 12);
+        else ctx.rect(cx, cy, cW, cH);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = "center";
+        ctx.font = "900 21px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#00f5ff";
+        ctx.fillText(tr.title || "CORE TEMPERATURE CRITICAL", W / 2, cy + 44);
+
+        ctx.font = "800 14px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(tr.subtitle || "VÒNG 03: HẠ NHIỆT LÒ NĂNG LƯỢNG", W / 2, cy + 78);
+      }
+    } else if (tr.type === "victory_warp") {
+      const warpAlpha = p < 0.5 ? p / 0.5 : (1 - p) / 0.5;
+      ctx.globalAlpha = Math.max(0, Math.min(1.0, warpAlpha));
+
+      const beamCount = 28;
+      const angleStep = (Math.PI * 2) / beamCount;
+      const beamSpeed = p * 400;
+
+      ctx.save();
+      ctx.translate(W / 2, H / 2);
+      for (let i = 0; i < beamCount; i++) {
+        const ang = i * angleStep + this.totalTime * 2;
+        const len = 120 + beamSpeed;
+        const width = 3 + Math.sin(i * 1.5) * 2;
+        ctx.strokeStyle = (i % 2 === 0) ? "#facc15" : "#00f5ff";
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(ang) * 40, Math.sin(ang) * 40);
+        ctx.lineTo(Math.cos(ang) * len, Math.sin(ang) * len);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      if (ctx.createRadialGradient) {
+        const flashGrad = ctx.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, 260);
+        flashGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+        flashGrad.addColorStop(0.4, "rgba(250, 204, 21, 0.65)");
+        flashGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = flashGrad;
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, 260, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.textAlign = "center";
+      ctx.font = "900 28px 'JetBrains Mono', monospace";
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "#facc15";
+      ctx.shadowBlur = 18;
+      ctx.fillText(tr.title || "MISSION ACCOMPLISHED", W / 2, H / 2 - 10);
+      ctx.font = "800 16px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = "#facc15";
+      ctx.fillText(tr.subtitle || "CHÚC MỪNG CHIẾN THẮNG!", W / 2, H / 2 + 30);
+      ctx.shadowBlur = 0;
+    }
 
     ctx.restore();
   }

@@ -570,6 +570,262 @@ export class RoadRenderer {
   }
 
   /**
+   * Code Slicer: Authentic Cel-Shaded Ninja Cyber Buggy Mascot
+   */
+  drawNinjaCyberBuggy(ctx, W, H, bladeTrail, isFever, isGameOver) {
+    if (isGameOver) return;
+    ctx.save();
+
+    const botX = W - 92;
+    const botY = H - 95;
+    ctx.translate(botX, botY);
+
+    const isAttacking = bladeTrail && bladeTrail.length >= 3;
+    const attackLunge = isAttacking ? Math.sin(this.totalTime * 20) * 12 : 0;
+    const idleBob = Math.sin(this.totalTime * 6) * 3;
+
+    // Ground neon shinobi seal underglow
+    const auraColor = isFever ? "#facc15" : "#00f5ff";
+    ctx.save();
+    if (ctx.createRadialGradient) {
+      const sealGrad = ctx.createRadialGradient(0, 32, 4, 0, 32, 44);
+      sealGrad.addColorStop(0, auraColor);
+      sealGrad.addColorStop(0.5, isFever ? "rgba(250, 204, 21, 0.3)" : "rgba(0, 245, 255, 0.3)");
+      sealGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = sealGrad;
+      ctx.beginPath();
+      if (ctx.ellipse) ctx.ellipse(0, 32, 48, 14, 0, 0, Math.PI * 2);
+      else ctx.arc(0, 32, 30, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Afterimage speed clones when attacking or during fever
+    if (isAttacking || isFever) {
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = auraColor;
+      for (let s = 1; s <= 2; s++) {
+        const offX = -s * 14;
+        const offY = s * 6;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(offX - 22, offY - 26 + idleBob, 44, 48, 14);
+        else ctx.rect(offX - 22, offY - 26 + idleBob, 44, 48);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Translate to dynamic combat lunge
+    ctx.translate(-attackLunge, idleBob);
+
+    // Ninja Headband Ribbons (cloth physics waving in wind)
+    ctx.save();
+    const ribbonWave1 = Math.sin(this.totalTime * 14) * 10;
+    const ribbonWave2 = Math.cos(this.totalTime * 12) * 8;
+    ctx.strokeStyle = auraColor;
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = "round";
+    // Ribbon 1
+    ctx.beginPath();
+    ctx.moveTo(14, -18);
+    ctx.quadraticCurveTo(28, -24 + ribbonWave1, 46, -20 + ribbonWave1 * 1.4);
+    ctx.stroke();
+    // Ribbon 2
+    ctx.beginPath();
+    ctx.moveTo(14, -14);
+    ctx.quadraticCurveTo(32, -16 + ribbonWave2, 52, -10 + ribbonWave2 * 1.3);
+    ctx.stroke();
+    ctx.restore();
+
+    // Left Katana (Held in reverse grip at hip)
+    ctx.save();
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-18, 10);
+    ctx.lineTo(-34, 26);
+    ctx.stroke();
+    // Katana Handle & Tsuba guard
+    ctx.strokeStyle = auraColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-14, 6);
+    ctx.lineTo(-20, 12);
+    ctx.stroke();
+    ctx.restore();
+
+    // Dark Shinobi Armor Shell
+    if (ctx.createLinearGradient) {
+      const armorGrad = ctx.createLinearGradient(0, -28, 0, 24);
+      armorGrad.addColorStop(0, "#0f172a");
+      armorGrad.addColorStop(0.6, "#1e293b");
+      armorGrad.addColorStop(1, "#020617");
+      ctx.fillStyle = armorGrad;
+    } else {
+      ctx.fillStyle = "#0f172a";
+    }
+    ctx.strokeStyle = auraColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-24, -28, 48, 52, 16);
+    else ctx.rect(-24, -28, 48, 52);
+    ctx.fill();
+    ctx.stroke();
+
+    // Shinobi Forehead Protector Plate
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = auraColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-16, -24, 32, 10, 4);
+    else ctx.rect(-16, -24, 32, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Engraved Code Shuriken Emblem on Forehead Plate
+    ctx.font = "900 8px sans-serif";
+    ctx.fillStyle = auraColor;
+    ctx.textAlign = "center";
+    ctx.fillText("✦", 0, -16);
+
+    // Visor with Slanted Ninja Eyes
+    ctx.fillStyle = "#030712";
+    ctx.fillRect(-18, -12, 36, 14);
+
+    ctx.fillStyle = auraColor;
+    ctx.strokeStyle = auraColor;
+    ctx.shadowColor = auraColor;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 2.5;
+    if (isAttacking) {
+      // Fierce Slanted Eyes (> <)
+      ctx.beginPath();
+      ctx.moveTo(-12, -9); ctx.lineTo(-6, -5); ctx.lineTo(-12, -2);
+      ctx.moveTo(12, -9); ctx.lineTo(6, -5); ctx.lineTo(12, -2);
+      ctx.stroke();
+    } else {
+      // Alert Slit Eyes
+      ctx.beginPath();
+      ctx.moveTo(-12, -5); ctx.lineTo(-4, -5);
+      ctx.moveTo(4, -5); ctx.lineTo(12, -5);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+
+    // Right Laser Katana (Drawn & Slashing)
+    ctx.save();
+    const slashAngle = isAttacking ? -Math.PI * 0.35 : Math.PI * 0.15;
+    ctx.translate(-14, 2);
+    ctx.rotate(slashAngle);
+
+    // Katana Blade Core (Glowing Laser)
+    ctx.strokeStyle = auraColor;
+    ctx.lineWidth = 4;
+    ctx.shadowColor = auraColor;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-42, -18);
+    ctx.stroke();
+
+    // White Razor Center
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.5;
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-42, -18);
+    ctx.stroke();
+
+    // Hilt / Tsuba
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(-3, -3, 6, 6);
+    ctx.restore();
+
+    // Floating Ninja Title
+    ctx.font = "900 10.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = auraColor;
+    ctx.textAlign = "center";
+    ctx.fillText("NINJA BUGGY", 0, 36);
+
+    ctx.restore();
+  }
+
+  /**
+   * Flappy Buggy: Steampunk / Cyber Aviator Gear
+   */
+  drawAviatorCyberBuggy(ctx, pSize, vy, isGameOver, isInvulnerable) {
+    ctx.save();
+
+    // Brass Aviator Goggles on forehead
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2.5;
+    ctx.fillStyle = "#0284c7";
+
+    // Left Goggle
+    ctx.beginPath();
+    ctx.arc(-14, -18, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Right Goggle
+    ctx.beginPath();
+    ctx.arc(14, -18, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Center Leather Bridge
+    ctx.fillStyle = "#78350f";
+    ctx.fillRect(-6, -20, 12, 4);
+
+    // Specular Glint on Goggles
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(-17, -21, 2.5, 0, Math.PI * 2);
+    ctx.arc(11, -21, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Twin Dorsal Rocket Thrusters
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = "#00f5ff";
+    ctx.lineWidth = 1.5;
+    // Left Rocket Cylinder
+    ctx.fillRect(-28, -8, 8, 20);
+    ctx.strokeRect(-28, -8, 8, 20);
+    // Right Rocket Cylinder
+    ctx.fillRect(20, -8, 8, 20);
+    ctx.strokeRect(20, -8, 8, 20);
+
+    // Dynamic Plasma Flame Exhaust from Thrusters
+    if (!isGameOver) {
+      const pulse = (Math.sin(this.totalTime * 32) + 1) * 4;
+      ctx.fillStyle = "#00f5ff";
+      ctx.shadowColor = "#00f5ff";
+      ctx.shadowBlur = 12;
+
+      // Left Thruster Flame
+      ctx.beginPath();
+      ctx.moveTo(-28, 12);
+      ctx.lineTo(-24, 24 + pulse);
+      ctx.lineTo(-20, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // Right Thruster Flame
+      ctx.beginPath();
+      ctx.moveTo(20, 12);
+      ctx.lineTo(24, 24 + pulse);
+      ctx.lineTo(28, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.restore();
+  }
+
+  /**
    * Render Parallax Cyberpunk FPTU Skyline with Retro Synthwave Sun
    */
   drawCyberpunkSkyline(ctx, W, horizonY, isFever) {
@@ -1359,7 +1615,10 @@ export class RoadRenderer {
       ctx.restore();
     }
 
-    // 4. Render Particle FX
+    // 4. Render Authentic Ninja Cyber Buggy Mascot
+    this.drawNinjaCyberBuggy(ctx, W, H, bladeTrail, isFever, isGameOver);
+
+    // 5. Render Particle FX
     if (particleSystem) {
       particleSystem.render(ctx);
     }
@@ -1569,6 +1828,10 @@ export class RoadRenderer {
       ctx.fillStyle = "#06b6d4";
       ctx.fill();
     }
+
+    // Render Steampunk Aviator Goggles & Rocket Backpack Thrusters
+    this.drawAviatorCyberBuggy(ctx, pSize, vy, isGameOver, isInvulnerable);
+
     ctx.restore();
 
     // 4. Particle FX
