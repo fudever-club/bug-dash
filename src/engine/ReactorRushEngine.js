@@ -5,6 +5,8 @@
 import { REACTOR_CONFIG } from "../config.js";
 import { sound } from "../audio/SoundEngine.js";
 
+const ImageCtor = (typeof Image !== "undefined") ? Image : class { constructor() { this.src = ""; this.complete = false; } };
+
 export const REACTOR_STAGES = {
   CALIBRATION: "calibration",
   ROUND_1_ENERGY: "round1_energy",
@@ -21,6 +23,18 @@ export class ReactorRushEngine {
     this.ctx = canvas.getContext("2d");
     this.W = canvas.width || 640;
     this.H = canvas.height || 720;
+
+    // Preload Authentic Cel-Shaded Stage Environments (Anti-AI Craftsmanship)
+    this.bgImages = {
+      round1: new ImageCtor(),
+      round2: new ImageCtor(),
+      round3: new ImageCtor(),
+      victory: new ImageCtor()
+    };
+    this.bgImages.round1.src = "assets/reactor/round1_bg.jpg";
+    this.bgImages.round2.src = "assets/reactor/round2_bg.jpg";
+    this.bgImages.round3.src = "assets/reactor/round3_bg.jpg";
+    this.bgImages.victory.src = "assets/reactor/victory_bg.jpg";
 
     this.stage = REACTOR_STAGES.CALIBRATION;
     this.stageTime = 0;
@@ -663,31 +677,90 @@ export class ReactorRushEngine {
     this.renderFloatingTexts(ctx);
   }
 
+  drawBackgroundCover(ctx, img, W, H, darkOverlayAlpha = 0) {
+    if (img && img.complete && img.naturalWidth > 0 && ctx.drawImage) {
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      const targetAspect = W / H;
+      const imgAspect = iw / ih;
+
+      let sx, sy, sw, sh;
+      if (imgAspect > targetAspect) {
+        sh = ih;
+        sw = ih * targetAspect;
+        sx = (iw - sw) * 0.5;
+        sy = 0;
+      } else {
+        sw = iw;
+        sh = iw / targetAspect;
+        sx = 0;
+        sy = (ih - sh) * 0.5;
+      }
+
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+    } else {
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, "#060914");
+      bgGrad.addColorStop(0.65, "#0a1126");
+      bgGrad.addColorStop(1, "#101a38");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    if (darkOverlayAlpha > 0) {
+      ctx.fillStyle = `rgba(5, 10, 24, ${darkOverlayAlpha})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
   renderBackground(ctx, W, H) {
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-    bgGrad.addColorStop(0, "#060914");
-    bgGrad.addColorStop(0.65, "#0a1126");
-    bgGrad.addColorStop(1, "#101a38");
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, W, H);
+    let activeBg = this.bgImages.round1;
+    let overlayAlpha = 0;
 
-    // Perspective Cyber Grid on floor
-    const floorY = 560;
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.16)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-
-    for (let y = floorY; y <= H; y += 28) {
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
+    switch (this.stage) {
+      case REACTOR_STAGES.CALIBRATION:
+        activeBg = this.bgImages.round1;
+        overlayAlpha = 0.50; // Darken for calibration boxes
+        break;
+      case REACTOR_STAGES.ROUND_1_ENERGY:
+        activeBg = this.bgImages.round1;
+        overlayAlpha = 0.12; // Crisp cel-shaded map
+        break;
+      case REACTOR_STAGES.SWAP_ROUND_2:
+        activeBg = this.bgImages.round2;
+        overlayAlpha = 0.55;
+        break;
+      case REACTOR_STAGES.ROUND_2_CIRCUIT:
+        activeBg = this.bgImages.round2;
+        overlayAlpha = 0.12;
+        break;
+      case REACTOR_STAGES.SWAP_ROUND_3:
+        activeBg = this.bgImages.round3;
+        overlayAlpha = 0.55;
+        break;
+      case REACTOR_STAGES.ROUND_3_COOLING:
+        activeBg = this.bgImages.round3;
+        overlayAlpha = 0.12;
+        break;
+      case REACTOR_STAGES.MISSION_COMPLETE:
+        activeBg = this.bgImages.victory;
+        overlayAlpha = 0.08;
+        break;
     }
 
-    const cx = W / 2;
-    for (let x = -100; x <= W + 100; x += 60) {
-      ctx.moveTo(cx + (x - cx) * 0.35, floorY);
-      ctx.lineTo(x, H);
+    this.drawBackgroundCover(ctx, activeBg, W, H, overlayAlpha);
+
+    // Subtle neon floor guide line for ground-based gameplay
+    if (this.stage === REACTOR_STAGES.ROUND_1_ENERGY || this.stage === REACTOR_STAGES.CALIBRATION) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 245, 255, 0.25)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, REACTOR_CONFIG.floorY + 28);
+      ctx.lineTo(W, REACTOR_CONFIG.floorY + 28);
+      ctx.stroke();
+      ctx.restore();
     }
-    ctx.stroke();
 
     this.renderTopHeader(ctx, W);
   }
@@ -1437,7 +1510,7 @@ export class ReactorRushEngine {
 
       ctx.font = "800 11px 'JetBrains Mono', monospace";
       ctx.fillStyle = idx % 2 === 0 ? "#00f5ff" : "#ff2a8d";
-      ctx.fillText(`MEMBER ${idx + 1}`, ix, cardY + 52);
+      ctx.fillText(`★ ĐỒNG ĐỘI`, ix, cardY + 52);
 
       ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
       ctx.fillStyle = "#ffffff";
@@ -1464,16 +1537,18 @@ export class ReactorRushEngine {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.fillText("• SCIENCE IS FOR EVERYONE •", W / 2, 495);
 
-    // Celebrating Mascot Pair
-    this.drawCyberBuggy(ctx, W / 2 - 85, 575, "cyan", {
-      handsRaised: true,
-      scale: 1.2
-    });
+    // Celebrating Mascot Pair (only draw vector fallback if background image not yet loaded)
+    if (!this.bgImages.victory || !this.bgImages.victory.complete) {
+      this.drawCyberBuggy(ctx, W / 2 - 85, 575, "cyan", {
+        handsRaised: true,
+        scale: 1.2
+      });
 
-    this.drawCyberBuggy(ctx, W / 2 + 85, 575, "pink", {
-      handsRaised: true,
-      scale: 1.2
-    });
+      this.drawCyberBuggy(ctx, W / 2 + 85, 575, "pink", {
+        handsRaised: true,
+        scale: 1.2
+      });
+    }
 
     ctx.font = "800 11px 'JetBrains Mono', monospace";
     ctx.fillStyle = "rgba(255, 255, 255, 0.6)";

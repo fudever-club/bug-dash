@@ -54,6 +54,9 @@ export const MODE_METADATA = {
     badgeColor: "var(--fpt-orange)",
     title: "BUGGY DASH — ĐUA XE NÉ DEADLINE",
     mascot: "assets/player_3d_run.png",
+    heroBg: "assets/player_3d_run.png",
+    heroTag: "FLAGSHIP RUNNER • ĐUA XE DEADLINE",
+    heroTech: "BLAZEFACE AI • 1€ FILTER • NITRO DRIFT",
     desc: "Chế độ đua xe né deadline đỉnh cao tích hợp toàn diện: Lắc đầu/quét tay né bug, nhảy bổng hất cằm, cúi đầu trượt lướt, hút trọn PR Merged & Git Crystal, và bứt tốc Nitro Highway x1.5!",
     rules: [
       { badge: "CHUYỂN LÀN / BẺ LÁI", badgeClass: "steer-badge", title: "Lắc Đầu Đổi Làn", desc: "Nghiêng đầu nhẹ hoặc bẻ lái vô lăng để chuyển 3 làn Trái - Giữa - Phải hoặc lái tự do Analog" },
@@ -78,6 +81,9 @@ export const MODE_METADATA = {
     badgeColor: "#00f5ff",
     title: "REACTOR RUSH — 2 NGƯỜI • 3 VÒNG • 1 NHIỆM VỤ",
     mascot: "assets/player_3d_run.png",
+    heroBg: "assets/reactor/round1_bg.jpg",
+    heroTag: "CO-OP STEM FAIR 2026 • 2 NGƯỜI",
+    heroTech: "DUAL MULTI-HAND CV • SYNC COMBO • BIG TV LAB",
     desc: "Trải nghiệm khoa học tương tác 2 người đỉnh cao: Hiệu chuẩn giơ 2 tay, Vòng 1 Hứng Năng Lượng (Energy Catch), Vòng 2 Mạch Điện Đồng Đội (Duo Circuit), và Vòng 3 Hạ Nhiệt Lò Phản Ứng (Cool The Core)!",
     rules: [
       { badge: "VÒNG 1: ENERGY CATCH", badgeClass: "loot-badge", title: "Hứng Năng Lượng & Sync Combo", desc: "P1 & P2 lướt tay di chuyển Robot hứng hạt năng lượng (+), né gai đỏ (!), kích hoạt Sync Combo +15 khi cùng hứng!" },
@@ -94,7 +100,7 @@ export const MODE_METADATA = {
       { badge: "VÒNG 2: DUO CIRCUIT", badgeClass: "steer-badge", title: "Cùng Giơ Cao Tay", desc: "Cả 2 người chơi cùng giơ cao tay lên trên để đóng mạch điện nối tiếp thắp sáng bóng đèn" },
       { badge: "VÒNG 3: COOL THE CORE", badgeClass: "avoid-badge", title: "Vẫy Tay Cực Nhanh", desc: "Vung vẫy bàn tay thật nhanh về phía lò phản ứng để thổi luồng băng tuyết hạ nhiệt cấp tốc!" }
     ],
-    tips: "Phối hợp nhịp nhàng: Ở Vòng 1 cùng hứng năng lượng để kích hoạt SYNC COMBO; Vòng 2 phải CÙNG LÚC giơ tay mạch mới thông; Vòng 3 hãy vẫy tay hết tốc lực!",
+    tips: "Tự động kích hoạt Đa Cảm Biến cho cả 2 người chơi: P1 (nửa trái) • P2 (nửa phải). Cùng giơ tay để xuất phát!",
     ctaText: "Khởi Động Reactor Rush (SPACE)"
   },
   [GAME_MODES.CATCHER]: {
@@ -368,5 +374,9 @@ export const ASSET_PATHS = {
   item3dCoffee: "assets/item_3d_coffee.png",
   item3dGem: "assets/item_3d_gem.png",
   item3dBug: "assets/item_3d_bug.png",
-  item3dDeadline: "assets/item_3d_deadline.png"
+  item3dDeadline: "assets/item_3d_deadline.png",
+  reactorRound1Bg: "assets/reactor/round1_bg.jpg",
+  reactorRound2Bg: "assets/reactor/round2_bg.jpg",
+  reactorRound3Bg: "assets/reactor/round3_bg.jpg",
+  reactorVictoryBg: "assets/reactor/victory_bg.jpg"
 };

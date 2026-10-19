@@ -69,6 +69,13 @@ export class UIController {
       inputReactorMem4: $("inputReactorMem4"),
       btnStartSwitchFace: $("btnStartSwitchFace"),
       btnStartSwitchHand: $("btnStartSwitchHand"),
+      startInputSwitcher: $("startInputSwitcher"),
+      sensorBtnGroup: $("sensorBtnGroup"),
+      sensorCoopReactorInfo: $("sensorCoopReactorInfo"),
+      modalHeroShowcase: $("modalHeroShowcase"),
+      modalHeroBg: $("modalHeroBg"),
+      startModalHeroTag: $("startModalHeroTag"),
+      startModalHeroTech: $("startModalHeroTech"),
       startModalTipsText: $("startModalTipsText"),
       startModalMascot: $("startModalMascot"),
       btnStartGameText: $("btnStartGameText"),
@@ -996,7 +1003,45 @@ export class UIController {
       this.dom.startModalTipsText.textContent = meta.tips;
     }
 
-    // Render rules based on current active sensor
+    // Hero Visual Showcase Banner Setup
+    if (this.dom.modalHeroBg) {
+      const heroBgUrl = meta.heroBg || meta.mascot || "assets/player_3d_run.png";
+      this.dom.modalHeroBg.style.backgroundImage = `url('${heroBgUrl}')`;
+    }
+    if (this.dom.startModalHeroTag) {
+      this.dom.startModalHeroTag.textContent = meta.heroTag || meta.badge || "GAME MODE";
+    }
+    if (this.dom.startModalHeroTech) {
+      this.dom.startModalHeroTech.textContent = meta.heroTech || "AI COMPUTER VISION • 60 FPS";
+    }
+
+    // Isolate Reactor Rush from single-player sensor switcher:
+    if (mode === "reactor") {
+      if (this.dom.startInputSwitcher) this.dom.startInputSwitcher.classList.add("hidden");
+      if (this.dom.sensorBtnGroup) this.dom.sensorBtnGroup.classList.add("hidden");
+      if (this.dom.sensorCoopReactorInfo) this.dom.sensorCoopReactorInfo.classList.remove("hidden");
+      if (this.dom.controlInputBadge) {
+        this.dom.controlInputBadge.textContent = "CO-OP 2P";
+        this.dom.controlInputBadge.style.color = "#00f5ff";
+        this.dom.controlInputBadge.style.borderColor = "#00f5ff";
+      }
+    } else {
+      if (this.dom.sensorBtnGroup) this.dom.sensorBtnGroup.classList.remove("hidden");
+      if (this.dom.sensorCoopReactorInfo) this.dom.sensorCoopReactorInfo.classList.add("hidden");
+      if (mode === "slicer") {
+        if (this.dom.startInputSwitcher) this.dom.startInputSwitcher.classList.add("hidden");
+        if (this.dom.controlInputBadge) {
+          this.dom.controlInputBadge.textContent = "BÀN TAY (BLADE)";
+          this.dom.controlInputBadge.style.color = "#f43f5e";
+          this.dom.controlInputBadge.style.borderColor = "#f43f5e";
+        }
+      } else {
+        if (this.dom.startInputSwitcher) this.dom.startInputSwitcher.classList.remove("hidden");
+        this.updateInputSourceUI(this.currentActiveInputSource);
+      }
+    }
+
+    // Render rules based on current mode & sensor
     this.renderStartModalRules();
 
     if (this.dom.reactorTeamRosterBlock) {
@@ -1013,11 +1058,16 @@ export class UIController {
   renderStartModalRules() {
     const mode = this.currentActiveStartMode || "classic";
     const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
-    const isHand = this.currentActiveInputSource === "hand";
-    const rules = isHand ? (meta.handRules || meta.rules) : (meta.faceRules || meta.rules);
-
-    if (this.dom.btnStartSwitchFace) this.dom.btnStartSwitchFace.classList.toggle("active", !isHand);
-    if (this.dom.btnStartSwitchHand) this.dom.btnStartSwitchHand.classList.toggle("active", isHand);
+    let rules;
+    if (mode === "reactor") {
+      // Reactor Rush always showcases the 3 rounds
+      rules = meta.rules;
+    } else {
+      const isHand = this.currentActiveInputSource === "hand";
+      rules = isHand ? (meta.handRules || meta.rules) : (meta.faceRules || meta.rules);
+      if (this.dom.btnStartSwitchFace) this.dom.btnStartSwitchFace.classList.toggle("active", !isHand);
+      if (this.dom.btnStartSwitchHand) this.dom.btnStartSwitchHand.classList.toggle("active", isHand);
+    }
 
     if (this.dom.startRulesGrid && rules) {
       this.dom.startRulesGrid.innerHTML = rules.map(r => `

@@ -616,7 +616,47 @@ class BugDashApp {
       this.ui.updateCameraStatus("lock", currentFps);
     }
 
-    // 1. Hand Tracking Mode or Slicer Mode
+    // ============================================================
+    // 1. DEDICATED REACTOR RUSH LOCAL CO-OP TRACKING (Hands + Faces)
+    // Tách riêng hoàn toàn: Reactor Rush tự động kích hoạt Đa Cảm Biến
+    // nhận diện cả 2 người chơi (P1 & P2), không phụ thuộc vào công tắc
+    // chọn mặt/tay đơn của các game Bug Dash 1 người chơi cũ!
+    // ============================================================
+    if (this.gameMode === GAME_MODES.REACTOR) {
+      // Run multi-hand tracking for P1 (left half) & P2 (right half)
+      let multiHands = null;
+      if (this.handDetector.isReady) {
+        multiHands = this.handDetector.detectMultiHandsForVideo(video, now);
+      }
+
+      // Run dual face tracking concurrently
+      const faces = this.detector.detectForVideo(video, now);
+      this.dualTracker.update(faces, now);
+      const dualStatus = this.dualTracker.getStatus();
+
+      const p1Hand = multiHands && multiHands.p1;
+      const p2Hand = multiHands && multiHands.p2;
+      const p1Face = dualStatus.p1;
+      const p2Face = dualStatus.p2;
+
+      const inputs = {
+        // P1: Left Side (0.0 .. 0.50)
+        p1NormX: p1Hand ? p1Hand.normX : (p1Face ? p1Face.analogNormalized : undefined),
+        p1HandRaised: (p1Hand && p1Hand.isRaised) || (p1Face && p1Face.isJump),
+        p1WaveVelocity: p1Hand && p1Hand.waveVelocity ? p1Hand.waveVelocity : (p1Face && p1Face.isJump ? 260 : 0),
+
+        // P2: Right Side (0.50 .. 1.00)
+        p2NormX: p2Hand ? p2Hand.normX : (p2Face ? p2Face.analogNormalized : undefined),
+        p2HandRaised: (p2Hand && p2Hand.isRaised) || (p2Face && p2Face.isJump),
+        p2WaveVelocity: p2Hand && p2Hand.waveVelocity ? p2Hand.waveVelocity : (p2Face && p2Face.isJump ? 260 : 0)
+      };
+
+      this.reactorEngine.setInputs(inputs);
+      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, multiHands && multiHands.allHands ? multiHands.allHands[0] : null, "coop_multimodal", this.gameMode);
+      return;
+    }
+
+    // 2. Hand Tracking Mode or Slicer Mode (Single Player)
     if (this.inputSource === CONTROL_INPUTS.HAND || this.gameMode === GAME_MODES.SLICER) {
       let handStatus = null;
       if (this.handDetector.isReady) {
@@ -649,40 +689,9 @@ class BugDashApp {
       if (this.inputSource === CONTROL_INPUTS.HAND) return;
     }
 
-    // 2. Face Tracking Mode (BlazeFace)
+    // 3. Face Tracking Mode (BlazeFace Single/Split-screen)
     const faces = this.detector.detectForVideo(video, now);
 
-    // Multimodal 2-Player Tracking for Reactor Rush (Lab Room Webcam & Big TV)
-    if (this.gameMode === GAME_MODES.REACTOR) {
-      let multiHands = null;
-      if (this.handDetector.isReady) {
-        multiHands = this.handDetector.detectMultiHandsForVideo(video, now);
-      }
-
-      this.dualTracker.update(faces, now);
-      const dualStatus = this.dualTracker.getStatus();
-
-      const p1Hand = multiHands && multiHands.p1;
-      const p2Hand = multiHands && multiHands.p2;
-      const p1Face = dualStatus.p1;
-      const p2Face = dualStatus.p2;
-
-      const inputs = {
-        // P1: Left Side
-        p1NormX: p1Hand ? p1Hand.normX : (p1Face ? p1Face.analogNormalized : undefined),
-        p1HandRaised: (p1Hand && p1Hand.isRaised) || (p1Face && p1Face.isJump),
-        p1WaveVelocity: p1Hand && p1Hand.waveVelocity ? p1Hand.waveVelocity : (p1Face && p1Face.isJump ? 260 : 0),
-
-        // P2: Right Side
-        p2NormX: p2Hand ? p2Hand.normX : (p2Face ? p2Face.analogNormalized : undefined),
-        p2HandRaised: (p2Hand && p2Hand.isRaised) || (p2Face && p2Face.isJump),
-        p2WaveVelocity: p2Hand && p2Hand.waveVelocity ? p2Hand.waveVelocity : (p2Face && p2Face.isJump ? 260 : 0)
-      };
-
-      this.reactorEngine.setInputs(inputs);
-      this.ui.drawVisionOverlay(null, faces, null, true, dualStatus, multiHands && multiHands.allHands ? multiHands.allHands[0] : null, this.inputSource, this.gameMode);
-      return;
-    }
 
     if (this.gameMode === GAME_MODES.SPLIT_SCREEN) {
       this.dualTracker.update(faces, now);

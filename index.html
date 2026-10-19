@@ -83,18 +83,28 @@
         </div>
 
         <!-- Camera Sensor Mode Selector (Face Head-Tilt vs Hand Gesture) -->
-        <div class="control-card-section">
+        <div class="control-card-section" id="sensorSelectorSection">
           <div class="section-label-row">
             <span>CẢM BIẾN CAMERA</span>
             <span id="controlInputBadge" class="status-pill">LẮC ĐẦU</span>
           </div>
-          <div class="btn-group-row">
+          <div class="btn-group-row" id="sensorBtnGroup">
             <button class="btn-outline active-mode" id="btnInputFace">
               Lắc Đầu (Mặt)
             </button>
             <button class="btn-outline" id="btnInputHand">
               Bàn Tay & Cử Chỉ
             </button>
+          </div>
+          <!-- Co-op 2P Dedicated Info Card for Reactor Rush -->
+          <div id="sensorCoopReactorInfo" class="hidden" style="margin-top:6px; padding:10px 12px; border-radius:8px; background:rgba(0,245,255,0.08); border:1px solid rgba(0,245,255,0.35); text-align:left;">
+            <div style="font-size:11px; font-weight:800; color:#00f5ff; display:flex; align-items:center; gap:6px;">
+              <span class="status-led on" style="background:#00f5ff; box-shadow:0 0 8px #00f5ff;"></span>
+              ĐA CẢM BIẾN CO-OP 2 NGƯỜI
+            </div>
+            <div style="font-size:10.5px; color:#94a3b8; margin-top:4px; line-height:1.4;">
+              Tự động kích hoạt song song <strong>Bàn Tay & Khuôn Mặt</strong> cho cả 2 người: P1 (Nửa trái) • P2 (Nửa phải).
+            </div>
           </div>
         </div>
 
@@ -204,7 +214,19 @@
       <!-- Overlay Modals inside Stage -->
       <!-- 1. Start Screen -->
       <div class="game-state-modal" id="startScreenModal">
-        <img src="assets/player_3d_run.png" alt="Buggy 3D Running" id="startModalMascot" class="modal-mascot-img">
+        <!-- Hero Visual Showcase Banner (Hiển thị Artwork Đồ Họa Của Game) -->
+        <div class="modal-hero-showcase" id="modalHeroShowcase">
+          <div class="modal-hero-bg" id="modalHeroBg"></div>
+          <div class="modal-hero-overlay"></div>
+          <div class="modal-hero-content">
+            <img src="assets/player_3d_run.png" alt="Buggy 3D Running" id="startModalMascot" class="modal-mascot-img">
+            <div class="modal-hero-meta">
+              <span class="modal-hero-tag" id="startModalHeroTag">FLAGSHIP RUNNER • ĐUA XE DEADLINE</span>
+              <div class="modal-hero-tech" id="startModalHeroTech">BLAZEFACE AI • 1€ FILTER • NITRO DRIFT</div>
+            </div>
+          </div>
+        </div>
+
         <span class="modal-mode-badge" id="startModalBadge">CHẾ ĐỘ NÉ BUG SOLO</span>
         <h2 id="startModalTitle">NÉ BUG CHẠY DEADLINE</h2>
         <p id="startModalDesc">Trải nghiệm né chướng ngại vật bằng chuyển động lắc đầu hoặc cử chỉ bàn tay tại Booth FU-DEVER!</p>
