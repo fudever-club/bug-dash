@@ -56,7 +56,7 @@ Toàn bộ 4 phân cảnh gameplay đã được đại tu toàn diện theo chu
 ![Vinh Danh Toàn Đội — Bản Cel-Shaded Sạch](./demo_screenshots/04_mission_complete_celshaded.jpg)
 
 * **Nhân vật tâm điểm:** Hai robot **Cyber Buggy Cyan** và **Cyber Buggy Pink** đeo huy chương vàng, vẫy tay ăn mừng chiến thắng trên bậc bục podium bên cạnh chiếc Cúp Vàng đa giác độc bản.
-* **Màn hình LED trung tâm:** Hiển thị sắc nét **`TOTAL SCORE: 1,850 PTS`** và **`RANK: S+ CYBER LEGEND`**, phía trên là dải băng neon **`MISSION COMPLETE! REACTOR STABILIZED!`**.
+* **Bố cục phân cánh thông minh (Zero Text Occlusion):** Hai màn hình hiển thị được tách riêng biệt sang 2 cánh trái/phải (`TOTAL SCORE: 1,850 PTS` bên trái và `RANK: S+ CYBER LEGEND` bên phải); khoảng không gian phía sau chiếc cúp ở giữa là nền tối sạch có đèn spotlight rọi xuống — **100% không còn chữ nào bị cúp hay nhân vật che khuất**. Phía trên đỉnh là dải băng neon **`MISSION COMPLETE! REACTOR STABILIZED!`**.
 * **Bảng vinh danh 4 thành viên:** 4 kỷ niệm chương phẳng (flat UI plaques) với icon ngôi sao vàng mang tên đầy đủ của 4 bạn trong đội: **`⭐ 1. Minh Nam`**, **`⭐ 2. Quang Nhật`**, **`⭐ 3. Đình Khoa`**, **`⭐ 4. Thái Hưng`** (tuyệt đối không tự vẽ avatar khuôn mặt người ảo khi chưa có ảnh thực tế).
 * **Hiệu ứng sân khấu:** Pháo hoa giấy hình học (geometric confetti), đèn chiếu spotlight góc rộng trên nền tường xám công nghiệp.
 
