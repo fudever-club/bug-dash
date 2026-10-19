@@ -51,15 +51,18 @@ Toàn bộ 4 phân cảnh gameplay đã được đại tu toàn diện theo chu
 ---
 
 ### 4. Vinh Danh Toàn Đội: Mission Complete (Đại Sân Khấu Vinh Danh STEM Fair 2026)
-![Vinh Danh Toàn Đội — Bản Nâng Cấp Cel-Shaded](./demo_screenshots/04_mission_complete_celshaded.jpg)
 
-* **Chi tiết Môi trường (Map):**
-  - Khán đài sân khấu đại lễ hội triển lãm khoa học STEM Fair 2026 với bục podium vinh danh bậc thang trung tâm.
-  - Chiếc Cúp Vàng Cyber Trophy đa giác độc bản, pháo hoa giấy hình học (geometric confetti) tung bay, đèn chiếu spotlight rực rỡ.
-  - Màn hình LED thể thao cỡ lớn hiển thị **`TOTAL SCORE: 1,850 PTS`** và **`RANK: S+ CYBER LEGEND`**.
-  - Hai bên treo trang trọng dải cờ hiệu và biểu trưng chính thức của **`FU-DEVER`** và **`FPT UNIVERSITY DA NANG`**.
-* **Vinh danh trọn vẹn 4 thành viên:**
-  - Dưới chân bục có 4 kỷ niệm chương mang avatar và tên đầy đủ của cả 4 bạn: **`1. Minh Nam`**, **`2. Quang Nhật`**, **`3. Đình Khoa`**, **`4. Thái Hưng`**.
+#### 🌟 Bản In-Game Cel-Shaded Thuần Túy (Không còn cờ hiệu vẽ lỗi, không avatar ảo):
+![Vinh Danh Toàn Đội — Bản Cel-Shaded Sạch](./demo_screenshots/04_mission_complete_celshaded.jpg)
+
+* **Nhân vật tâm điểm:** Hai robot **Cyber Buggy Cyan** và **Cyber Buggy Pink** đeo huy chương vàng, vẫy tay ăn mừng chiến thắng trên bậc bục podium bên cạnh chiếc Cúp Vàng đa giác độc bản.
+* **Màn hình LED trung tâm:** Hiển thị sắc nét **`TOTAL SCORE: 1,850 PTS`** và **`RANK: S+ CYBER LEGEND`**, phía trên là dải băng neon **`MISSION COMPLETE! REACTOR STABILIZED!`**.
+* **Bảng vinh danh 4 thành viên:** 4 kỷ niệm chương phẳng (flat UI plaques) với icon ngôi sao vàng mang tên đầy đủ của 4 bạn trong đội: **`⭐ 1. Minh Nam`**, **`⭐ 2. Quang Nhật`**, **`⭐ 3. Đình Khoa`**, **`⭐ 4. Thái Hưng`** (tuyệt đối không tự vẽ avatar khuôn mặt người ảo khi chưa có ảnh thực tế).
+* **Hiệu ứng sân khấu:** Pháo hoa giấy hình học (geometric confetti), đèn chiếu spotlight góc rộng trên nền tường xám công nghiệp.
+
+#### 🏛️ Bản Gắn Logo Chính Thức Của CLB & Trường (Official Branding):
+![Vinh Danh Toàn Đội — Gắn Logo Gốc](./demo_screenshots/04_mission_complete_official_branding.jpg)
+* Được ghép trực tiếp từ file vector chuẩn gốc trong thư mục `DeverLogo/` (`fptu_logo_white.png` và `dever_logo_white.png`) ở góc trên — sắc nét 100%, bảo đảm nhận diện thương hiệu tuyệt đối và loại bỏ hoàn toàn các dị tật "logo lỏ" do AI vẽ bừa.
 
 ---
 
