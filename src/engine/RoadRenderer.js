@@ -7,6 +7,8 @@ export class RoadRenderer {
   constructor(canvasElement) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext("2d");
+    this.logicalWidth = 640;
+    this.logicalHeight = 720;
     this.roadOffset = 0;
     this.shake = 0;
 
@@ -19,6 +21,9 @@ export class RoadRenderer {
     // Dynamic Tire Trails & Drift Slipstream
     this.tireTrails = [];
     this.cameraRoll = 0;
+
+    // HiDPI Backing Store Setup (Retina 2X / 4K Crisp Rendering)
+    this.setupHiDPI();
 
     // Preload Mascot Sprites (safe in both Browser and Node.js headless test)
     const ImageCtor = (typeof Image !== "undefined") ? Image : class { constructor() { this.src = ""; this.complete = false; } };
@@ -92,6 +97,28 @@ export class RoadRenderer {
     ];
   }
 
+  /**
+   * HiDPI Backing Store Setup (Retina 2X / 4K Crisp Rendering)
+   */
+  setupHiDPI() {
+    if (!this.canvas) return;
+    const rect = (this.canvas.getBoundingClientRect && this.canvas.getBoundingClientRect()) || {
+      width: this.canvas.clientWidth || this.logicalWidth,
+      height: this.canvas.clientHeight || this.logicalHeight
+    };
+    const cssWidth = rect.width || this.canvas.clientWidth || this.logicalWidth;
+    const cssHeight = rect.height || this.canvas.clientHeight || this.logicalHeight;
+    const dpr = Math.min((typeof window !== "undefined" && window.devicePixelRatio) || 1, 2);
+
+    const targetWidth = Math.max(this.logicalWidth, Math.round(cssWidth * dpr));
+    const targetHeight = Math.max(this.logicalHeight, Math.round(cssHeight * dpr));
+
+    if (this.canvas.width !== targetWidth || this.canvas.height !== targetHeight) {
+      this.canvas.width = targetWidth;
+      this.canvas.height = targetHeight;
+    }
+  }
+
   triggerShake(intensity = 1.0) {
     this.shake = intensity;
   }
@@ -127,12 +154,23 @@ export class RoadRenderer {
    * Main Neo-Arcade 60 FPS Render Pipeline
    */
   render(dt, playerX, targetX, currentLane, items, particleSystem, isBuffed, isGameOver, isInvulnerable = false, isFever = false, steeringMode = "snap3", opponentData = null, gameMode = "classic", jumpState = null, slideState = null, extraData = null) {
-    const W = this.canvas.width;
-    const H = this.canvas.height;
+    this.setupHiDPI();
+    const W = this.logicalWidth || 640;
+    const H = this.logicalHeight || 720;
     const ctx = this.ctx;
     this.totalTime += dt;
 
+    const scaleX = (this.canvas.width || W) / W;
+    const scaleY = (this.canvas.height || H) / H;
+
     ctx.save();
+    if (scaleX !== 1 || scaleY !== 1) {
+      if (ctx.scale) ctx.scale(scaleX, scaleY);
+    }
+    if (ctx.imageSmoothingEnabled !== undefined) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
 
     // 1. Camera Shake calculation
     if (this.shake > 0) {
@@ -1273,12 +1311,23 @@ export class RoadRenderer {
    * Split-Screen 2-Player Renderer on a Single 640x720 Canvas (Enhanced Cyberpunk Duel Tracks)
    */
   renderSplitScreen(dt, p1, p2, particleSystem, timeLeft = 60) {
-    const W = this.canvas.width;
-    const H = this.canvas.height;
+    this.setupHiDPI();
+    const W = this.logicalWidth || 640;
+    const H = this.logicalHeight || 720;
     const ctx = this.ctx;
     this.totalTime += dt;
 
+    const scaleX = (this.canvas.width || W) / W;
+    const scaleY = (this.canvas.height || H) / H;
+
     ctx.save();
+    if (scaleX !== 1 || scaleY !== 1) {
+      if (ctx.scale) ctx.scale(scaleX, scaleY);
+    }
+    if (ctx.imageSmoothingEnabled !== undefined) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
 
     // 1. Camera Shake
     if (this.shake > 0) {

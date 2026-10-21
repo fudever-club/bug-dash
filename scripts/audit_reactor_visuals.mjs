@@ -27,18 +27,11 @@ const context = await browser.newContext({
 
 const page = await context.newPage();
 
-const consoleLogs = [];
-const consoleErrors = [];
-page.on('console', msg => {
-  const line = `[${msg.type()}] ${msg.text()}`;
-  consoleLogs.push(line);
-  if (msg.type() === 'error') consoleErrors.push(line);
-});
-page.on('pageerror', err => consoleErrors.push(err.toString()));
+await context.route('**fonts.googleapis.com/**', route => route.abort());
+await context.route('**fonts.gstatic.com/**', route => route.abort());
 
-console.log('[AUDIT] Navigating to http://127.0.0.1:3001...');
-await page.goto('http://127.0.0.1:3001/', { waitUntil: 'load', timeout: 30000 });
-await page.waitForTimeout(1000);
+await page.goto('http://127.0.0.1:3001/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.waitForTimeout(2000);
 
 // 1. Initial Screen
 await page.screenshot({ path: path.join(outDir, '01_initial_home.png') });

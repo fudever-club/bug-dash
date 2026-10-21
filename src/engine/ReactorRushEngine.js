@@ -4,6 +4,7 @@
 
 import { REACTOR_CONFIG } from "../config.js";
 import { sound } from "../audio/SoundEngine.js";
+import { SpriteSheetAnimator } from "./SpriteSheetAnimator.js";
 
 const ImageCtor = (typeof Image !== "undefined") ? Image : class { constructor() { this.src = ""; this.complete = false; } };
 
@@ -20,9 +21,14 @@ export const REACTOR_STAGES = {
 export class ReactorRushEngine {
   constructor(canvas) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
-    this.W = canvas.width || 640;
-    this.H = canvas.height || 720;
+    this.ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
+    this.logicalWidth = 640;
+    this.logicalHeight = 720;
+    this.W = (canvas && canvas.width) || 640;
+    this.H = (canvas && canvas.height) || 720;
+
+    // HiDPI Backing Store Setup (Retina 2X / 4K Crisp Rendering)
+    this.setupHiDPI();
 
     // Preload Authentic Cel-Shaded Stage Environments (Anti-AI Craftsmanship)
     this.bgImages = {
@@ -66,6 +72,82 @@ export class ReactorRushEngine {
     this.sprites.circuitComplete.src = basePath + "assets/reactor/sprite_circuit_complete.png";
     this.sprites.finalBoost.src = basePath + "assets/reactor/sprite_final_boost.png";
     this.sprites.energyOrb.src = basePath + "assets/reactor/sprite_energy_orb.png";
+
+    // Animated Spritesheet Controllers (4-frame & 6-frame dynamic animations with procedural fallback)
+    this.animators = {
+      kartCyan: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_kart_cyan.png",
+        frameWidth: 180,
+        frameHeight: 250,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "kart_cyan"
+      }),
+      kartPink: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_kart_pink.png",
+        frameWidth: 180,
+        frameHeight: 250,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "kart_pink"
+      }),
+      circuitCyan: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_circuit_cyan.png",
+        frameWidth: 290,
+        frameHeight: 215,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "circuit_cyan"
+      }),
+      circuitPink: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_circuit_pink.png",
+        frameWidth: 290,
+        frameHeight: 215,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "circuit_pink"
+      }),
+      cryoCyan: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_cryo_cyan.png",
+        frameWidth: 280,
+        frameHeight: 215,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "cryo_cyan"
+      }),
+      cryoPink: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_cryo_pink.png",
+        frameWidth: 280,
+        frameHeight: 215,
+        frameCount: 4,
+        fps: 8,
+        loop: true,
+        fallbackType: "cryo_pink"
+      }),
+      energyOrb: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_energy_orb.png",
+        frameWidth: 40,
+        frameHeight: 40,
+        frameCount: 6,
+        fps: 12,
+        loop: true,
+        fallbackType: "energy_orb"
+      }),
+      champTrophy: new SpriteSheetAnimator({
+        image: basePath + "assets/reactor/sheet_champ_trophy.png",
+        frameWidth: 190,
+        frameHeight: 275,
+        frameCount: 6,
+        fps: 8,
+        loop: true,
+        fallbackType: "champ_trophy"
+      })
+    };
 
     this.stage = REACTOR_STAGES.CALIBRATION;
     this.stageTime = 0;
@@ -185,6 +267,28 @@ export class ReactorRushEngine {
       return { p1Name: p1, p2Name: p2 };
     }
     return { p1Name: m[0] || "Player 1", p2Name: m[1] || "Player 2" };
+  }
+
+  /**
+   * HiDPI Backing Store Setup (Retina 2X / 4K Crisp Rendering)
+   */
+  setupHiDPI() {
+    if (!this.canvas) return;
+    const rect = (this.canvas.getBoundingClientRect && this.canvas.getBoundingClientRect()) || {
+      width: this.canvas.clientWidth || this.logicalWidth || 640,
+      height: this.canvas.clientHeight || this.logicalHeight || 720
+    };
+    const cssWidth = rect.width || this.canvas.clientWidth || this.logicalWidth || 640;
+    const cssHeight = rect.height || this.canvas.clientHeight || this.logicalHeight || 720;
+    const dpr = Math.min((typeof window !== "undefined" && window.devicePixelRatio) || 1, 2);
+
+    const targetWidth = Math.max(this.logicalWidth || 640, Math.round(cssWidth * dpr));
+    const targetHeight = Math.max(this.logicalHeight || 720, Math.round(cssHeight * dpr));
+
+    if (this.canvas.width !== targetWidth || this.canvas.height !== targetHeight) {
+      this.canvas.width = targetWidth;
+      this.canvas.height = targetHeight;
+    }
   }
 
   initConfetti() {
@@ -375,6 +479,13 @@ export class ReactorRushEngine {
   update(dt) {
     this.totalTime += dt;
     this.stageTime += dt;
+
+    // Advance all animated spritesheet controllers
+    if (this.animators) {
+      for (const anim of Object.values(this.animators)) {
+        anim.update(dt);
+      }
+    }
 
     // Cinematic transition progress & screen shake decay
     if (this.transition.active) {
@@ -730,8 +841,14 @@ export class ReactorRushEngine {
 
   render(ctx, W, H, dt) {
     this.ctx = ctx;
-    this.W = W;
-    this.H = H;
+    this.setupHiDPI();
+    this.W = W || 640;
+    this.H = H || 720;
+
+    if (ctx && ctx.imageSmoothingEnabled !== undefined) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
 
     let shaking = false;
     if (this.screenShake > 0) {
@@ -902,34 +1019,73 @@ export class ReactorRushEngine {
     if (isNaN(roundTimeLeft)) roundTimeLeft = 0;
 
     // Pill 1: Round / Stage Badge (Left)
-    const p1W = 140;
+    const p1W = 145;
     const p1X = 24;
-    ctx.fillStyle = "rgba(10, 16, 36, 0.75)";
+    ctx.save();
+    ctx.fillStyle = "rgba(9, 14, 28, 0.90)";
     ctx.strokeStyle = stageColor;
     ctx.lineWidth = 1.5;
+    ctx.shadowColor = stageColor;
+    ctx.shadowBlur = 8;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(p1X, pillY, p1W, pillH, 17);
     else ctx.rect(p1X, pillY, p1W, pillH);
     ctx.fill();
     ctx.stroke();
 
+    // Cyber LED indicator dot
+    ctx.fillStyle = stageColor;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(p1X + 18, pillY + pillH / 2, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
     ctx.font = "900 13px 'JetBrains Mono', monospace";
     ctx.fillStyle = stageColor;
     ctx.textAlign = "center";
-    ctx.fillText(stageLabel, p1X + p1W / 2, pillY + 22);
+    ctx.fillText(stageLabel, p1X + p1W / 2 + 8, pillY + 22);
+    ctx.restore();
 
-    // Pill 2: Countdown Timer (Center)
+    // Pill 2: Countdown Timer (Center - Ultra Sharp Vector Stopwatch)
     const p2W = 150;
     const p2X = W / 2 - p2W / 2;
     const isUrgent = roundTimeLeft <= 5;
     const timerColor = isUrgent ? "#ef4444" : "#ffffff";
-    ctx.fillStyle = isUrgent ? "rgba(239, 68, 68, 0.25)" : "rgba(10, 16, 36, 0.75)";
-    ctx.strokeStyle = isUrgent ? "#ef4444" : "rgba(255, 255, 255, 0.25)";
+    const timerBorder = isUrgent ? "#ef4444" : "rgba(103, 232, 249, 0.5)";
+
+    ctx.save();
+    ctx.fillStyle = isUrgent ? "rgba(239, 68, 68, 0.3)" : "rgba(9, 14, 28, 0.90)";
+    ctx.strokeStyle = timerBorder;
     ctx.lineWidth = 1.5;
+    ctx.shadowColor = timerBorder;
+    ctx.shadowBlur = isUrgent ? 12 : 6;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(p2X, pillY, p2W, pillH, 17);
     else ctx.rect(p2X, pillY, p2W, pillH);
     ctx.fill();
+    ctx.stroke();
+
+    // Vector Stopwatch Icon (Zero Emoji)
+    const clockX = p2X + 22;
+    const clockY = pillY + pillH / 2;
+    ctx.strokeStyle = timerColor;
+    ctx.lineWidth = 1.8;
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(clockX, clockY, 6.5, 0, Math.PI * 2);
+    ctx.stroke();
+    // Clock hands
+    ctx.beginPath();
+    ctx.moveTo(clockX, clockY);
+    ctx.lineTo(clockX, clockY - 3.8);
+    ctx.moveTo(clockX, clockY);
+    ctx.lineTo(clockX + 3.2, clockY);
+    ctx.stroke();
+    // Top stem
+    ctx.beginPath();
+    ctx.moveTo(clockX - 1.5, clockY - 8.5);
+    ctx.lineTo(clockX + 1.5, clockY - 8.5);
     ctx.stroke();
 
     const min = String(Math.floor(roundTimeLeft / 60)).padStart(2, "0");
@@ -937,24 +1093,43 @@ export class ReactorRushEngine {
     ctx.font = "800 14px 'JetBrains Mono', monospace";
     ctx.fillStyle = timerColor;
     ctx.textAlign = "center";
-    ctx.fillText(`⏱ ${min}:${sec}`, p2X + p2W / 2, pillY + 22);
+    ctx.fillText(`${min}:${sec}`, p2X + p2W / 2 + 10, pillY + 22);
+    ctx.restore();
 
-    // Pill 3: Total Team Score (Right)
-    const p3W = 160;
+    // Pill 3: Total Team Score (Right - Glowing Amber Cyber Pill)
+    const p3W = 165;
     const p3X = W - 24 - p3W;
-    ctx.fillStyle = "rgba(10, 16, 36, 0.75)";
-    ctx.strokeStyle = "rgba(250, 204, 21, 0.6)";
+    ctx.save();
+    ctx.fillStyle = "rgba(9, 14, 28, 0.90)";
+    ctx.strokeStyle = "rgba(250, 204, 21, 0.75)";
     ctx.lineWidth = 1.5;
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 8;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(p3X, pillY, p3W, pillH, 17);
     else ctx.rect(p3X, pillY, p3W, pillH);
     ctx.fill();
     ctx.stroke();
 
+    // Golden Diamond Vector Icon
+    const diamondX = p3X + 20;
+    const diamondY = pillY + pillH / 2;
+    ctx.fillStyle = "#facc15";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.moveTo(diamondX, diamondY - 5.5);
+    ctx.lineTo(diamondX + 5, diamondY);
+    ctx.lineTo(diamondX, diamondY + 5.5);
+    ctx.lineTo(diamondX - 5, diamondY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
     ctx.font = "900 13px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#facc15";
     ctx.textAlign = "center";
-    ctx.fillText(`SCORE: ${this.totalScore}`, p3X + p3W / 2, pillY + 22);
+    ctx.fillText(`SCORE: ${this.totalScore}`, p3X + p3W / 2 + 8, pillY + 22);
+    ctx.restore();
 
     ctx.restore();
   }
@@ -1290,9 +1465,21 @@ export class ReactorRushEngine {
     ctx.arc(it.x, it.y, r * 2.0, 0, Math.PI * 2);
     ctx.fill();
 
-    if (!it.isHazard && ctx.drawImage && this.sprites.energyOrb && this.sprites.energyOrb.complete && this.sprites.energyOrb.naturalWidth > 0) {
+    if (!it.isHazard && this.animators && this.animators.energyOrb && this.animators.energyOrb.isReady()) {
+      const orbW = 36 * pulseScale;
+      this.animators.energyOrb.draw(ctx, it.x - orbW / 2, it.y - orbW / 2, orbW, orbW, {
+        glowColor: itemColor,
+        glowBlur: 10
+      });
+    } else if (!it.isHazard && ctx.drawImage && this.sprites.energyOrb && this.sprites.energyOrb.complete && this.sprites.energyOrb.naturalWidth > 0) {
       const orbW = 34 * pulseScale;
       ctx.drawImage(this.sprites.energyOrb, it.x - orbW / 2, it.y - orbW / 2, orbW, orbW);
+    } else if (!it.isHazard && this.animators && this.animators.energyOrb) {
+      const orbW = 34 * pulseScale;
+      this.animators.energyOrb.draw(ctx, it.x - orbW / 2, it.y - orbW / 2, orbW, orbW, {
+        glowColor: itemColor,
+        glowBlur: 8
+      });
     } else {
       ctx.fillStyle = itemColor;
       ctx.strokeStyle = "#ffffff";
@@ -1749,10 +1936,20 @@ export class ReactorRushEngine {
     const champPair = this.getActivePair();
 
     // Central Trophy on 1st Tier Pedestal
-    if (ctx.drawImage && this.sprites.champTrophy && this.sprites.champTrophy.complete && this.sprites.champTrophy.naturalWidth > 0) {
-      const trophyW = 125;
-      const trophyH = 180;
+    const trophyW = 125;
+    const trophyH = 180;
+    if (this.animators && this.animators.champTrophy && this.animators.champTrophy.isReady()) {
+      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH, {
+        glowColor: "#facc15",
+        glowBlur: 16
+      });
+    } else if (ctx.drawImage && this.sprites.champTrophy && this.sprites.champTrophy.complete && this.sprites.champTrophy.naturalWidth > 0) {
       ctx.drawImage(this.sprites.champTrophy, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH);
+    } else if (this.animators && this.animators.champTrophy) {
+      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH, {
+        glowColor: "#facc15",
+        glowBlur: 12
+      });
     }
 
     this.drawMechaPilotKart(ctx, W / 2 - 110, 545, "cyan", {
@@ -1897,8 +2094,9 @@ export class ReactorRushEngine {
     ctx.rotate(steerTilt);
     ctx.translate(0, idleBob);
 
-    // Determine Stage-Appropriate Authentic Sprite
+    // Determine Stage-Appropriate Authentic Sprite & Spritesheet Animator
     let sprite = null;
+    let animator = null;
     let targetW = 140;
     let targetH = 194;
     let anchorYRatio = 0.86;
@@ -1909,28 +2107,45 @@ export class ReactorRushEngine {
       targetH = 190;
       anchorYRatio = 0.88;
     } else if (options.isCooling || options.isWaving || this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
+      animator = this.animators ? (isCyan ? this.animators.cryoCyan : this.animators.cryoPink) : null;
       sprite = isCyan ? this.sprites.cryoCyan : this.sprites.cryoPink;
       targetW = 165;
       targetH = 126;
       anchorYRatio = 0.90;
     } else if (options.isCircuit || options.handsRaised || this.stage === REACTOR_STAGES.ROUND_2_CIRCUIT) {
+      animator = this.animators ? (isCyan ? this.animators.circuitCyan : this.animators.circuitPink) : null;
       sprite = isCyan ? this.sprites.circuitCyan : this.sprites.circuitPink;
       targetW = 165;
       targetH = 122;
       anchorYRatio = 0.92;
     } else {
+      animator = this.animators ? (isCyan ? this.animators.kartCyan : this.animators.kartPink) : null;
       sprite = isCyan ? this.sprites.kartCyan : this.sprites.kartPink;
       targetW = 140;
       targetH = 194;
       anchorYRatio = 0.86;
     }
 
-    const hasSprite = Boolean(ctx.drawImage && sprite && sprite.complete && sprite.naturalWidth > 0);
+    const drawX = -targetW / 2;
+    const drawY = -targetH * anchorYRatio;
 
-    if (hasSprite) {
-      const drawX = -targetW / 2;
-      const drawY = -targetH * anchorYRatio;
+    // Caught energy combo scale pulse
+    if (options.justCaught && ctx.scale) {
+      ctx.scale(1.08, 1.08);
+    }
+
+    if (animator && animator.isReady()) {
+      animator.draw(ctx, drawX, drawY, targetW, targetH, {
+        glowColor: primaryColor,
+        glowBlur: options.justCaught ? 18 : 8
+      });
+    } else if (ctx.drawImage && sprite && sprite.complete && sprite.naturalWidth > 0) {
       ctx.drawImage(sprite, drawX, drawY, targetW, targetH);
+    } else if (animator) {
+      animator.draw(ctx, drawX, drawY, targetW, targetH, {
+        glowColor: primaryColor,
+        glowBlur: 6
+      });
     } else {
       // 5. Heavy Off-Road Cyber Wheels (Left & Right)
       this.drawCyberWheel(ctx, -30, 8, primaryColor, this.totalTime);

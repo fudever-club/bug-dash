@@ -1,0 +1,268 @@
+{
+  "version": "2.0.0",
+  "system": "Reactor Rush / Bug Dash Multi-Frame Animation Engine",
+  "craftsman": "FU-DEVER 3D Game Art & Multi-Frame Sprite Sheet Craftsman",
+  "aesthetic": "Stylized 3D Cel-shaded, Clean Graphic Vector, Zero AI Slop",
+  "brandTokens": {
+    "deepSpace": "#070A12",
+    "surfaceCard": "#0F172A",
+    "fptOrange": "#F26F21",
+    "deverCyan": "#00E5FF",
+    "deverMagenta": "#FF2A85",
+    "stemGold": "#FFD600",
+    "freezeIce": "#70E1FF",
+    "crispWhite": "#FFFFFF"
+  },
+  "backgroundPlates": {
+    "round1": {
+      "file": "assets/reactor/round1_bg.jpg",
+      "width": 1280,
+      "height": 1440,
+      "aspectRatio": "8:9",
+      "theme": "Power Grid & Magnetic Accelerator"
+    },
+    "round2": {
+      "file": "assets/reactor/round2_bg.jpg",
+      "width": 1280,
+      "height": 1440,
+      "aspectRatio": "8:9",
+      "theme": "Duo Arc Capacitor & Circuit Terminal"
+    },
+    "round3": {
+      "file": "assets/reactor/round3_bg.jpg",
+      "width": 1280,
+      "height": 1440,
+      "aspectRatio": "8:9",
+      "theme": "Cryo Sub-Zero Reactor Core"
+    },
+    "victory": {
+      "file": "assets/reactor/victory_bg.jpg",
+      "width": 1280,
+      "height": 1440,
+      "aspectRatio": "8:9",
+      "theme": "STEM Fair 2026 Champion Victory Stage"
+    }
+  },
+  "spriteSheets": {
+    "kartCyan": {
+      "file": "assets/reactor/sheet_kart_cyan.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "idle": [
+          0
+        ],
+        "drive": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "boost": [
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Xe idle nhịp nhàng, đèn LED sáng dịu",
+        "Frame 1: Bánh xe xoay phát sáng hồ quang, thân xe nhún nhẹ",
+        "Frame 2: Ăng-ten và ống hút rung lắc cơ khí, đèn pha lóe sáng",
+        "Frame 3: Luồng phản lực phía sau bốc nhẹ, lốp xe hoàn tất 1 vòng quay"
+      ]
+    },
+    "kartPink": {
+      "file": "assets/reactor/sheet_kart_pink.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "idle": [
+          0
+        ],
+        "drive": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "boost": [
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Xe idle nhịp nhàng, đèn LED sáng dịu",
+        "Frame 1: Bánh xe xoay phát sáng hồ quang, thân xe nhún nhẹ",
+        "Frame 2: Ăng-ten và ống hút rung lắc cơ khí, đèn pha lóe sáng",
+        "Frame 3: Luồng phản lực phía sau bốc nhẹ, lốp xe hoàn tất 1 vòng quay"
+      ]
+    },
+    "circuitCyan": {
+      "file": "assets/reactor/sheet_circuit_cyan.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "standby": [
+          0
+        ],
+        "clampAction": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Gập tay cơ khí, trạng thái chờ",
+        "Frame 1: Vươn kẹp phóng tia lửa nhỏ",
+        "Frame 2: Kẹp chặt chốt điện hồ quang cực mạnh",
+        "Frame 3: Dòng điện chạy qua thân rô-bốt, giật lùi cơ học"
+      ]
+    },
+    "circuitPink": {
+      "file": "assets/reactor/sheet_circuit_pink.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "standby": [
+          0
+        ],
+        "clampAction": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Gập tay cơ khí, trạng thái chờ",
+        "Frame 1: Vươn kẹp phóng tia lửa nhỏ",
+        "Frame 2: Kẹp chặt chốt điện hồ quang cực mạnh",
+        "Frame 3: Dòng điện chạy qua thân rô-bốt, giật lùi cơ học"
+      ]
+    },
+    "cryoCyan": {
+      "file": "assets/reactor/sheet_cryo_cyan.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "idle": [
+          0
+        ],
+        "frostBlast": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Nạp khí lạnh, khoang làm mát phát sáng",
+        "Frame 1: Nòng súng lùi giật mở van, phóng tia sương băng",
+        "Frame 2: Sóng băng tuyết -196°C bùng nổ cực mạnh",
+        "Frame 3: Xả hơi sương mù, nòng súng trở về vị trí"
+      ]
+    },
+    "cryoPink": {
+      "file": "assets/reactor/sheet_cryo_pink.png",
+      "sheetWidth": 640,
+      "sheetHeight": 160,
+      "frameWidth": 160,
+      "frameHeight": 160,
+      "totalFrames": 4,
+      "fps": 8,
+      "animations": {
+        "idle": [
+          0
+        ],
+        "frostBlast": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Nạp khí lạnh, khoang làm mát phát sáng",
+        "Frame 1: Nòng súng lùi giật mở van, phóng tia sương băng",
+        "Frame 2: Sóng băng tuyết -196°C bùng nổ cực mạnh",
+        "Frame 3: Xả hơi sương mù, nòng súng trở về vị trí"
+      ]
+    },
+    "energyOrb": {
+      "file": "assets/reactor/sheet_energy_orb.png",
+      "sheetWidth": 384,
+      "sheetHeight": 64,
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "totalFrames": 6,
+      "fps": 12,
+      "animations": {
+        "spin": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Vành đai 0°, lõi plasma 1.0",
+        "Frame 1: Vành đai xoay +30°, electron di chuyển",
+        "Frame 2: Vành đai xoay +60°, góc nhìn 3D chiều sâu",
+        "Frame 3: Vành đai xoay +90°, góc nghiêng đối cực",
+        "Frame 4: Vành đai xoay +120°, electron qua mặt sau",
+        "Frame 5: Vành đai xoay +150°, hoàn tất chu kỳ 180° đối xứng"
+      ]
+    },
+    "champTrophy": {
+      "file": "assets/reactor/sheet_champ_trophy.png",
+      "sheetWidth": 512,
+      "sheetHeight": 128,
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "totalFrames": 4,
+      "fps": 6,
+      "animations": {
+        "shimmer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "framesDescription": [
+        "Frame 0: Cúp vàng hoàng kim, ánh kim tĩnh và vệt phản quang",
+        "Frame 1: Ngôi sao 4 cánh lấp lánh ở quai cúp bên trái",
+        "Frame 2: Ngôi sao lấp lánh lóe sáng ở đỉnh cúp / biểu tượng STEM",
+        "Frame 3: Ngôi sao lấp lánh lóe sáng ở quai cúp bên phải & bệ cúp"
+      ]
+    }
+  },
+  "hudAssets": {
+    "roundBadge": "assets/reactor/hud_round_badge.png",
+    "timerCapsule": "assets/reactor/hud_timer_capsule.png",
+    "scorePill": "assets/reactor/hud_score_pill.png",
+    "comboMultiplier": "assets/reactor/hud_combo_multiplier.png"
+  }
+}

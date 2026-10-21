@@ -200,7 +200,8 @@ function log(msg) {
 }
 
 async function waitImages(engine) {
-  const imgs = [...Object.values(engine.bgImages || {}), ...Object.values(engine.sprites || {})];
+  const animImgs = Object.values(engine.animators || {}).map(a => a.image).filter(Boolean);
+  const imgs = [...Object.values(engine.bgImages || {}), ...Object.values(engine.sprites || {}), ...animImgs];
   await Promise.all(imgs.map(img => {
     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
     return new Promise((resolve) => {
@@ -232,6 +233,7 @@ async function run() {
   ];
   e1.r1SyncActive = true;
   e1.r1SyncTimer = 1.0;
+  e1.update(0.1);
   e1.render(c1.getContext("2d"), 640, 720, 0.016);
   log("✓ Đã render Round 1: Energy Catch");
 
@@ -245,6 +247,7 @@ async function run() {
   e2.r2Charge = 0.8;
   e2.r2PulsesCompleted = 2;
   e2.totalScore = 820;
+  e2.update(0.1);
   e2.render(c2.getContext("2d"), 640, 720, 0.016);
   log("✓ Đã render Round 2: Duo Circuit");
 
@@ -258,6 +261,7 @@ async function run() {
   e3.p1.waveVelocity = 120;
   e3.p2.waveVelocity = 120;
   e3.totalScore = 1240;
+  e3.update(0.1);
   e3.render(c3.getContext("2d"), 640, 720, 0.016);
   log("✓ Đã render Round 3: Cool The Core");
 
@@ -269,6 +273,7 @@ async function run() {
   e4.totalScore = 1850;
   e4.displayScore = 1850;
   e4.teamMembers = ["Minh Nam", "Quang Nhật", "Đình Khoa", "Thái Hưng"];
+  e4.update(0.1);
   e4.render(c4.getContext("2d"), 640, 720, 0.016);
   log("✓ Đã render Mission Complete Victory");
 
