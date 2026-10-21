@@ -37,6 +37,36 @@ export class ReactorRushEngine {
     this.bgImages.round3.src = basePath + "assets/reactor/round3_bg.jpg";
     this.bgImages.victory.src = basePath + "assets/reactor/victory_bg.jpg";
 
+    // Preload Authentic Cel-Shaded Character Sprites & Game Props (Zero AI Slop)
+    this.sprites = {
+      kartCyan: new ImageCtor(),
+      kartPink: new ImageCtor(),
+      circuitCyan: new ImageCtor(),
+      circuitPink: new ImageCtor(),
+      cryoCyan: new ImageCtor(),
+      cryoPink: new ImageCtor(),
+      champCyan: new ImageCtor(),
+      champPink: new ImageCtor(),
+      champTrophy: new ImageCtor(),
+      syncCombo: new ImageCtor(),
+      circuitComplete: new ImageCtor(),
+      finalBoost: new ImageCtor(),
+      energyOrb: new ImageCtor()
+    };
+    this.sprites.kartCyan.src = basePath + "assets/reactor/sprite_kart_cyan.png";
+    this.sprites.kartPink.src = basePath + "assets/reactor/sprite_kart_pink.png";
+    this.sprites.circuitCyan.src = basePath + "assets/reactor/sprite_circuit_cyan.png";
+    this.sprites.circuitPink.src = basePath + "assets/reactor/sprite_circuit_pink.png";
+    this.sprites.cryoCyan.src = basePath + "assets/reactor/sprite_cryo_cyan.png";
+    this.sprites.cryoPink.src = basePath + "assets/reactor/sprite_cryo_pink.png";
+    this.sprites.champCyan.src = basePath + "assets/reactor/sprite_champ_cyan.png";
+    this.sprites.champPink.src = basePath + "assets/reactor/sprite_champ_pink.png";
+    this.sprites.champTrophy.src = basePath + "assets/reactor/sprite_champ_trophy.png";
+    this.sprites.syncCombo.src = basePath + "assets/reactor/sprite_sync_combo.png";
+    this.sprites.circuitComplete.src = basePath + "assets/reactor/sprite_circuit_complete.png";
+    this.sprites.finalBoost.src = basePath + "assets/reactor/sprite_final_boost.png";
+    this.sprites.energyOrb.src = basePath + "assets/reactor/sprite_energy_orb.png";
+
     this.stage = REACTOR_STAGES.CALIBRATION;
     this.stageTime = 0;
     this.totalTime = 0;
@@ -838,57 +868,93 @@ export class ReactorRushEngine {
   }
 
   renderTopHeader(ctx, W) {
+    if (this.stage === REACTOR_STAGES.MISSION_COMPLETE) {
+      // Suppress top HUD pills during Victory Stage so the massive championship banner is unhindered
+      return;
+    }
+
     ctx.save();
-    ctx.fillStyle = "rgba(10, 16, 36, 0.90)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.32)";
+    const pillY = 14;
+    const pillH = 34;
+
+    // Determine Stage Name, Color & Time Left
+    let stageLabel = "CALIBRATION";
+    let stageColor = "#38bdf8";
+    let roundTimeLeft = Math.max(0, Math.ceil(REACTOR_CONFIG.calibrationDuration - (this.stageTime || 0)));
+
+    if (this.stage === REACTOR_STAGES.ROUND_1_ENERGY) {
+      stageLabel = "ROUND 01";
+      stageColor = "#facc15";
+      roundTimeLeft = Math.max(0, Math.ceil(REACTOR_CONFIG.round1Duration - (this.stageTime || 0)));
+    } else if (this.stage === REACTOR_STAGES.SWAP_ROUND_2 || this.stage === REACTOR_STAGES.SWAP_ROUND_3) {
+      stageLabel = "ĐỔI CA";
+      stageColor = "#fb923c";
+      roundTimeLeft = Math.max(0, Math.ceil((this.swapDuration || 6) - (this.stageTime || 0)));
+    } else if (this.stage === REACTOR_STAGES.ROUND_2_CIRCUIT) {
+      stageLabel = "ROUND 02";
+      stageColor = "#00f5ff";
+      roundTimeLeft = Math.max(0, Math.ceil(REACTOR_CONFIG.round2Duration - (this.stageTime || 0)));
+    } else if (this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
+      stageLabel = "ROUND 03";
+      stageColor = "#ec4899";
+      roundTimeLeft = Math.max(0, Math.ceil(REACTOR_CONFIG.round3Duration - (this.stageTime || 0)));
+    }
+    if (isNaN(roundTimeLeft)) roundTimeLeft = 0;
+
+    // Pill 1: Round / Stage Badge (Left)
+    const p1W = 140;
+    const p1X = 24;
+    ctx.fillStyle = "rgba(10, 16, 36, 0.75)";
+    ctx.strokeStyle = stageColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(16, 12, W - 32, 54, 8);
+    if (ctx.roundRect) ctx.roundRect(p1X, pillY, p1W, pillH, 17);
+    else ctx.rect(p1X, pillY, p1W, pillH);
     ctx.fill();
     ctx.stroke();
 
-    // Left brand text
-    ctx.font = "900 13px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("FU-DEVER", 32, 36);
+    ctx.font = "900 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = stageColor;
+    ctx.textAlign = "center";
+    ctx.fillText(stageLabel, p1X + p1W / 2, pillY + 22);
 
-    ctx.font = "700 11px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillText("SCIENCE ARENA", 108, 36);
+    // Pill 2: Countdown Timer (Center)
+    const p2W = 150;
+    const p2X = W / 2 - p2W / 2;
+    const isUrgent = roundTimeLeft <= 5;
+    const timerColor = isUrgent ? "#ef4444" : "#ffffff";
+    ctx.fillStyle = isUrgent ? "rgba(239, 68, 68, 0.25)" : "rgba(10, 16, 36, 0.75)";
+    ctx.strokeStyle = isUrgent ? "#ef4444" : "rgba(255, 255, 255, 0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(p2X, pillY, p2W, pillH, 17);
+    else ctx.rect(p2X, pillY, p2W, pillH);
+    ctx.fill();
+    ctx.stroke();
 
-    // Center Stage Indicator & Active Team
-    let stageTitle = "CALIBRATION";
-    let stageIndex = "00 / 03";
-    if (this.stage === REACTOR_STAGES.ROUND_1_ENERGY) {
-      stageTitle = "ROUND 01 — ENERGY CATCH";
-      stageIndex = "01 / 03";
-    } else if (this.stage === REACTOR_STAGES.SWAP_ROUND_2) {
-      stageTitle = "ĐỔI CA — CHUẨN BỊ VÒNG 2";
-      stageIndex = "ĐỔI CA";
-    } else if (this.stage === REACTOR_STAGES.ROUND_2_CIRCUIT) {
-      stageTitle = "ROUND 02 — DUO CIRCUIT";
-      stageIndex = "02 / 03";
-    } else if (this.stage === REACTOR_STAGES.SWAP_ROUND_3) {
-      stageTitle = "ĐỔI CA — CHUẨN BỊ VÒNG 3";
-      stageIndex = "ĐỔI CA";
-    } else if (this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
-      stageTitle = "ROUND 03 — COOL THE CORE";
-      stageIndex = "03 / 03";
-    } else if (this.stage === REACTOR_STAGES.MISSION_COMPLETE) {
-      stageTitle = "MISSION COMPLETE!";
-      stageIndex = "HOÀN TẤT";
-    }
+    const min = String(Math.floor(roundTimeLeft / 60)).padStart(2, "0");
+    const sec = String(roundTimeLeft % 60).padStart(2, "0");
+    ctx.font = "800 14px 'JetBrains Mono', monospace";
+    ctx.fillStyle = timerColor;
+    ctx.textAlign = "center";
+    ctx.fillText(`⏱ ${min}:${sec}`, p2X + p2W / 2, pillY + 22);
 
-    ctx.font = "800 12px 'JetBrains Mono', monospace";
+    // Pill 3: Total Team Score (Right)
+    const p3W = 160;
+    const p3X = W - 24 - p3W;
+    ctx.fillStyle = "rgba(10, 16, 36, 0.75)";
+    ctx.strokeStyle = "rgba(250, 204, 21, 0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(p3X, pillY, p3W, pillH, 17);
+    else ctx.rect(p3X, pillY, p3W, pillH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = "900 13px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#facc15";
     ctx.textAlign = "center";
-    ctx.fillText(`${this.teamName} • ${stageIndex}`, W / 2, 34);
-
-    // Right status pill
-    ctx.textAlign = "right";
-    ctx.font = "800 11px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#4ade80";
-    ctx.fillText("● STEM FAIR 2026", W - 32, 36);
+    ctx.fillText(`SCORE: ${this.totalScore}`, p3X + p3W / 2, pillY + 22);
 
     ctx.restore();
   }
@@ -1019,16 +1085,16 @@ export class ReactorRushEngine {
     ctx.save();
     const pair = this.getActivePair();
 
-    ctx.font = "900 20px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 15px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.textAlign = "left";
-    ctx.fillText("ROUND 01 — ENERGY CATCH", 32, 98);
+    ctx.fillText("HỨNG NĂNG LƯỢNG • NÉ GAI ĐỎ", 32, 72);
 
-    ctx.font = "600 13px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.fillText("Dùng tay điều khiển robot • Bắt năng lượng • Tránh vật phẩm đỏ", 32, 122);
+    ctx.font = "600 12px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+    ctx.fillText("Lái robot sang trái/phải • Cùng hứng = SYNC COMBO", 32, 92);
 
-    this.renderMiniCameraPIP(ctx, W - 145, 82, 120, 68);
+    this.renderMiniCameraPIP(ctx, W - 145, 60, 120, 68);
 
     // Center divider line
     ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
@@ -1056,6 +1122,16 @@ export class ReactorRushEngine {
 
     if (this.r1SyncActive) {
       this.renderSyncArc(ctx);
+      if (ctx.drawImage && this.sprites.syncCombo && this.sprites.syncCombo.complete && this.sprites.syncCombo.naturalWidth > 0) {
+        ctx.save();
+        const burstW = 200;
+        const burstH = 195;
+        const pulse = 1.0 + Math.sin(this.totalTime * 14) * 0.08;
+        ctx.translate(W / 2, 280);
+        ctx.scale(pulse, pulse);
+        ctx.drawImage(this.sprites.syncCombo, -burstW / 2, -burstH / 2, burstW, burstH);
+        ctx.restore();
+      }
     }
 
     // Render Mecha Pilot Karts on floor with Nametags & Dynamic Steering Tilt
@@ -1202,30 +1278,36 @@ export class ReactorRushEngine {
 
   drawR1Item(ctx, it) {
     ctx.save();
-    const pulseScale = 1.0 + Math.sin(it.pulse) * 0.12;
+    const itemColor = it.color || (it.isHazard ? "#ef4444" : "#facc15");
+    const pulseScale = 1.0 + Math.sin(it.pulse || 0) * 0.12;
     const r = it.isHazard ? 18 * pulseScale : 16 * pulseScale;
 
     const glow = ctx.createRadialGradient(it.x, it.y, r * 0.2, it.x, it.y, r * 2.0);
-    glow.addColorStop(0, it.color);
+    glow.addColorStop(0, itemColor);
     glow.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(it.x, it.y, r * 2.0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = it.color;
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(it.x, it.y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    if (!it.isHazard && ctx.drawImage && this.sprites.energyOrb && this.sprites.energyOrb.complete && this.sprites.energyOrb.naturalWidth > 0) {
+      const orbW = 34 * pulseScale;
+      ctx.drawImage(this.sprites.energyOrb, it.x - orbW / 2, it.y - orbW / 2, orbW, orbW);
+    } else {
+      ctx.fillStyle = itemColor;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(it.x, it.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
 
-    ctx.font = "900 15px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#0a0f1d";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(it.isHazard ? "!" : "+", it.x, it.y);
+      ctx.font = "900 15px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = "#0a0f1d";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(it.isHazard ? "!" : "+", it.x, it.y);
+    }
 
     ctx.restore();
   }
@@ -1240,12 +1322,15 @@ export class ReactorRushEngine {
     ctx.quadraticCurveTo(this.W / 2, this.p1.y - 120, this.p2.x, this.p2.y - 25);
     ctx.stroke();
 
-    ctx.font = "900 24px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#facc15";
-    ctx.textAlign = "center";
-    ctx.shadowColor = "#facc15";
-    ctx.shadowBlur = 15;
-    ctx.fillText("SYNC COMBO +15!", this.W / 2, this.p1.y - 130);
+    const hasSyncSprite = Boolean(ctx.drawImage && this.sprites.syncCombo && this.sprites.syncCombo.complete && this.sprites.syncCombo.naturalWidth > 0);
+    if (!hasSyncSprite) {
+      ctx.font = "900 24px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = "#facc15";
+      ctx.textAlign = "center";
+      ctx.shadowColor = "#facc15";
+      ctx.shadowBlur = 15;
+      ctx.fillText("SYNC COMBO +15!", this.W / 2, this.p1.y - 130);
+    }
 
     ctx.restore();
   }
@@ -1255,14 +1340,16 @@ export class ReactorRushEngine {
     ctx.save();
     const pair = this.getActivePair();
 
-    ctx.font = "900 20px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 15px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.textAlign = "left";
-    ctx.fillText("ROUND 02 — DUO CIRCUIT", 32, 98);
+    ctx.fillText("MẠCH ĐIỆN NỐI TIẾP • 2 CÔNG TẮC", 32, 72);
 
-    ctx.font = "600 13px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.fillText("Cả hai cùng giơ tay để đóng công tắc và thắp sáng bóng đèn", 32, 122);
+    ctx.font = "600 12px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+    ctx.fillText("Cả hai cùng giơ tay để đóng mạch và thắp sáng bóng đèn", 32, 92);
+
+    this.renderMiniCameraPIP(ctx, W - 145, 60, 120, 68);
 
     const centerY = 330;
     const bulbX = W / 2;
@@ -1294,11 +1381,17 @@ export class ReactorRushEngine {
 
     ctx.textAlign = "center";
     if (isBothOn || this.r2JustCompletedTimer > 0) {
-      ctx.font = "900 22px 'Be Vietnam Pro', sans-serif";
-      ctx.fillStyle = "#facc15";
-      ctx.shadowColor = "#facc15";
-      ctx.shadowBlur = 12;
-      ctx.fillText("CIRCUIT COMPLETE!", bulbX, centerY + 105);
+      if (ctx.drawImage && this.sprites.circuitComplete && this.sprites.circuitComplete.complete && this.sprites.circuitComplete.naturalWidth > 0) {
+        const cw = 200;
+        const ch = 116;
+        ctx.drawImage(this.sprites.circuitComplete, bulbX - cw / 2, centerY + 45, cw, ch);
+      } else {
+        ctx.font = "900 22px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = "#facc15";
+        ctx.shadowColor = "#facc15";
+        ctx.shadowBlur = 12;
+        ctx.fillText("CIRCUIT COMPLETE!", bulbX, centerY + 105);
+      }
     } else {
       ctx.font = "800 14px 'Be Vietnam Pro', sans-serif";
       ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -1402,16 +1495,16 @@ export class ReactorRushEngine {
     ctx.save();
     const pair = this.getActivePair();
 
-    ctx.font = "900 20px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 15px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.textAlign = "left";
-    ctx.fillText("ROUND 03 — COOL THE CORE", 32, 98);
+    ctx.fillText("HẠ NHIỆT LÒ PHẢN ỨNG • CRYO BLAST", 32, 72);
 
-    ctx.font = "600 13px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.fillText("Phối hợp làm mát reactor bằng chuyển động tay", 32, 122);
+    ctx.font = "600 12px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+    ctx.fillText("Vẫy tay liên tục để xả khí lạnh dập lửa nguy hiểm", 32, 92);
 
-    this.renderMiniCameraPIP(ctx, W - 145, 82, 120, 68);
+    this.renderMiniCameraPIP(ctx, W - 145, 60, 120, 68);
 
     const coreX = W / 2;
     const coreY = 320;
@@ -1456,10 +1549,16 @@ export class ReactorRushEngine {
     ctx.fillText("< <", W - 225, 330);
 
     if (this.finalBoostActive) {
-      ctx.font = "900 18px 'JetBrains Mono', monospace";
-      ctx.fillStyle = "#facc15";
-      ctx.textAlign = "center";
-      ctx.fillText("⚡ FINAL BOOST!", coreX, 195);
+      if (ctx.drawImage && this.sprites.finalBoost && this.sprites.finalBoost.complete && this.sprites.finalBoost.naturalWidth > 0) {
+        const bw = Math.min(W - 40, 480);
+        const bh = (bw / 670) * 95;
+        ctx.drawImage(this.sprites.finalBoost, W / 2 - bw / 2, 170, bw, bh);
+      } else {
+        ctx.font = "900 18px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#facc15";
+        ctx.textAlign = "center";
+        ctx.fillText("⚡ FINAL BOOST!", coreX, 195);
+      }
     }
 
     // Temperature Bar
@@ -1561,31 +1660,37 @@ export class ReactorRushEngine {
     }
 
     ctx.textAlign = "center";
-    ctx.font = "900 36px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "#facc15";
-    ctx.shadowBlur = 18;
-    ctx.fillText("MISSION COMPLETE!", W / 2, 145);
 
-    ctx.font = "900 18px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#38bdf8";
-    ctx.shadowBlur = 0;
-    ctx.fillText(this.teamName, W / 2, 185);
-
-    // Total Score Number
-    ctx.font = "900 64px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(Math.round(this.displayScore).toLocaleString(), W / 2, 260);
+    // Team Pill
+    const teamBadgeW = 240;
+    const teamBadgeY = 145;
+    ctx.fillStyle = "rgba(10, 16, 36, 0.78)";
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(W / 2 - teamBadgeW / 2, teamBadgeY, teamBadgeW, 30, 15);
+    else ctx.rect(W / 2 - teamBadgeW / 2, teamBadgeY, teamBadgeW, 30);
+    ctx.fill();
+    ctx.stroke();
 
     ctx.font = "800 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillText(`★ TEAM: ${this.teamName}`, W / 2, teamBadgeY + 20);
+
+    // Total Score Number
+    ctx.font = "900 56px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(Math.round(this.displayScore).toLocaleString(), W / 2, 230);
+
+    ctx.font = "800 12.5px 'JetBrains Mono', monospace";
     ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.fillText("TỔNG ĐIỂM TÍCH LŨY CẢ ĐỘI (3 VÒNG)", W / 2, 290);
+    ctx.fillText("TỔNG ĐIỂM TÍCH LŨY CẢ ĐỘI (3 VÒNG)", W / 2, 258);
 
     // Full Team Members Roster Honor Card
     const cardW = 540;
     const cardH = 95;
     const cardX = W / 2 - cardW / 2;
-    const cardY = 315;
+    const cardY = 285;
 
     ctx.fillStyle = "rgba(15, 23, 42, 0.90)";
     ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
@@ -1640,20 +1745,28 @@ export class ReactorRushEngine {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.fillText("• SCIENCE IS FOR EVERYONE •", W / 2, 495);
 
-    // Celebrating Champion Mascot Pair on the 3-Tier Victory Podium
+    // Celebrating Champion Mascot Pair & Golden Trophy on the 3-Tier Victory Podium
     const champPair = this.getActivePair();
-    this.drawMechaPilotKart(ctx, W / 2 - 75, 545, "cyan", {
+
+    // Central Trophy on 1st Tier Pedestal
+    if (ctx.drawImage && this.sprites.champTrophy && this.sprites.champTrophy.complete && this.sprites.champTrophy.naturalWidth > 0) {
+      const trophyW = 125;
+      const trophyH = 180;
+      ctx.drawImage(this.sprites.champTrophy, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH);
+    }
+
+    this.drawMechaPilotKart(ctx, W / 2 - 110, 545, "cyan", {
       handsRaised: true,
       isWinner: true,
-      scale: 1.22,
+      scale: 1.15,
       playerName: champPair.p1Name,
       eyeState: "happy"
     });
 
-    this.drawMechaPilotKart(ctx, W / 2 + 75, 545, "pink", {
+    this.drawMechaPilotKart(ctx, W / 2 + 110, 545, "pink", {
       handsRaised: true,
       isWinner: true,
-      scale: 1.22,
+      scale: 1.15,
       playerName: champPair.p2Name,
       eyeState: "happy"
     });
@@ -1784,112 +1897,148 @@ export class ReactorRushEngine {
     ctx.rotate(steerTilt);
     ctx.translate(0, idleBob);
 
-    // 5. Heavy Off-Road Cyber Wheels (Left & Right)
-    this.drawCyberWheel(ctx, -30, 8, primaryColor, this.totalTime);
-    this.drawCyberWheel(ctx, 30, 8, primaryColor, this.totalTime);
+    // Determine Stage-Appropriate Authentic Sprite
+    let sprite = null;
+    let targetW = 140;
+    let targetH = 194;
+    let anchorYRatio = 0.86;
 
-    // 6. Kart Chassis Lower Body (Cel-shaded dark armor with neon side skirts)
-    ctx.save();
-    ctx.fillStyle = darkMetal;
-    ctx.strokeStyle = "#1e293b";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(-28, 2, 56, 18, [4, 4, 8, 8]);
-    else ctx.rect(-28, 2, 56, 18);
-    ctx.fill();
-    ctx.stroke();
-
-    // Neon Side Skirts & Aerodynamic Fins
-    ctx.fillStyle = primaryColor;
-    ctx.shadowColor = primaryColor;
-    ctx.shadowBlur = 8;
-    ctx.fillRect(-29, 6, 4, 12);
-    ctx.fillRect(25, 6, 4, 12);
-    ctx.shadowBlur = 0;
-
-    // Front Bumper with Team Racing Stripe & Headlights
-    if (ctx.createLinearGradient) {
-      const bumperGrad = ctx.createLinearGradient(0, 12, 0, 24);
-      bumperGrad.addColorStop(0, darkShell);
-      bumperGrad.addColorStop(1, "#0a0f1d");
-      ctx.fillStyle = bumperGrad;
+    if (options.isWinner || this.stage === REACTOR_STAGES.MISSION_COMPLETE) {
+      sprite = isCyan ? this.sprites.champCyan : this.sprites.champPink;
+      targetW = 145;
+      targetH = 190;
+      anchorYRatio = 0.88;
+    } else if (options.isCooling || options.isWaving || this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
+      sprite = isCyan ? this.sprites.cryoCyan : this.sprites.cryoPink;
+      targetW = 165;
+      targetH = 126;
+      anchorYRatio = 0.90;
+    } else if (options.isCircuit || options.handsRaised || this.stage === REACTOR_STAGES.ROUND_2_CIRCUIT) {
+      sprite = isCyan ? this.sprites.circuitCyan : this.sprites.circuitPink;
+      targetW = 165;
+      targetH = 122;
+      anchorYRatio = 0.92;
     } else {
-      ctx.fillStyle = darkShell;
+      sprite = isCyan ? this.sprites.kartCyan : this.sprites.kartPink;
+      targetW = 140;
+      targetH = 194;
+      anchorYRatio = 0.86;
     }
-    ctx.strokeStyle = primaryColor;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(-24, 12, 48, 11, 4);
-    else ctx.rect(-24, 12, 48, 11);
-    ctx.fill();
-    ctx.stroke();
 
-    // Dual Projector LED Headlights
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = primaryColor;
-    ctx.shadowBlur = 12;
-    ctx.fillRect(-20, 15, 7, 4);
-    ctx.fillRect(13, 15, 7, 4);
-    ctx.shadowBlur = 0;
+    const hasSprite = Boolean(ctx.drawImage && sprite && sprite.complete && sprite.naturalWidth > 0);
 
-    // Headlight Beam Projection Cones onto Floor
-    ctx.save();
-    ctx.fillStyle = isCyan ? "rgba(0, 245, 255, 0.16)" : "rgba(255, 42, 141, 0.16)";
-    ctx.beginPath();
-    ctx.moveTo(-20, 19);
-    ctx.lineTo(-34, 44);
-    ctx.lineTo(-6, 44);
-    ctx.closePath();
-    ctx.fill();
+    if (hasSprite) {
+      const drawX = -targetW / 2;
+      const drawY = -targetH * anchorYRatio;
+      ctx.drawImage(sprite, drawX, drawY, targetW, targetH);
+    } else {
+      // 5. Heavy Off-Road Cyber Wheels (Left & Right)
+      this.drawCyberWheel(ctx, -30, 8, primaryColor, this.totalTime);
+      this.drawCyberWheel(ctx, 30, 8, primaryColor, this.totalTime);
 
-    ctx.beginPath();
-    ctx.moveTo(13, 19);
-    ctx.lineTo(6, 44);
-    ctx.lineTo(34, 44);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+      // 6. Kart Chassis Lower Body (Cel-shaded dark armor with neon side skirts)
+      ctx.save();
+      ctx.fillStyle = darkMetal;
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-28, 2, 56, 18, [4, 4, 8, 8]);
+      else ctx.rect(-28, 2, 56, 18);
+      ctx.fill();
+      ctx.stroke();
 
-    // Racing Number Badge (01 for P1, 02 for P2)
-    ctx.font = "900 8.5px 'JetBrains Mono', monospace";
-    ctx.fillStyle = primaryColor;
-    ctx.textAlign = "center";
-    ctx.fillText(isCyan ? "01" : "02", 0, 21);
-    ctx.restore();
+      // Neon Side Skirts & Aerodynamic Fins
+      ctx.fillStyle = primaryColor;
+      ctx.shadowColor = primaryColor;
+      ctx.shadowBlur = 8;
+      ctx.fillRect(-29, 6, 4, 12);
+      ctx.fillRect(25, 6, 4, 12);
+      ctx.shadowBlur = 0;
 
-    // 7. Cockpit Shell & Rollcage
-    ctx.save();
-    ctx.fillStyle = "#0c1527";
-    ctx.strokeStyle = primaryColor;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(-20, -18, 40, 24, 6);
-    else ctx.rect(-20, -18, 40, 24);
-    ctx.fill();
-    ctx.stroke();
+      // Front Bumper with Team Racing Stripe & Headlights
+      if (ctx.createLinearGradient) {
+        const bumperGrad = ctx.createLinearGradient(0, 12, 0, 24);
+        bumperGrad.addColorStop(0, darkShell);
+        bumperGrad.addColorStop(1, "#0a0f1d");
+        ctx.fillStyle = bumperGrad;
+      } else {
+        ctx.fillStyle = darkShell;
+      }
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-24, 12, 48, 11, 4);
+      else ctx.rect(-24, 12, 48, 11);
+      ctx.fill();
+      ctx.stroke();
 
-    // Glowing Dashboard Dials inside Cockpit
-    ctx.fillStyle = "#22c55e";
-    ctx.fillRect(-12, -4, 4, 2);
-    ctx.fillStyle = "#facc15";
-    ctx.fillRect(-6, -4, 4, 2);
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, -4, 12, 2);
-    ctx.restore();
+      // Dual Projector LED Headlights
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = primaryColor;
+      ctx.shadowBlur = 12;
+      ctx.fillRect(-20, 15, 7, 4);
+      ctx.fillRect(13, 15, 7, 4);
+      ctx.shadowBlur = 0;
 
-    // 8. Chibi Mecha Pilot
-    this.drawChibiMechaPilot(ctx, 0, -18, primaryColor, darkShell, lightGlow, options);
+      // Headlight Beam Projection Cones onto Floor
+      ctx.save();
+      ctx.fillStyle = isCyan ? "rgba(0, 245, 255, 0.16)" : "rgba(255, 42, 141, 0.16)";
+      ctx.beginPath();
+      ctx.moveTo(-20, 19);
+      ctx.lineTo(-34, 44);
+      ctx.lineTo(-6, 44);
+      ctx.closePath();
+      ctx.fill();
 
-    // 9. Round-Specific High-Tech Dynamic Equipment
-    if (options.isCatching) {
-      // Round 1: Magneto-Electric Energy Catch Net / Funnel
-      this.drawEnergyCatchNet(ctx, 0, -32, primaryColor, options);
-    } else if (options.isCircuit || options.handsRaised) {
-      // Round 2: Telescopic Crane Arm reaching high
-      this.drawCircuitCraneArm(ctx, 0, -28, primaryColor, options.handsRaised);
-    } else if (options.isWaving || options.isCooling) {
-      // Round 3: Twin Cryo Blaster Cannons
-      this.drawCryoCannons(ctx, primaryColor, options.isWaving);
+      ctx.beginPath();
+      ctx.moveTo(13, 19);
+      ctx.lineTo(6, 44);
+      ctx.lineTo(34, 44);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Racing Number Badge (01 for P1, 02 for P2)
+      ctx.font = "900 8.5px 'JetBrains Mono', monospace";
+      ctx.fillStyle = primaryColor;
+      ctx.textAlign = "center";
+      ctx.fillText(isCyan ? "01" : "02", 0, 21);
+      ctx.restore();
+
+      // 7. Cockpit Shell & Rollcage
+      ctx.save();
+      ctx.fillStyle = "#0c1527";
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-20, -18, 40, 24, 6);
+      else ctx.rect(-20, -18, 40, 24);
+      ctx.fill();
+      ctx.stroke();
+
+      // Glowing Dashboard Dials inside Cockpit
+      ctx.fillStyle = "#22c55e";
+      ctx.fillRect(-12, -4, 4, 2);
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(-6, -4, 4, 2);
+      ctx.fillStyle = primaryColor;
+      ctx.fillRect(0, -4, 12, 2);
+      ctx.restore();
+
+      // 8. Chibi Mecha Pilot
+      this.drawChibiMechaPilot(ctx, 0, -18, primaryColor, darkShell, lightGlow, options);
+
+      // 9. Round-Specific High-Tech Dynamic Equipment
+      if (options.isCatching) {
+        // Round 1: Magneto-Electric Energy Catch Net / Funnel
+        this.drawEnergyCatchNet(ctx, 0, -32, primaryColor, options);
+      } else if (options.isCircuit || options.handsRaised) {
+        // Round 2: Telescopic Crane Arm reaching high
+        this.drawCircuitCraneArm(ctx, 0, -28, primaryColor, options.handsRaised);
+      } else if (options.isWaving || options.isCooling) {
+        // Round 3: Twin Cryo Blaster Cannons
+        this.drawCryoCannons(ctx, primaryColor, options.isWaving);
+      }
     }
 
     // 10. Winner Trophy Star Aura

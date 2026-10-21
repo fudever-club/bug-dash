@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>FU-DEVER Game Visual & Animation Audit</title>
+<style>
+  body {
+    background: #070a13;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 {
+    color: #00f5ff;
+    margin-bottom: 8px;
+  }
+  .desc {
+    color: #94a3b8;
+    margin-bottom: 24px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+  .card {
+    background: #0d1527;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f59e0b;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .card-title span.badge {
+    color: #00f5ff;
+    font-size: 12px;
+  }
+  .comparison {
+    display: flex;
+    gap: 16px;
+  }
+  .pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pane h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+  canvas, img {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    aspect-ratio: 640 / 720;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #000;
+    object-fit: cover;
+  }
+  #statusLog {
+    background: #111827;
+    border: 1px solid #374151;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #10b981;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>⚡ BẢNG ĐỐI CHIẾU THỊ GIÁC GAMEPLAY: MẪU THIẾT KẾ VS THỰC TẾ ENGINE RENDER</h1>
+<p class="desc">Kiểm thử tự động tải asset nền, hoạt ảnh bot và hệ thống render thời gian thực</p>
+
+<div id="statusLog">Đang nạp động cơ và tài nguyên đồ họa...</div>
+
+<div class="grid">
+  <!-- Round 1 -->
+  <div class="card">
+    <div class="card-title">
+      <span>1. Round 1: Energy Catch</span>
+      <span class="badge">Reactor Rush</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎨 Bản Vẽ Mẫu Đã Duyệt (Reference)</h4>
+        <img src="demo_screenshots/01_round1_energy_catch_celshaded.jpg" alt="Round 1 Reference">
+      </div>
+      <div class="pane">
+        <h4>🎮 Engine Render Thực Tế (Live In-Game)</h4>
+        <canvas id="cvsR1" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round 2 -->
+  <div class="card">
+    <div class="card-title">
+      <span>2. Round 2: Duo Circuit</span>
+      <span class="badge">Reactor Rush</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎨 Bản Vẽ Mẫu Đã Duyệt (Reference)</h4>
+        <img src="demo_screenshots/02_round2_duo_circuit_celshaded.jpg" alt="Round 2 Reference">
+      </div>
+      <div class="pane">
+        <h4>🎮 Engine Render Thực Tế (Live In-Game)</h4>
+        <canvas id="cvsR2" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round 3 -->
+  <div class="card">
+    <div class="card-title">
+      <span>3. Round 3: Cool The Core</span>
+      <span class="badge">Reactor Rush</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎨 Bản Vẽ Mẫu Đã Duyệt (Reference)</h4>
+        <img src="demo_screenshots/03_round3_cool_the_core_celshaded.jpg" alt="Round 3 Reference">
+      </div>
+      <div class="pane">
+        <h4>🎮 Engine Render Thực Tế (Live In-Game)</h4>
+        <canvas id="cvsR3" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory -->
+  <div class="card">
+    <div class="card-title">
+      <span>4. Mission Complete: Victory Podium</span>
+      <span class="badge">STEM Fair Stage</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎨 Bản Vẽ Mẫu Đã Duyệt (Reference)</h4>
+        <img src="demo_screenshots/04_mission_complete_official_branding.jpg" alt="Victory Reference">
+      </div>
+      <div class="pane">
+        <h4>🎮 Engine Render Thực Tế (Live In-Game)</h4>
+        <canvas id="cvsVictory" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Slicer -->
+  <div class="card">
+    <div class="card-title">
+      <span>5. Ninja Cyber Buggy</span>
+      <span class="badge">Code Slicer</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎮 Slicer Bot & Laser Blade</h4>
+        <canvas id="cvsSlicer" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flappy Buggy -->
+  <div class="card">
+    <div class="card-title">
+      <span>6. Aviator Cyber Buggy</span>
+      <span class="badge">Flappy Buggy</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎮 Aviator Buggy & Jetpack</h4>
+        <canvas id="cvsFlappy" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { ReactorRushEngine, REACTOR_STAGES } from "./src/engine/ReactorRushEngine.js";
+import { RoadRenderer } from "./src/engine/RoadRenderer.js";
+
+const logEl = document.getElementById("statusLog");
+function log(msg) {
+  logEl.innerHTML += "<br>" + msg;
+}
+
+async function waitImages(engine) {
+  const imgs = [...Object.values(engine.bgImages || {}), ...Object.values(engine.sprites || {})];
+  await Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => {
+        log("[CẢNH BÁO] Không tải được ảnh: " + img.src);
+        resolve();
+      };
+    });
+  }));
+}
+
+async function run() {
+  log("Đang khởi tạo các engine...");
+
+  // 1. Round 1
+  const c1 = document.getElementById("cvsR1");
+  const e1 = new ReactorRushEngine(c1);
+  await waitImages(e1);
+  e1.stage = REACTOR_STAGES.ROUND_1_ENERGY;
+  e1.p1.x = 210;
+  e1.p2.x = 430;
+  e1.p1.score = 220;
+  e1.p2.score = 230;
+  e1.totalScore = 450;
+  e1.r1Items = [
+    { x: 210, y: 380, type: 'energy', value: 10, color: '#facc15', vy: 100, pulse: 0, pIndex: 0 },
+    { x: 430, y: 440, type: 'energy', value: 25, color: '#38bdf8', vy: 100, pulse: 1, pIndex: 1 }
+  ];
+  e1.r1SyncActive = true;
+  e1.r1SyncTimer = 1.0;
+  e1.render(c1.getContext("2d"), 640, 720, 0.016);
+  log("✓ Đã render Round 1: Energy Catch");
+
+  // 2. Round 2
+  const c2 = document.getElementById("cvsR2");
+  const e2 = new ReactorRushEngine(c2);
+  await waitImages(e2);
+  e2.stage = REACTOR_STAGES.ROUND_2_CIRCUIT;
+  e2.p1.handRaised = true;
+  e2.p2.handRaised = true;
+  e2.r2Charge = 0.8;
+  e2.r2PulsesCompleted = 2;
+  e2.totalScore = 820;
+  e2.render(c2.getContext("2d"), 640, 720, 0.016);
+  log("✓ Đã render Round 2: Duo Circuit");
+
+  // 3. Round 3
+  const c3 = document.getElementById("cvsR3");
+  const e3 = new ReactorRushEngine(c3);
+  await waitImages(e3);
+  e3.stage = REACTOR_STAGES.ROUND_3_COOLING;
+  e3.coreTemp = 32.4;
+  e3.finalBoostActive = true;
+  e3.p1.waveVelocity = 120;
+  e3.p2.waveVelocity = 120;
+  e3.totalScore = 1240;
+  e3.render(c3.getContext("2d"), 640, 720, 0.016);
+  log("✓ Đã render Round 3: Cool The Core");
+
+  // 4. Victory
+  const c4 = document.getElementById("cvsVictory");
+  const e4 = new ReactorRushEngine(c4);
+  await waitImages(e4);
+  e4.stage = REACTOR_STAGES.MISSION_COMPLETE;
+  e4.totalScore = 1850;
+  e4.displayScore = 1850;
+  e4.teamMembers = ["Minh Nam", "Quang Nhật", "Đình Khoa", "Thái Hưng"];
+  e4.render(c4.getContext("2d"), 640, 720, 0.016);
+  log("✓ Đã render Mission Complete Victory");
+
+  // 5. Code Slicer
+  const c5 = document.getElementById("cvsSlicer");
+  const r5 = new RoadRenderer(c5);
+  const ctx5 = c5.getContext("2d");
+  r5.renderSlicer(ctx5, 640, 720, 0.016, [
+    { x: 300, y: 300, time: 0 },
+    { x: 350, y: 320, time: 0.05 },
+    { x: 420, y: 380, time: 0.1 }
+  ], null, false, false);
+  log("✓ Đã render Code Slicer Ninja");
+
+  // 6. Flappy Buggy
+  const c6 = document.getElementById("cvsFlappy");
+  const r6 = new RoadRenderer(c6);
+  const ctx6 = c6.getContext("2d");
+  r6.renderFlappy(ctx6, 640, 720, 0.016, 140, 360, -20, [], null, false, false, 360, "face");
+  log("✓ Đã render Aviator Cyber Buggy");
+
+  log("🎉 HOÀN THÀNH TOÀN BỘ RENDER!");
+  window.RENDER_COMPLETED = true;
+}
+
+run().catch(err => {
+  log("[LỖI] " + err.message + "<br><pre>" + err.stack + "</pre>");
+});
+</script>
+
+</body>
+</html>
