@@ -143,6 +143,20 @@
     </div>
   </div>
 
+  <!-- Intermission -->
+  <div class="card">
+    <div class="card-title">
+      <span>3.5 Intermission Screen (Error 4 Fix)</span>
+      <span class="badge">Team Swap UI</span>
+    </div>
+    <div class="comparison">
+      <div class="pane">
+        <h4>🎮 Engine Render Thực Tế (Live In-Game)</h4>
+        <canvas id="cvsIntermission" width="640" height="720"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Victory -->
   <div class="card">
     <div class="card-title">
@@ -264,6 +278,19 @@ async function run() {
   e3.update(0.1);
   e3.render(c3.getContext("2d"), 640, 720, 0.016);
   log("✓ Đã render Round 3: Cool The Core");
+
+  // 3.5 Intermission Screen (Error 4 Fix)
+  const cInter = document.getElementById("cvsIntermission");
+  if (cInter) {
+    const eInter = new ReactorRushEngine(cInter);
+    await waitImages(eInter);
+    eInter.stage = REACTOR_STAGES.SWAP_ROUND_2;
+    eInter.stageTime = 2.0;
+    eInter.setTeamRoster("TEAM NOVA", ["Minh Nam", "Quang Nhật", "Đình Khoa", "Thái Hưng"]);
+    eInter.update(0.1);
+    eInter.render(cInter.getContext("2d"), 640, 720, 0.016);
+    log("✓ Đã render Intermission Swap Screen");
+  }
 
   // 4. Victory
   const c4 = document.getElementById("cvsVictory");

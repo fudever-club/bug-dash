@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BUG DASH — Gameplay Demo & Video Producer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #060913;
+    color: #f8fafc;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .stage-container {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    background: #080c18;
+    box-shadow: 0 0 50px rgba(0, 245, 255, 0.25);
+    border: 2px solid #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+  }
+  /* Left HUD Telemetry */
+  .telemetry-left {
+    width: 320px;
+    height: 100%;
+    background: rgba(10, 16, 32, 0.95);
+    border-right: 1px solid rgba(0, 245, 255, 0.3);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  /* Center Arena Canvas */
+  .arena-center {
+    width: 640px;
+    height: 100%;
+    position: relative;
+    background: #000;
+  }
+  #gameCanvas {
+    width: 640px;
+    height: 720px;
+    display: block;
+  }
+  /* Right Mission HUD */
+  .mission-right {
+    width: 320px;
+    height: 100%;
+    background: rgba(10, 16, 32, 0.95);
+    border-left: 1px solid rgba(255, 42, 141, 0.3);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .hud-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #00f5ff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hud-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .hud-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: #facc15;
+    font-family: monospace;
+  }
+  .hud-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+  .brand-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .brand-header img {
+    height: 32px;
+    object-fit: contain;
+  }
+  .brand-text h2 {
+    font-size: 14px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+  .brand-text p {
+    font-size: 10px;
+    color: #38bdf8;
+    font-weight: 700;
+  }
+  .indicator-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    margin-top: 8px;
+  }
+  .indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage-container">
+  <!-- Left Side Telemetry -->
+  <aside class="telemetry-left">
+    <div>
+      <div class="brand-header">
+        <img src="assets/fptu_logo_white.png" alt="FPTU">
+        <div class="brand-text">
+          <h2>FU-DEVER CLUB</h2>
+          <p>FPT UNIVERSITY DA NANG</p>
+        </div>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-title">CHẾ ĐỘ CO-OP 2P</div>
+        <div class="hud-value" id="hudMode">REACTOR RUSH</div>
+        <div class="hud-sub">STEM FAIR TOURNAMENT 2026</div>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-title">ĐỘI THI ĐẤU</div>
+        <div class="hud-value" style="color:#38bdf8;">TEAM NOVA</div>
+        <div class="hud-sub">4 THÀNH VIÊN XOAY TUA</div>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-title">TIẾN ĐỘ CHIẾN DỊCH</div>
+        <div class="hud-value" id="hudStageName" style="font-size: 15px;">VÒNG 1: ENERGY CATCH</div>
+        <div class="indicator-pill">
+          <div class="indicator-dot"></div>
+          <span id="hudStatus">AI VISION LOCKED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-card" style="border-color: rgba(250, 204, 21, 0.4);">
+      <div class="hud-title" style="color: #facc15;">TỔNG ĐIỂM TEAM</div>
+      <div class="hud-value" id="hudTotalScore" style="font-size: 28px;">0 PTS</div>
+      <div class="hud-sub">TÍCH LŨY LIÊN HOÀN 3 VÒNG</div>
+    </div>
+  </aside>
+
+  <!-- Center Arena Canvas -->
+  <main class="arena-center">
+    <canvas id="gameCanvas" width="640" height="720"></canvas>
+  </main>
+
+  <!-- Right Side Mission Control -->
+  <aside class="mission-right">
+    <div>
+      <div class="hud-card" style="border-color: rgba(0, 245, 255, 0.4);">
+        <div class="hud-title">P1 • CYBER CYAN</div>
+        <div class="hud-value" id="p1Name" style="color: #00f5ff; font-size: 17px;">Minh Nam</div>
+        <div class="hud-sub" id="p1Telemetry">CỬ CHỈ: ĐANG HƯỚNG TÂM</div>
+      </div>
+
+      <div class="hud-card" style="border-color: rgba(255, 42, 141, 0.4);">
+        <div class="hud-title" style="color: #ff2a8d;">P2 • CYBER PINK</div>
+        <div class="hud-value" id="p2Name" style="color: #ff2a8d; font-size: 17px;">Quang Nhật</div>
+        <div class="hud-sub" id="p2Telemetry">CỬ CHỈ: ĐANG HƯỚNG TÂM</div>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-title">TRẠNG THÁI LÒ PHẢN ỨNG</div>
+        <div class="hud-value" id="hudCoreTemp" style="color: #ef4444;">88.5°C</div>
+        <div class="hud-sub">MỨC AN TOÀN: &le; 28.0°C</div>
+      </div>
+    </div>
+
+    <div class="hud-card" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.4);">
+      <div class="hud-title" style="color: #10b981;">KIỂM TOÁN UI/UX</div>
+      <div class="hud-sub" style="color: #e2e8f0; font-size: 12px; line-height: 1.5;">
+        &bull; Khử 100% Emoji UI<br>
+        &bull; Khắc phục lỗi chồng chữ<br>
+        &bull; Bục vinh danh 3 tầng chuẩn
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script type="module">
+import { ReactorRushEngine, REACTOR_STAGES } from "./src/engine/ReactorRushEngine.js";
+
+const canvas = document.getElementById("gameCanvas");
+const engine = new ReactorRushEngine(canvas);
+window.demoEngine = engine;
+
+// Wait for all sprites and backgrounds to load
+async function loadAssets() {
+  const animImgs = Object.values(engine.animators || {}).map(a => a.image).filter(Boolean);
+  const imgs = [...Object.values(engine.bgImages || {}), ...Object.values(engine.sprites || {}), ...animImgs];
+  await Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise(res => {
+      img.onload = () => res();
+      img.onerror = () => res();
+    });
+  }));
+}
+
+await loadAssets();
+
+// Initialize Demo Setup
+engine.setTeamRoster("TEAM NOVA", ["Minh Nam", "Quang Nhật", "Đình Khoa", "Thái Hưng"]);
+
+const hudTotalScore = document.getElementById("hudTotalScore");
+const hudStageName = document.getElementById("hudStageName");
+const hudCoreTemp = document.getElementById("hudCoreTemp");
+const p1NameEl = document.getElementById("p1Name");
+const p2NameEl = document.getElementById("p2Name");
+const p1Tele = document.getElementById("p1Telemetry");
+const p2Tele = document.getElementById("p2Telemetry");
+
+// Timed Demo Director: 22s full cinematic gameplay walkthrough
+let timeline = 0; // seconds
+const ctx = canvas.getContext("2d");
+
+// Start in Round 1 Energy Catch
+engine.stage = REACTOR_STAGES.ROUND_1_ENERGY;
+engine.stageTime = 5;
+engine.p1.x = 210;
+engine.p2.x = 430;
+engine.totalScore = 180;
+
+let lastTime = performance.now();
+
+function animate(now) {
+  const dt = Math.min(0.033, (now - lastTime) / 1000);
+  lastTime = now;
+  timeline += dt;
+
+  const pair = engine.getActivePair();
+  p1NameEl.textContent = pair.p1Name;
+  p2NameEl.textContent = pair.p2Name;
+
+  // Timeline Phase 1: Round 1 (Energy Catch) from 0s to 5s
+  if (timeline < 5.0) {
+    hudStageName.textContent = "VÒNG 1: ENERGY CATCH";
+    p1Tele.textContent = "ĐANG DI CHUYỂN BẮT HẠT";
+    p2Tele.textContent = "ĐANG DI CHUYỂN BẮT HẠT";
+    hudCoreTemp.textContent = "88.5°C";
+    
+    engine.p1.x = 200 + Math.sin(timeline * 2.5) * 50;
+    engine.p2.x = 440 - Math.sin(timeline * 2.5) * 50;
+    
+    if (Math.floor(timeline * 3) % 4 === 0 && !engine.r1SyncActive) {
+      engine.r1SyncActive = true;
+      engine.r1SyncTimer = 1.0;
+      engine.addFloatingText(320, 260, "SYNC COMBO +15!", "#facc15");
+      engine.totalScore += 45;
+    }
+  } 
+  // Timeline Phase 2: Intermission Swap Screen (error4 fix showcase) from 5s to 9s
+  else if (timeline < 9.0) {
+    if (engine.stage !== REACTOR_STAGES.SWAP_ROUND_2) {
+      engine.stage = REACTOR_STAGES.SWAP_ROUND_2;
+      engine.stageTime = 0;
+      window.AUDIT_READY_ERROR4 = true;
+    }
+    engine.stageTime = timeline - 5.0;
+    hudStageName.textContent = "ĐỔI CA VÒNG 2";
+    p1Tele.textContent = "ĐỔI CA: ĐÌNH KHOA";
+    p2Tele.textContent = "ĐỔI CA: THÁI HƯNG";
+  }
+  // Timeline Phase 3: Round 2 (Duo Circuit) from 9s to 13s
+  else if (timeline < 13.0) {
+    if (engine.stage !== REACTOR_STAGES.ROUND_2_CIRCUIT) {
+      engine.stage = REACTOR_STAGES.ROUND_2_CIRCUIT;
+      engine.stageTime = 0;
+      engine.r2PulsesCompleted = 2;
+    }
+    hudStageName.textContent = "VÒNG 2: DUO CIRCUIT";
+    p1Tele.textContent = "GIƠ TAY ĐÓNG MẠCH ✓";
+    p2Tele.textContent = "GIƠ TAY ĐÓNG MẠCH ✓";
+    engine.p1.handRaised = true;
+    engine.p2.handRaised = true;
+    engine.r2ChargeProgress = Math.min(1.0, 0.3 + (timeline - 9.0) * 0.25);
+    if (timeline > 11.5 && engine.r2PulsesCompleted === 2) {
+      engine.r2PulsesCompleted = 3;
+      engine.addFloatingText(320, 240, "CIRCUIT CHARGED! 3/4", "#10b981");
+      engine.totalScore += 120;
+    }
+  }
+  // Timeline Phase 4: Round 3 (Cool The Core) from 13s to 17.5s
+  else if (timeline < 17.5) {
+    if (engine.stage !== REACTOR_STAGES.ROUND_3_COOLING) {
+      engine.stage = REACTOR_STAGES.ROUND_3_COOLING;
+      engine.stageTime = 0;
+      engine.coreTemp = 68;
+    }
+    hudStageName.textContent = "VÒNG 3: COOL THE CORE";
+    p1Tele.textContent = "VẪY TAY QUẠT GIÓ CỰC ĐẠI";
+    p2Tele.textContent = "VẪY TAY QUẠT GIÓ CỰC ĐẠI";
+    engine.p1.waveVelocity = 280;
+    engine.p2.waveVelocity = 280;
+    
+    // Smooth cooling descent
+    const coolElapsed = timeline - 13.0;
+    engine.coreTemp = Math.max(28, 68 - coolElapsed * 9.0);
+    hudCoreTemp.textContent = engine.coreTemp.toFixed(1) + "°C";
+    
+    if (engine.coreTemp <= 44 && !engine.finalBoostActive) {
+      engine.finalBoostActive = true;
+      engine.addFloatingText(320, 220, "FINAL BOOST KÍCH HOẠT!", "#facc15");
+    }
+    if (Math.floor(coolElapsed * 5) % 2 === 0) {
+      engine.triggerP1Wave();
+      engine.triggerP2Wave();
+    }
+  }
+  // Timeline Phase 5: Mission Complete & Victory Stage (error5 fix showcase) from 17.5s to 23s
+  else {
+    if (engine.stage !== REACTOR_STAGES.MISSION_COMPLETE) {
+      engine.stage = REACTOR_STAGES.MISSION_COMPLETE;
+      engine.stageTime = 0;
+      engine.coreTemp = 28;
+      engine.totalScore = 1580;
+      engine.displayScore = 1580;
+      window.AUDIT_READY_ERROR5 = true;
+    }
+    hudStageName.textContent = "CHIẾN DỊCH HOÀN THÀNH";
+    p1Tele.textContent = "VÔ ĐỊCH BẬC 2";
+    p2Tele.textContent = "VÔ ĐỊCH BẬC 3";
+    hudCoreTemp.textContent = "28.0°C (AN TOÀN)";
+    hudCoreTemp.style.color = "#10b981";
+  }
+
+  hudTotalScore.textContent = Math.round(engine.totalScore) + " PTS";
+
+  engine.update(dt);
+  engine.render(ctx, 640, 720, dt);
+
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+window.DEMO_READY = true;
+</script>
+
+</body>
+</html>

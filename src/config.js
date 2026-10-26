@@ -355,9 +355,9 @@ export const REACTOR_CONFIG = {
   startTemp: 90,                 // Nhiệt độ xuất phát (°C)
   boostTemp: 44,                 // Ngưỡng Final Boost (°C)
   safeTemp: 28,                  // Nhiệt độ an toàn đích (°C)
-  coolingPerWave: 2.2,           // Độ sụt nhiệt mỗi cú vẫy tay mạnh (°C)
-  minWaveVelocity: 80,           // Ngưỡng vận tốc vẫy tay (px/s)
-  passiveHeatRise: 0.35,         // Tự tăng nhiệt nhẹ nếu ngừng tương tác (°C/s)
+  coolingPerWave: 2.0,           // Độ sụt nhiệt mỗi cú vẫy tay mạnh (°C)
+  minWaveVelocity: 160,          // Ngưỡng vận tốc vẫy tay cao hơn - yêu cầu biên độ quạt tay dứt khoát (px/s)
+  passiveHeatRise: 0.45,         // Tự tăng nhiệt nếu ngừng tương tác (°C/s)
   
   // Tọa độ sàn đấu
   p1FloorBounds: { minX: 60, maxX: 290 },

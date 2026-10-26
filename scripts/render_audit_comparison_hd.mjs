@@ -67,10 +67,19 @@ const screen3Path = path.join(outDir, 'hd_03_round3_cooling.png');
 await page.locator('#cvsR3').screenshot({ path: screen3Path });
 console.log(`[HD-AUDIT] Captured ${screen3Path}`);
 
-// 4. Capture Stage 4: Mission Complete (Victory Stage)
+// 4. Capture Stage 4: Mission Complete (Victory Stage - Error 5 Fix)
 const screen4Path = path.join(outDir, 'hd_04_mission_complete.png');
 await page.locator('#cvsVictory').screenshot({ path: screen4Path });
-console.log(`[HD-AUDIT] Captured ${screen4Path}`);
+await page.locator('#cvsVictory').screenshot({ path: path.join(projectRoot, 'audit_error5_fixed.png') });
+console.log(`[HD-AUDIT] Captured ${screen4Path} and audit_error5_fixed.png`);
+
+// 4.5 Capture Intermission (Error 4 Fix)
+const intermissionEl = await page.$('#cvsIntermission');
+if (intermissionEl) {
+  const intermissionPath = path.join(projectRoot, 'audit_error4_fixed.png');
+  await intermissionEl.screenshot({ path: intermissionPath });
+  console.log(`[HD-AUDIT] Captured Error 4 Fix: ${intermissionPath}`);
+}
 
 // 5. Full Visual Showcase Grid
 const fullStagePath = path.join(outDir, 'hd_05_full_stage_display.png');

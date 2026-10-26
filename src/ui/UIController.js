@@ -679,11 +679,10 @@ export class UIController {
           const isP1 = h.palmX < 0.5;
           const color = isP1 ? "rgba(0, 245, 255, 0.75)" : "rgba(244, 114, 182, 0.75)";
           const tipColor = isP1 ? "#38bdf8" : "#f472b6";
-          let label = isP1 ? "P1 TAY" : "P2 TAY";
-          if (h.isRaised) {
-            label = isP1 ? "P1 [GIƠ CAO ✓]" : "P2 [GIƠ CAO ✓]";
-          } else if (h.waveVelocity && h.waveVelocity >= 80) {
+          if (h.waveVelocity && h.waveVelocity >= 160) {
             label = isP1 ? "P1 [QUẠT GIÓ]" : "P2 [QUẠT GIÓ]";
+          } else if (h.isRaised) {
+            label = isP1 ? "P1 [GIƠ CAO ✓]" : "P2 [GIƠ CAO ✓]";
           }
           drawHandSkeleton(h, color, tipColor, label);
         });

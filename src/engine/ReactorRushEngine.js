@@ -786,14 +786,14 @@ export class ReactorRushEngine {
       this.addFloatingText(this.W / 2, 220, "FINAL BOOST KÍCH HOẠT! VẪY TAY CỰC ĐẠI!", "#facc15");
     }
 
-    // Check continuous wave gestures from webcam telemetry
-    const p1Waving = (this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p1.handRaised;
-    const p2Waving = (this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p2.handRaised;
+    // Check continuous wave gestures from webcam telemetry (require active fanning motion, not just holding hand raised)
+    const p1Waving = this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity;
+    const p2Waving = this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity;
 
-    if (p1Waving && (this.totalTime - this.p1.lastWaveTime > 0.18)) {
+    if (p1Waving && (this.totalTime - this.p1.lastWaveTime > 0.28)) {
       this.triggerP1Wave();
     }
-    if (p2Waving && (this.totalTime - this.p2.lastWaveTime > 0.18)) {
+    if (p2Waving && (this.totalTime - this.p2.lastWaveTime > 0.28)) {
       this.triggerP2Wave();
     }
 
@@ -1353,100 +1353,136 @@ export class ReactorRushEngine {
     const pair = this.getActivePair();
 
     // Backdrop overlay: translucent so the upcoming round's art is visible!
-    ctx.fillStyle = "rgba(7, 11, 25, 0.45)";
+    ctx.fillStyle = "rgba(7, 11, 25, 0.55)";
     ctx.fillRect(0, 72, W, H - 72);
 
-    // Intermission Box
-    const boxW = 540;
-    const boxH = 430;
+    // Intermission Box (W: 560, H: 480, X: 40, Y: 104) -> Generous padding on all sides
+    const boxW = 560;
+    const boxH = 480;
     const boxX = W / 2 - boxW / 2;
-    const boxY = 120;
+    const boxY = 104;
 
-    ctx.fillStyle = "rgba(13, 22, 50, 0.72)";
+    ctx.fillStyle = "rgba(9, 15, 34, 0.92)";
     ctx.strokeStyle = "#facc15";
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2.0;
+    ctx.shadowColor = "rgba(250, 204, 21, 0.25)";
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxW, boxH, 16);
+    if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 18);
+    else ctx.rect(boxX, boxY, boxW, boxH);
     ctx.fill();
     ctx.stroke();
-
-    // Header Title
-    ctx.textAlign = "center";
-    ctx.font = "900 24px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#facc15";
-    ctx.shadowColor = "#facc15";
-    ctx.shadowBlur = 12;
-    ctx.fillText("ĐỔI CA THÀNH VIÊN TRONG TEAM", W / 2, boxY + 45);
     ctx.shadowBlur = 0;
 
-    // Previous round recap
-    const prevScore = nextRoundNum === 2 ? this.r1Score : this.r2Score;
-    ctx.font = "700 14px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(`Vừa hoàn thành Vòng ${nextRoundNum - 1} • Điểm hiện tại: ${this.totalScore} PTS`, W / 2, boxY + 75);
+    ctx.textAlign = "center";
 
-    // Upcoming Round Notification
-    ctx.font = "800 18px 'Be Vietnam Pro', sans-serif";
+    // 1. Header Pill: Round transition
+    const badgeW = 340;
+    const badgeH = 28;
+    ctx.fillStyle = "rgba(56, 189, 248, 0.12)";
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.45)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(W / 2 - badgeW / 2, boxY + 22, badgeW, badgeH, 14);
+    else ctx.rect(W / 2 - badgeW / 2, boxY + 22, badgeW, badgeH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = "800 12px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#38bdf8";
     const roundTitle = nextRoundNum === 2 ? "VÒNG 02: DUO CIRCUIT (MẠCH ĐIỆN)" : "VÒNG 03: COOL THE CORE (HẠ NHIỆT LÒ)";
-    ctx.fillText(`CHUẨN BỊ CHO ${roundTitle}`, W / 2, boxY + 120);
+    ctx.fillText(`CHUẨN BỊ CHO ${roundTitle}`, W / 2, boxY + 41);
 
-    // Two New Active Members Stepping In
-    ctx.font = "600 14px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.fillText("2 THÀNH VIÊN TIẾP THEO BƯỚC VÀO TRƯỚC WEBCAM TV:", W / 2, boxY + 155);
-
-    // Member 1 Badge (Cyan)
-    const cardY = boxY + 180;
-    ctx.fillStyle = "rgba(0, 245, 255, 0.15)";
-    ctx.strokeStyle = "#00f5ff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(boxX + 35, cardY, 210, 80, 10);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.font = "800 12px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#00f5ff";
-    ctx.fillText("P1 (CYBER CYAN)", boxX + 140, cardY + 28);
-    ctx.font = "900 16px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(pair.p1Name, boxX + 140, cardY + 56);
-
-    // Member 2 Badge (Pink)
-    ctx.fillStyle = "rgba(255, 42, 141, 0.15)";
-    ctx.strokeStyle = "#ff2a8d";
-    ctx.beginPath();
-    ctx.roundRect(boxX + 295, cardY, 210, 80, 10);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.font = "800 12px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#ff2a8d";
-    ctx.fillText("P2 (CYBER PINK)", boxX + 400, cardY + 28);
-    ctx.font = "900 16px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(pair.p2Name, boxX + 400, cardY + 56);
-
-    // Big Countdown Number
-    ctx.font = "900 36px 'JetBrains Mono', monospace";
+    // 2. Main Title (Clean, elegant, no harsh crowding)
+    ctx.font = "900 21px 'Be Vietnam Pro', sans-serif";
     ctx.fillStyle = "#facc15";
-    ctx.fillText(`TỰ ĐỘNG BẮT ĐẦU TRONG: ${remainingSwap}S`, W / 2, boxY + 315);
+    ctx.fillText("ĐỔI CA THÀNH VIÊN TRONG TEAM", W / 2, boxY + 80);
 
-    // Skip / Ready Button Hint
+    // 3. Recap Subtitle
+    ctx.font = "600 13px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`Đã hoàn thành Vòng ${nextRoundNum - 1} • Điểm hiện tại: ${this.totalScore} PTS`, W / 2, boxY + 104);
+
+    // 4. Instructions
     ctx.font = "700 13px 'Be Vietnam Pro', sans-serif";
     ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.fillText("Bấm phím [SPACE] hoặc click chuột để vào chơi ngay lập tức!", W / 2, boxY + 355);
+    ctx.fillText("2 THÀNH VIÊN TIẾP THEO BƯỚC VÀO TRƯỚC WEBCAM TV:", W / 2, boxY + 138);
 
-    // Ready CTA Button
-    ctx.fillStyle = "#10b981";
+    // 5. Member 1 Badge (Cyan) & Member 2 Badge (Pink)
+    const cardY = boxY + 156;
+    const cardW = 215;
+    const cardH = 78;
+
+    // Card P1 (Left)
+    const p1CardX = boxX + 45;
+    ctx.fillStyle = "rgba(0, 245, 255, 0.12)";
+    ctx.strokeStyle = "#00f5ff";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(W / 2 - 120, boxY + 375, 240, 38, 19);
+    if (ctx.roundRect) ctx.roundRect(p1CardX, cardY, cardW, cardH, 12);
+    else ctx.rect(p1CardX, cardY, cardW, cardH);
     ctx.fill();
+    ctx.stroke();
 
-    ctx.font = "900 13px 'Be Vietnam Pro', sans-serif";
+    ctx.font = "800 11.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#00f5ff";
+    ctx.fillText("P1 • CYBER CYAN", p1CardX + cardW / 2, cardY + 28);
+    ctx.font = "900 17px 'Be Vietnam Pro', sans-serif";
     ctx.fillStyle = "#ffffff";
-    ctx.fillText("SẴN SÀNG VÀO VÒNG (SPACE)", W / 2, boxY + 399);
+    ctx.fillText(pair.p1Name, p1CardX + cardW / 2, cardY + 57);
+
+    // Card P2 (Right)
+    const p2CardX = boxX + boxW - 45 - cardW;
+    ctx.fillStyle = "rgba(255, 42, 141, 0.12)";
+    ctx.strokeStyle = "#ff2a8d";
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(p2CardX, cardY, cardW, cardH, 12);
+    else ctx.rect(p2CardX, cardY, cardW, cardH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = "800 11.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#ff2a8d";
+    ctx.fillText("P2 • CYBER PINK", p2CardX + cardW / 2, cardY + 28);
+    ctx.font = "900 17px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(pair.p2Name, p2CardX + cardW / 2, cardY + 57);
+
+    // 6. Countdown Section: Structured with breathing room (No edge-to-edge overflow!)
+    ctx.font = "700 13px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("TỰ ĐỘNG BẮT ĐẦU TRONG", W / 2, boxY + 272);
+
+    ctx.font = "900 38px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#facc15";
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 10;
+    ctx.fillText(`${remainingSwap} GIÂY`, W / 2, boxY + 316);
+    ctx.shadowBlur = 0;
+
+    // 7. Shortcut Tip
+    ctx.font = "600 12.5px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+    ctx.fillText("Bấm phím [SPACE] hoặc click chuột để vào chơi ngay lập tức!", W / 2, boxY + 356);
+
+    // 8. Ready CTA Button (Comfortable 44px height, plenty of margin to bottom)
+    const btnW = 260;
+    const btnH = 42;
+    const btnX = W / 2 - btnW / 2;
+    const btnY = boxY + 382;
+
+    ctx.fillStyle = "#10b981";
+    ctx.shadowColor = "#10b981";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(btnX, btnY, btnW, btnH, 21);
+    else ctx.rect(btnX, btnY, btnW, btnH);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = "900 13.5px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("SẴN SÀNG VÀO VÒNG (SPACE)", W / 2, btnY + 26);
 
     ctx.restore();
   }
@@ -1705,8 +1741,8 @@ export class ReactorRushEngine {
       ctx.fill();
     }
 
-    const p1Waving = (this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p1.handRaised;
-    const p2Waving = (this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity) || this.p2.handRaised;
+    const p1Waving = this.p1.waveVelocity >= REACTOR_CONFIG.minWaveVelocity;
+    const p2Waving = this.p2.waveVelocity >= REACTOR_CONFIG.minWaveVelocity;
 
     // P1 Robot (Left) with Nametag & Cryo Cannons
     this.drawMechaPilotKart(ctx, 120, REACTOR_CONFIG.floorY, "cyan", {
@@ -1848,63 +1884,69 @@ export class ReactorRushEngine {
 
     ctx.textAlign = "center";
 
-    // 1. Sleek Jumbotron Score Banner (Y = 125 to 195, perfectly framed under stadium header)
-    const scoreBoxW = 420;
-    const scoreBoxH = 68;
+    // 1. Sleek Jumbotron Score Banner (Y = 108 to 192, spacious and opaque against background bleed)
+    const scoreBoxW = 460;
+    const scoreBoxH = 80;
     const scoreBoxX = W / 2 - scoreBoxW / 2;
-    const scoreBoxY = 122;
+    const scoreBoxY = 108;
 
-    ctx.fillStyle = "rgba(7, 13, 28, 0.88)";
-    ctx.strokeStyle = "rgba(0, 245, 255, 0.45)";
+    ctx.fillStyle = "rgba(6, 11, 25, 0.96)";
+    ctx.strokeStyle = "rgba(0, 245, 255, 0.55)";
     ctx.lineWidth = 1.5;
     ctx.shadowColor = "rgba(0, 245, 255, 0.35)";
     ctx.shadowBlur = 12;
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(scoreBoxX, scoreBoxY, scoreBoxW, scoreBoxH, 12);
+    if (ctx.roundRect) ctx.roundRect(scoreBoxX, scoreBoxY, scoreBoxW, scoreBoxH, 14);
     else ctx.rect(scoreBoxX, scoreBoxY, scoreBoxW, scoreBoxH);
     ctx.fill();
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    ctx.font = "800 11px 'JetBrains Mono', monospace";
+    ctx.font = "800 11.5px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#38bdf8";
-    ctx.fillText(`TEAM: ${this.teamName.toUpperCase()} • CHIẾN DỊCH HOÀN THÀNH`, W / 2, scoreBoxY + 22);
+    ctx.fillText(`TEAM: ${this.teamName.toUpperCase()} • CHIẾN DỊCH HOÀN THÀNH`, W / 2, scoreBoxY + 26);
 
-    ctx.font = "900 34px 'JetBrains Mono', monospace";
+    ctx.font = "900 32px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#facc15";
     ctx.shadowColor = "#facc15";
     ctx.shadowBlur = 10;
-    ctx.fillText(`${Math.round(this.displayScore).toLocaleString()} ĐIỂM`, W / 2, scoreBoxY + 56);
+    ctx.fillText(`${Math.round(this.displayScore).toLocaleString()} ĐIỂM`, W / 2, scoreBoxY + 64);
     ctx.shadowBlur = 0;
 
-    // 2. Full Team Members Roster Honor Bar (Y = 202 to 244)
+    // 2. Full Team Members Roster Honor Bar (Spacious cards with 12px gap, 46px height, no text collisions)
     const memCount = this.teamMembers.length;
-    const rosterW = 540;
-    const itemW = Math.min(125, (rosterW - 20) / Math.max(1, memCount));
-    const startMemX = W / 2 - (memCount * itemW) / 2;
+    const itemW = 122;
+    const gap = 12;
+    const totalRosterW = memCount * itemW + (memCount - 1) * gap;
+    const startMemX = W / 2 - totalRosterW / 2;
+    const rosterY = 202;
+    const itemH = 46;
 
     this.teamMembers.forEach((name, idx) => {
-      const ix = startMemX + idx * itemW + itemW / 2;
-      const iy = 204;
-      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-      ctx.strokeStyle = idx % 2 === 0 ? "rgba(0, 245, 255, 0.5)" : "rgba(255, 42, 141, 0.5)";
-      ctx.lineWidth = 1;
+      const ix = startMemX + idx * (itemW + gap);
+      const centerX = ix + itemW / 2;
+
+      ctx.fillStyle = "rgba(9, 16, 35, 0.94)";
+      ctx.strokeStyle = idx % 2 === 0 ? "rgba(0, 245, 255, 0.65)" : "rgba(255, 42, 141, 0.65)";
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(ix - itemW / 2 + 4, iy, itemW - 8, 36, 8);
-      else ctx.rect(ix - itemW / 2 + 4, iy, itemW - 8, 36);
+      if (ctx.roundRect) ctx.roundRect(ix, rosterY, itemW, itemH, 10);
+      else ctx.rect(ix, rosterY, itemW, itemH);
       ctx.fill();
       ctx.stroke();
 
-      ctx.font = "800 9.5px 'JetBrains Mono', monospace";
+      // Role tag
+      ctx.font = "800 10px 'JetBrains Mono', monospace";
       ctx.fillStyle = idx % 2 === 0 ? "#00f5ff" : "#ff2a8d";
-      ctx.fillText(idx === 0 ? "P1" : idx === 1 ? "P2" : "ĐỒNG ĐỘI", ix, iy + 14);
+      ctx.fillText(idx === 0 ? "P1" : idx === 1 ? "P2" : "ĐỒNG ĐỘI", centerX, rosterY + 16);
 
-      ctx.font = "900 11px 'Be Vietnam Pro', sans-serif";
+      // Name
+      ctx.font = "900 12.5px 'Be Vietnam Pro', sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(name, ix, iy + 28);
+      ctx.fillText(name, centerX, rosterY + 34);
     });
 
-    // 3. Central Animated Golden Trophy on 1st Tier Pedestal (Base at Y = 455)
+    // 3. Central Animated Golden Trophy on 1st Tier Pedestal (Base at Y = 452)
     const trophyW = 120;
     const trophyH = 120;
     const trophyBaseY = 452;
@@ -1986,22 +2028,22 @@ export class ReactorRushEngine {
     ctx.fill();
     ctx.restore();
 
-    // 2. Player Nametag (Floating cleanly above head, NO overlap)
+    // 2. Player Nametag (Clear 10px clearance above antennae at -146, NO overlap!)
     if (options.playerName) {
       ctx.save();
-      ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
+      ctx.font = "900 12.5px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
       const nameText = options.role ? `${options.role}: ${options.playerName}` : options.playerName;
-      const tagW = ctx.measureText ? (ctx.measureText(nameText).width + 24) : 88;
-      const tagY = -155 + cheerBob;
-      ctx.fillStyle = "rgba(7, 13, 28, 0.92)";
+      const tagW = ctx.measureText ? (ctx.measureText(nameText).width + 30) : 96;
+      const tagY = -182 + cheerBob;
+      ctx.fillStyle = "rgba(7, 13, 28, 0.94)";
       ctx.strokeStyle = primaryColor;
       ctx.lineWidth = 1.5;
       ctx.shadowColor = primaryColor;
       ctx.shadowBlur = 6;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(-tagW / 2, tagY, tagW, 22, 11);
-      else ctx.rect(-tagW / 2, tagY, tagW, 22);
+      if (ctx.roundRect) ctx.roundRect(-tagW / 2, tagY, tagW, 26, 13);
+      else ctx.rect(-tagW / 2, tagY, tagW, 26);
       ctx.fill();
       ctx.stroke();
       ctx.shadowBlur = 0;
