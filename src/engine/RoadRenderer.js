@@ -1724,7 +1724,7 @@ export class RoadRenderer {
     // Direct Tracking Reticle & Target Altitude Guide (Nose / Hand)
     if (!isGameOver && flappyTargetY !== undefined && flappyTargetY !== null) {
       ctx.save();
-      const targetLabel = (inputSource === "hand") ? "✋ BÁM TAY" : "🎯 BÁM MŨI";
+      const targetLabel = (inputSource === "hand") ? "BÁM TAY" : "BÁM MŨI";
       const targetColor = "#06b6d4";
 
       // Subtle dashed guide line towards Buggy

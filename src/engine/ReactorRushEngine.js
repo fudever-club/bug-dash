@@ -77,8 +77,8 @@ export class ReactorRushEngine {
     this.animators = {
       kartCyan: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_kart_cyan.png",
-        frameWidth: 180,
-        frameHeight: 250,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -86,8 +86,8 @@ export class ReactorRushEngine {
       }),
       kartPink: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_kart_pink.png",
-        frameWidth: 180,
-        frameHeight: 250,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -95,8 +95,8 @@ export class ReactorRushEngine {
       }),
       circuitCyan: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_circuit_cyan.png",
-        frameWidth: 290,
-        frameHeight: 215,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -104,8 +104,8 @@ export class ReactorRushEngine {
       }),
       circuitPink: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_circuit_pink.png",
-        frameWidth: 290,
-        frameHeight: 215,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -113,8 +113,8 @@ export class ReactorRushEngine {
       }),
       cryoCyan: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_cryo_cyan.png",
-        frameWidth: 280,
-        frameHeight: 215,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -122,8 +122,8 @@ export class ReactorRushEngine {
       }),
       cryoPink: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_cryo_pink.png",
-        frameWidth: 280,
-        frameHeight: 215,
+        frameWidth: 160,
+        frameHeight: 160,
         frameCount: 4,
         fps: 8,
         loop: true,
@@ -131,8 +131,8 @@ export class ReactorRushEngine {
       }),
       energyOrb: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_energy_orb.png",
-        frameWidth: 40,
-        frameHeight: 40,
+        frameWidth: 64,
+        frameHeight: 64,
         frameCount: 6,
         fps: 12,
         loop: true,
@@ -140,9 +140,9 @@ export class ReactorRushEngine {
       }),
       champTrophy: new SpriteSheetAnimator({
         image: basePath + "assets/reactor/sheet_champ_trophy.png",
-        frameWidth: 190,
-        frameHeight: 275,
-        frameCount: 6,
+        frameWidth: 128,
+        frameHeight: 128,
+        frameCount: 4,
         fps: 8,
         loop: true,
         fallbackType: "champ_trophy"
@@ -1833,7 +1833,7 @@ export class ReactorRushEngine {
     ctx.restore();
   }
 
-  // --- RENDER STAGE: MISSION COMPLETE (Full Team Honor) ---
+  // --- RENDER STAGE: MISSION COMPLETE (Full Team Honor on 3-Tier Arena Podium) ---
   renderMissionComplete(ctx, W, H) {
     ctx.save();
 
@@ -1848,131 +1848,342 @@ export class ReactorRushEngine {
 
     ctx.textAlign = "center";
 
-    // Team Pill
-    const teamBadgeW = 240;
-    const teamBadgeY = 145;
-    ctx.fillStyle = "rgba(10, 16, 36, 0.78)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+    // 1. Sleek Jumbotron Score Banner (Y = 125 to 195, perfectly framed under stadium header)
+    const scoreBoxW = 420;
+    const scoreBoxH = 68;
+    const scoreBoxX = W / 2 - scoreBoxW / 2;
+    const scoreBoxY = 122;
+
+    ctx.fillStyle = "rgba(7, 13, 28, 0.88)";
+    ctx.strokeStyle = "rgba(0, 245, 255, 0.45)";
     ctx.lineWidth = 1.5;
+    ctx.shadowColor = "rgba(0, 245, 255, 0.35)";
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(W / 2 - teamBadgeW / 2, teamBadgeY, teamBadgeW, 30, 15);
-    else ctx.rect(W / 2 - teamBadgeW / 2, teamBadgeY, teamBadgeW, 30);
+    if (ctx.roundRect) ctx.roundRect(scoreBoxX, scoreBoxY, scoreBoxW, scoreBoxH, 12);
+    else ctx.rect(scoreBoxX, scoreBoxY, scoreBoxW, scoreBoxH);
     ctx.fill();
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    ctx.font = "800 13px 'JetBrains Mono', monospace";
+    ctx.font = "800 11px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#38bdf8";
-    ctx.fillText(`★ TEAM: ${this.teamName}`, W / 2, teamBadgeY + 20);
+    ctx.fillText(`TEAM: ${this.teamName.toUpperCase()} • CHIẾN DỊCH HOÀN THÀNH`, W / 2, scoreBoxY + 22);
 
-    // Total Score Number
-    ctx.font = "900 56px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(Math.round(this.displayScore).toLocaleString(), W / 2, 230);
-
-    ctx.font = "800 12.5px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.fillText("TỔNG ĐIỂM TÍCH LŨY CẢ ĐỘI (3 VÒNG)", W / 2, 258);
-
-    // Full Team Members Roster Honor Card
-    const cardW = 540;
-    const cardH = 95;
-    const cardX = W / 2 - cardW / 2;
-    const cardY = 285;
-
-    ctx.fillStyle = "rgba(15, 23, 42, 0.90)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, cardW, cardH, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.font = "800 12px 'Be Vietnam Pro', sans-serif";
+    ctx.font = "900 34px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#facc15";
-    ctx.fillText("DANH SÁCH ANH HÙNG KHOA HỌC TRONG TEAM:", W / 2, cardY + 24);
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 10;
+    ctx.fillText(`${Math.round(this.displayScore).toLocaleString()} ĐIỂM`, W / 2, scoreBoxY + 56);
+    ctx.shadowBlur = 0;
 
-    // Render Member Names Pills
+    // 2. Full Team Members Roster Honor Bar (Y = 202 to 244)
     const memCount = this.teamMembers.length;
-    const itemW = Math.min(125, (cardW - 40) / memCount);
+    const rosterW = 540;
+    const itemW = Math.min(125, (rosterW - 20) / Math.max(1, memCount));
     const startMemX = W / 2 - (memCount * itemW) / 2;
 
     this.teamMembers.forEach((name, idx) => {
       const ix = startMemX + idx * itemW + itemW / 2;
-      ctx.fillStyle = "rgba(56, 189, 248, 0.15)";
+      const iy = 204;
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      ctx.strokeStyle = idx % 2 === 0 ? "rgba(0, 245, 255, 0.5)" : "rgba(255, 42, 141, 0.5)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(ix - itemW / 2 + 5, cardY + 38, itemW - 10, 38, 8);
+      if (ctx.roundRect) ctx.roundRect(ix - itemW / 2 + 4, iy, itemW - 8, 36, 8);
+      else ctx.rect(ix - itemW / 2 + 4, iy, itemW - 8, 36);
       ctx.fill();
+      ctx.stroke();
 
-      ctx.font = "800 11px 'JetBrains Mono', monospace";
+      ctx.font = "800 9.5px 'JetBrains Mono', monospace";
       ctx.fillStyle = idx % 2 === 0 ? "#00f5ff" : "#ff2a8d";
-      ctx.fillText(`★ ĐỒNG ĐỘI`, ix, cardY + 52);
+      ctx.fillText(idx === 0 ? "P1" : idx === 1 ? "P2" : "ĐỒNG ĐỘI", ix, iy + 14);
 
-      ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
+      ctx.font = "900 11px 'Be Vietnam Pro', sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(name, ix, cardY + 68);
+      ctx.fillText(name, ix, iy + 28);
     });
 
-    // Badge: SCIENCE EXPLORERS
-    const badgeW = 240;
-    const badgeY = 430;
-    ctx.fillStyle = "rgba(16, 185, 129, 0.2)";
-    ctx.strokeStyle = "#10b981";
-    ctx.lineWidth = 1.5;
+    // 3. Central Animated Golden Trophy on 1st Tier Pedestal (Base at Y = 455)
+    const trophyW = 120;
+    const trophyH = 120;
+    const trophyBaseY = 452;
+
+    // Contact shadow on pedestal 1 top surface
+    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
     ctx.beginPath();
-    ctx.roundRect(W / 2 - badgeW / 2, badgeY, badgeW, 36, 18);
+    if (ctx.ellipse) ctx.ellipse(W / 2, trophyBaseY, 38, 10, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.stroke();
 
-    ctx.font = "900 13px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#34d399";
-    ctx.fillText("SCIENCE EXPLORERS", W / 2, badgeY + 23);
-
-    // Slogan: SCIENCE IS FOR EVERYONE
-    ctx.font = "800 15px 'Be Vietnam Pro', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.fillText("• SCIENCE IS FOR EVERYONE •", W / 2, 495);
-
-    // Celebrating Champion Mascot Pair & Golden Trophy on the 3-Tier Victory Podium
-    const champPair = this.getActivePair();
-
-    // Central Trophy on 1st Tier Pedestal
-    const trophyW = 125;
-    const trophyH = 180;
     if (this.animators && this.animators.champTrophy && this.animators.champTrophy.isReady()) {
-      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH, {
+      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, trophyBaseY - trophyH, trophyW, trophyH, {
         glowColor: "#facc15",
-        glowBlur: 16
+        glowBlur: 14
       });
     } else if (ctx.drawImage && this.sprites.champTrophy && this.sprites.champTrophy.complete && this.sprites.champTrophy.naturalWidth > 0) {
-      ctx.drawImage(this.sprites.champTrophy, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH);
+      ctx.drawImage(this.sprites.champTrophy, W / 2 - trophyW / 2, trophyBaseY - trophyH, trophyW, trophyH);
     } else if (this.animators && this.animators.champTrophy) {
-      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, 545 - trophyH * 0.95, trophyW, trophyH, {
+      this.animators.champTrophy.draw(ctx, W / 2 - trophyW / 2, trophyBaseY - trophyH, trophyW, trophyH, {
         glowColor: "#facc15",
-        glowBlur: 12
+        glowBlur: 10
       });
     }
 
-    this.drawMechaPilotKart(ctx, W / 2 - 110, 545, "cyan", {
-      handsRaised: true,
-      isWinner: true,
-      scale: 1.15,
+    // 4. Standing Champion Mascot Pair Grounded on Pedestal 2 (Left, Y=475) & Pedestal 3 (Right, Y=505)
+    const champPair = this.getActivePair();
+
+    // P1 (Cyan) on Pedestal 2 (X = 205, Y = 475)
+    this.drawCelebrationChampionBot(ctx, 205, 475, "cyan", {
       playerName: champPair.p1Name,
-      eyeState: "happy"
+      role: "P1"
     });
 
-    this.drawMechaPilotKart(ctx, W / 2 + 110, 545, "pink", {
-      handsRaised: true,
-      isWinner: true,
-      scale: 1.15,
+    // P2 (Pink) on Pedestal 3 (X = 435, Y = 505)
+    this.drawCelebrationChampionBot(ctx, 435, 505, "pink", {
       playerName: champPair.p2Name,
-      eyeState: "happy"
+      role: "P2"
     });
 
-    ctx.font = "800 11px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-    ctx.fillText("POWERED BY FU-DEVER • STEM FAIR 2026", W / 2, H - 28);
+    // 5. Bottom Call-To-Action (Clean, pulsating prompt)
+    const pulseAlpha = 0.65 + Math.sin(this.totalTime * 4) * 0.35;
+    ctx.font = "800 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = `rgba(255, 255, 255, ${pulseAlpha})`;
+    ctx.fillText("BẤM SPACE HOẶC GIƠ TAY ĐỂ TIẾP TỤC", W / 2, H - 24);
 
     ctx.restore();
+  }
+
+  // --- CELEBRATION CHAMPION BOT (3D Grounded, Raised Fists, Gold Medal, Stage Rim Lighting) ---
+  drawCelebrationChampionBot(ctx, x, y, colorTheme = "cyan", options = {}) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    const isCyan = colorTheme === "cyan";
+    const primaryColor = isCyan ? "#00f5ff" : "#ff2a8d";
+    const darkShell = isCyan ? "#0284c7" : "#be185d";
+    const medalRibbon = isCyan ? "#0284c7" : "#00f5ff";
+    const rimLightColor = isCyan ? "rgba(0, 245, 255, 0.45)" : "rgba(255, 214, 0, 0.45)";
+
+    // Cheering bounce physics
+    const cheerBob = Math.sin(this.totalTime * 6) * 3;
+    const armWave = Math.sin(this.totalTime * 8) * 0.12;
+
+    // 1. Realistic 3D Pedestal Contact Shadow (Conforms to metallic pedestal surface)
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+    ctx.beginPath();
+    if (ctx.ellipse) ctx.ellipse(0, 0, 36, 11, 0, 0, Math.PI * 2);
+    else ctx.arc(0, 0, 24, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dark tight feet occlusion
+    ctx.fillStyle = "rgba(0, 0, 0, 0.88)";
+    ctx.beginPath();
+    if (ctx.ellipse) {
+      ctx.ellipse(-16, 0, 13, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(16, 0, 13, 5, 0, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Player Nametag (Floating cleanly above head, NO overlap)
+    if (options.playerName) {
+      ctx.save();
+      ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
+      ctx.textAlign = "center";
+      const nameText = options.role ? `${options.role}: ${options.playerName}` : options.playerName;
+      const tagW = ctx.measureText ? (ctx.measureText(nameText).width + 24) : 88;
+      const tagY = -155 + cheerBob;
+      ctx.fillStyle = "rgba(7, 13, 28, 0.92)";
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = primaryColor;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-tagW / 2, tagY, tagW, 22, 11);
+      else ctx.rect(-tagW / 2, tagY, tagW, 22);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(nameText, 0, tagY + 15);
+      ctx.restore();
+    }
+
+    // 3. Cheering Body & Limbs
+    ctx.save();
+    ctx.translate(0, cheerBob);
+
+    // Legs in solid victory stance
+    // Left Leg
+    ctx.fillStyle = "#1e293b";
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2;
+    ctx.fillRect(-22, -42, 10, 24);
+    // Left Boot (Cel-shaded armor)
+    ctx.fillStyle = darkShell;
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-25, -20, 15, 20, [4, 4, 6, 6]);
+    else ctx.rect(-25, -20, 15, 20);
+    ctx.fill(); ctx.stroke();
+
+    // Right Leg
+    ctx.fillStyle = "#1e293b";
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2;
+    ctx.fillRect(12, -42, 10, 24);
+    // Right Boot
+    ctx.fillStyle = darkShell;
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(10, -20, 15, 20, [4, 4, 6, 6]);
+    else ctx.rect(10, -20, 15, 20);
+    ctx.fill(); ctx.stroke();
+
+    // Pelvis
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(-18, -48, 36, 10);
+
+    // Torso Armor (Cel-shaded primary color with specular highlight)
+    if (ctx.createLinearGradient) {
+      const torsoGrad = ctx.createLinearGradient(0, -82, 0, -46);
+      torsoGrad.addColorStop(0, primaryColor);
+      torsoGrad.addColorStop(0.5, darkShell);
+      torsoGrad.addColorStop(1, "#090d16");
+      ctx.fillStyle = torsoGrad;
+    } else {
+      ctx.fillStyle = primaryColor;
+    }
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-20, -82, 40, 36, 8);
+    else ctx.rect(-20, -82, 40, 36);
+    ctx.fill(); ctx.stroke();
+
+    // Raised Cheering Arms (Cheering Fists)
+    // Left Arm (Raised Up-Left)
+    ctx.save();
+    ctx.translate(-20, -74);
+    ctx.rotate(-0.55 + armWave);
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(-6, -30, 12, 30);
+    // Left Fist / Glove
+    ctx.fillStyle = primaryColor;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-8, -44, 16, 16, 4);
+    else ctx.rect(-8, -44, 16, 16);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // Right Arm (Raised Up-Right)
+    ctx.save();
+    ctx.translate(20, -74);
+    ctx.rotate(0.55 - armWave);
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(-6, -30, 12, 30);
+    // Right Fist / Glove
+    ctx.fillStyle = primaryColor;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-8, -44, 16, 16, 4);
+    else ctx.rect(-8, -44, 16, 16);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // Golden Champion Medal & Ribbon
+    ctx.strokeStyle = medalRibbon;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-16, -78);
+    ctx.lineTo(0, -56);
+    ctx.lineTo(16, -78);
+    ctx.stroke();
+
+    // Large Gold Medal
+    ctx.save();
+    ctx.fillStyle = "#facc15";
+    ctx.strokeStyle = "#eab308";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(0, -54, 11, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // Head / Helmet (Rounded Pilot Helmet with 3D gradient)
+    if (ctx.createLinearGradient) {
+      const helmetGrad = ctx.createLinearGradient(0, -126, 0, -84);
+      helmetGrad.addColorStop(0, primaryColor);
+      helmetGrad.addColorStop(0.35, darkShell);
+      helmetGrad.addColorStop(1, "#070b19");
+      ctx.fillStyle = helmetGrad;
+    } else {
+      ctx.fillStyle = darkShell;
+    }
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-24, -126, 48, 42, 10);
+    else ctx.rect(-24, -126, 48, 42);
+    ctx.fill(); ctx.stroke();
+
+    // Antennae with Golden Balls
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-12, -126); ctx.lineTo(-18, -142);
+    ctx.moveTo(12, -126); ctx.lineTo(18, -142);
+    ctx.stroke();
+    ctx.fillStyle = "#facc15";
+    ctx.beginPath();
+    ctx.arc(-18, -142, 3.5, 0, Math.PI * 2);
+    ctx.arc(18, -142, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Visor (Dark Obsidian Glass)
+    ctx.fillStyle = "#050914";
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-18, -118, 36, 26, 6);
+    else ctx.rect(-18, -118, 36, 26);
+    ctx.fill(); ctx.stroke();
+
+    // Glowing Happy Visor Face (^ ^)
+    ctx.font = "900 13px 'Be Vietnam Pro', sans-serif";
+    ctx.fillStyle = primaryColor;
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 8;
+    ctx.textAlign = "center";
+    ctx.fillText("^   ^", 0, -103);
+    ctx.shadowBlur = 0;
+
+    // Stage Spotlight Rim Light Effect (Gives 3D depth matching the stadium lights!)
+    ctx.save();
+    ctx.strokeStyle = rimLightColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    if (isCyan) {
+      ctx.arc(-22, -105, 12, Math.PI * 0.7, Math.PI * 1.3);
+      ctx.moveTo(-25, -20); ctx.lineTo(-25, 0);
+    } else {
+      ctx.arc(22, -105, 12, -Math.PI * 0.3, Math.PI * 0.3);
+      ctx.moveTo(25, -20); ctx.lineTo(25, 0);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.restore(); // end cheerBob
+    ctx.restore(); // end base
   }
 
   // --- ALIAS FOR COMPATIBILITY ---
@@ -1998,48 +2209,54 @@ export class ReactorRushEngine {
     const idleBob = Math.sin(this.totalTime * 8) * 2.2;
     const steerTilt = Math.max(-0.22, Math.min(0.22, options.steerTilt || 0));
 
-    // 2. Nametag for Big TV / Lab Room readability
+    // 2. Nametag for Big TV / Lab Room readability (Safe height above kart roof)
     if (options.playerName) {
       ctx.save();
       ctx.font = "900 12px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
       const tagW = ctx.measureText ? (ctx.measureText(options.playerName).width + 20) : 76;
-      ctx.fillStyle = "rgba(7, 13, 28, 0.88)";
+      ctx.fillStyle = "rgba(7, 13, 28, 0.92)";
       ctx.strokeStyle = primaryColor;
       ctx.lineWidth = 1.5;
       ctx.shadowColor = primaryColor;
       ctx.shadowBlur = 6;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(-tagW / 2, -78 + idleBob, tagW, 20, 6);
-      else ctx.rect(-tagW / 2, -78 + idleBob, tagW, 20);
+      if (ctx.roundRect) ctx.roundRect(-tagW / 2, -162 + idleBob, tagW, 20, 6);
+      else ctx.rect(-tagW / 2, -162 + idleBob, tagW, 20);
       ctx.fill();
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.fillStyle = primaryColor;
-      ctx.fillText(options.playerName, 0, -64 + idleBob);
+      ctx.fillText(options.playerName, 0, -148 + idleBob);
       ctx.restore();
     }
 
-    // 3. Ground Shadow & Neon Underglow
+    // 3. Ground Shadow & Ambient Occlusion Contact
     ctx.save();
+    // Soft wide floor ambient occlusion
+    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.beginPath();
+    if (ctx.ellipse) ctx.ellipse(0, 4, 46, 12, 0, 0, Math.PI * 2);
+    else ctx.arc(0, 4, 24, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dark tight wheel contact occlusion
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.beginPath();
+    if (ctx.ellipse) ctx.ellipse(0, 3, 34, 6, 0, 0, Math.PI * 2);
+    else ctx.arc(0, 3, 16, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Subtle team underglow on floor directly under chassis
     if (ctx.createRadialGradient) {
-      const underglow = ctx.createRadialGradient(0, 24, 6, 0, 24, 42);
-      underglow.addColorStop(0, primaryColor);
-      underglow.addColorStop(0.5, isCyan ? "rgba(0, 245, 255, 0.32)" : "rgba(255, 42, 141, 0.32)");
+      const underglow = ctx.createRadialGradient(0, 2, 4, 0, 2, 38);
+      underglow.addColorStop(0, isCyan ? "rgba(0, 245, 255, 0.22)" : "rgba(255, 42, 141, 0.22)");
       underglow.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = underglow;
       ctx.beginPath();
-      if (ctx.ellipse) ctx.ellipse(0, 25, 44, 12, 0, 0, Math.PI * 2);
-      else ctx.arc(0, 25, 24, 0, Math.PI * 2);
+      if (ctx.ellipse) ctx.ellipse(0, 2, 40, 10, 0, 0, Math.PI * 2);
       ctx.fill();
     }
-
-    // Dark ground contact shadow
-    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-    ctx.beginPath();
-    if (ctx.ellipse) ctx.ellipse(0, 24, 32, 7, 0, 0, Math.PI * 2);
-    else ctx.arc(0, 24, 16, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
 
     // 4. Rear Rocket Thrusters (Spitting animated plasma flames)
@@ -2097,33 +2314,28 @@ export class ReactorRushEngine {
     // Determine Stage-Appropriate Authentic Sprite & Spritesheet Animator
     let sprite = null;
     let animator = null;
-    let targetW = 140;
-    let targetH = 194;
-    let anchorYRatio = 0.86;
+    let targetW = 150;
+    let targetH = 150;
+    let anchorYRatio = 0.92;
 
-    if (options.isWinner || this.stage === REACTOR_STAGES.MISSION_COMPLETE) {
-      sprite = isCyan ? this.sprites.champCyan : this.sprites.champPink;
-      targetW = 145;
-      targetH = 190;
-      anchorYRatio = 0.88;
-    } else if (options.isCooling || options.isWaving || this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
+    if (options.isCooling || options.isWaving || this.stage === REACTOR_STAGES.ROUND_3_COOLING) {
       animator = this.animators ? (isCyan ? this.animators.cryoCyan : this.animators.cryoPink) : null;
       sprite = isCyan ? this.sprites.cryoCyan : this.sprites.cryoPink;
-      targetW = 165;
-      targetH = 126;
-      anchorYRatio = 0.90;
+      targetW = 150;
+      targetH = 150;
+      anchorYRatio = 0.92;
     } else if (options.isCircuit || options.handsRaised || this.stage === REACTOR_STAGES.ROUND_2_CIRCUIT) {
       animator = this.animators ? (isCyan ? this.animators.circuitCyan : this.animators.circuitPink) : null;
       sprite = isCyan ? this.sprites.circuitCyan : this.sprites.circuitPink;
-      targetW = 165;
-      targetH = 122;
+      targetW = 150;
+      targetH = 150;
       anchorYRatio = 0.92;
     } else {
       animator = this.animators ? (isCyan ? this.animators.kartCyan : this.animators.kartPink) : null;
       sprite = isCyan ? this.sprites.kartCyan : this.sprites.kartPink;
-      targetW = 140;
-      targetH = 194;
-      anchorYRatio = 0.86;
+      targetW = 150;
+      targetH = 150;
+      anchorYRatio = 0.92;
     }
 
     const drawX = -targetW / 2;
@@ -2136,15 +2348,15 @@ export class ReactorRushEngine {
 
     if (animator && animator.isReady()) {
       animator.draw(ctx, drawX, drawY, targetW, targetH, {
-        glowColor: primaryColor,
-        glowBlur: options.justCaught ? 18 : 8
+        glowColor: options.justCaught ? primaryColor : null,
+        glowBlur: options.justCaught ? 16 : 0
       });
     } else if (ctx.drawImage && sprite && sprite.complete && sprite.naturalWidth > 0) {
       ctx.drawImage(sprite, drawX, drawY, targetW, targetH);
     } else if (animator) {
       animator.draw(ctx, drawX, drawY, targetW, targetH, {
-        glowColor: primaryColor,
-        glowBlur: 6
+        glowColor: null,
+        glowBlur: 0
       });
     } else {
       // 5. Heavy Off-Road Cyber Wheels (Left & Right)

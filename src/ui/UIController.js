@@ -36,6 +36,7 @@ export class UIController {
 
   initElements() {
     this.dom = {
+      stageHud: document.querySelector(".stage-hud"),
       canvasScore: $("canvasScore"),
       timerVal: $("timerVal"),
       canvasCombo: $("canvasCombo"),
@@ -1013,7 +1014,7 @@ export class UIController {
         ctx.fillStyle = "#06b6d4";
         ctx.font = "bold 9px 'JetBrains Mono', monospace";
         ctx.textAlign = "center";
-        ctx.fillText("🎯 MŨI DẪN ĐƯỜNG", nx, ny - 11);
+        ctx.fillText("MŨI DẪN ĐƯỜNG", nx, ny - 11);
         ctx.restore();
 
         ctx.fillStyle = "rgba(6, 182, 212, 0.90)";
@@ -1023,7 +1024,7 @@ export class UIController {
         ctx.fillStyle = "#050811";
         ctx.font = "800 10.5px 'Be Vietnam Pro', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("🎯 BAY BÁM THEO MŨI (LÊN / XUỐNG)", W * 0.5, 25);
+        ctx.fillText("BAY BÁM THEO MŨI (LÊN / XUỐNG)", W * 0.5, 25);
       } else if (trackerStatus.isJump) {
         ctx.fillStyle = "rgba(56, 189, 248, 0.90)";
         ctx.beginPath();
@@ -1032,7 +1033,7 @@ export class UIController {
         ctx.fillStyle = "#050811";
         ctx.font = "800 11px 'Be Vietnam Pro', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("⬆ NHẢY QUA BUG (JUMP)!", W * 0.5, 25);
+        ctx.fillText("NHẢY QUA BUG (JUMP)!", W * 0.5, 25);
       } else if (trackerStatus.isDuck) {
         ctx.fillStyle = "rgba(245, 158, 11, 0.90)";
         ctx.beginPath();
@@ -1118,11 +1119,20 @@ export class UIController {
     if (this.dom.tabModeSlicer) this.dom.tabModeSlicer.classList.toggle("active", mode === "slicer");
     if (this.dom.tabModeFlappy) this.dom.tabModeFlappy.classList.toggle("active", mode === "flappy");
     if (this.dom.tabModeDuel) this.dom.tabModeDuel.classList.toggle("active", mode === "duel" || mode === "splitscreen");
+
+    // Seamlessly hide HTML stage HUD during Reactor and Split-Screen modes so it never clashes with Canvas HUD
+    if (this.dom.stageHud) {
+      this.dom.stageHud.style.display = (mode === "reactor" || mode === "splitscreen") ? "none" : "flex";
+    }
   }
 
   showStartScreenForMode(mode = "classic") {
     this.hideAllModals();
     this.currentActiveStartMode = mode;
+
+    if (this.dom.stageHud) {
+      this.dom.stageHud.style.display = (mode === "reactor" || mode === "splitscreen") ? "none" : "flex";
+    }
     const meta = MODE_METADATA[mode] || MODE_METADATA["classic"];
     if (this.dom.startModalBadge) {
       this.dom.startModalBadge.textContent = meta.badge;
@@ -1162,6 +1172,7 @@ export class UIController {
 
     // Isolate Reactor Rush from single-player sensor switcher:
     if (mode === "reactor") {
+      if (this.dom.stageHud) this.dom.stageHud.style.display = "none";
       if (this.dom.startInputSwitcher) this.dom.startInputSwitcher.classList.add("hidden");
       if (this.dom.sensorBtnGroup) this.dom.sensorBtnGroup.classList.add("hidden");
       if (this.dom.sensorCoopReactorInfo) this.dom.sensorCoopReactorInfo.classList.remove("hidden");
@@ -1171,6 +1182,7 @@ export class UIController {
         this.dom.controlInputBadge.style.borderColor = "#00f5ff";
       }
     } else {
+      if (this.dom.stageHud && mode !== "splitscreen") this.dom.stageHud.style.display = "flex";
       if (this.dom.sensorBtnGroup) this.dom.sensorBtnGroup.classList.remove("hidden");
       if (this.dom.sensorCoopReactorInfo) this.dom.sensorCoopReactorInfo.classList.add("hidden");
       if (mode === "slicer") {
@@ -1324,6 +1336,9 @@ export class UIController {
     if (this.dom.victoryModal) this.dom.victoryModal.classList.add("hidden");
     if (this.dom.duelLobbyModal) this.dom.duelLobbyModal.classList.add("hidden");
     if (this.dom.duelResultModal) this.dom.duelResultModal.classList.add("hidden");
+    if (this.dom.stageHud) {
+      this.dom.stageHud.style.display = (this.currentActiveStartMode === "reactor" || this.currentActiveStartMode === "splitscreen") ? "none" : "flex";
+    }
   }
 
   showDuelLobby() {
